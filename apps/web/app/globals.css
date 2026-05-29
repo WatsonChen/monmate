@@ -32,3 +32,75 @@ select,
 textarea {
   font: inherit;
 }
+
+.success-firework {
+  position: absolute;
+  width: 7px;
+  height: 18px;
+  border-radius: 999px;
+  background: #8ee6c1;
+  opacity: 0;
+  transform: translateY(10px) scale(0.8) rotate(var(--rotate, 0deg));
+  animation: success-firework 1.8s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.success-firework::after {
+  content: "";
+  position: absolute;
+  inset: 5px 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ff7231;
+}
+
+.success-spark {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: #ff7231;
+  opacity: 0;
+  transform: rotate(45deg) scale(0.8);
+  animation: success-spark 1.6s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes success-firework {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.7) rotate(var(--rotate, 0deg));
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(var(--rotate, 0deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.9) rotate(var(--rotate, 0deg));
+  }
+}
+
+@keyframes success-spark {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) rotate(45deg) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(0) rotate(45deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) rotate(45deg) scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-firework,
+  .success-spark {
+    animation: none;
+    opacity: 0.75;
+  }
+}

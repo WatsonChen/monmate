@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -112,18 +113,30 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <section className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-6xl grid-cols-1 gap-8 px-5 py-8 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-10">
-        <div className="max-w-2xl">
-          <p className="text-sm font-bold text-orange">活動報到的神隊友</p>
-          <h1 className="mt-3 text-4xl font-bold leading-tight sm:text-5xl">
-            MonMate
-          </h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-charcoal/70">
-            給主辦方使用的活動報到工具。單場儲值後建立活動、匯入名單，產生活動專屬報到連結，再把
-            QR Code 或 URL 寄送給受邀客戶。
-          </p>
+      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-5 py-8 md:min-h-[calc(100svh-4rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-10">
+        <div className="relative max-w-2xl overflow-hidden pb-2 md:overflow-visible md:pb-0">
+          <div className="relative z-10 max-w-[68%] sm:max-w-[60%] md:max-w-none">
+            <p className="text-sm font-bold text-orange">活動報到的神隊友</p>
+            <h1 className="mt-3 text-4xl font-bold leading-tight sm:text-5xl">
+              MonMate
+            </h1>
+            <p className="mt-5 text-base leading-7 text-charcoal/70 md:max-w-xl">
+              給主辦方使用的活動報到工具。單場儲值後建立活動、匯入名單，產生活動專屬報到連結，再把
+              QR Code 或 URL 寄送給受邀客戶。
+            </p>
+          </div>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+          <Image
+            src="/brand/mascot-mobile.png"
+            alt="MonMate mascot"
+            width={280}
+            height={280}
+            className="absolute right-0 top-4 z-0 w-[170px] object-contain sm:-right-4 sm:w-[220px] md:hidden"
+            priority
+            unoptimized
+          />
+
+          <div className="relative z-10 mt-7 flex flex-wrap gap-3">
             <Link
               href="/admin"
               className="flex h-12 items-center gap-2 rounded-lg bg-orange px-5 text-sm font-bold text-white shadow-soft"
@@ -140,7 +153,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+          <div className="relative z-10 mt-8 grid gap-3 sm:grid-cols-3">
             {[
               ["單場開通", CreditCard],
               ["匯入名單", FileSpreadsheet],
@@ -157,25 +170,54 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:justify-items-center">
-          <Image
-            src="/brand/mascot.png"
-            alt="MonMate mascot"
-            width={520}
-            height={520}
-            className="mx-auto aspect-square w-full max-w-[280px] object-contain sm:max-w-sm"
-            priority
-          />
-          <div className="w-full max-w-sm rounded-lg border border-charcoal/10 bg-white p-4 shadow-soft">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-mint/25">
-                <CheckCircle2 size={22} />
-              </span>
-              <div>
-                <p className="text-sm font-bold">報到成功</p>
-                <p className="text-xs font-semibold text-charcoal/60">
-                  王小明，電話末三碼 678
-                </p>
+        <div className="hidden md:flex md:justify-center">
+          <div className="relative w-full max-w-[360px] overflow-hidden rounded-[28px] border border-charcoal/10 bg-white px-8 py-10 shadow-soft">
+            <span className="success-firework left-10 top-44 -rotate-45" />
+            <span
+              className="success-firework right-12 top-40"
+              style={{ "--delay": "0.45s", "--rotate": "42deg" } as CSSProperties}
+            />
+            <span
+              className="success-firework bottom-32 left-14"
+              style={{ "--delay": "0.85s", "--rotate": "34deg" } as CSSProperties}
+            />
+            <span
+              className="success-spark right-10 top-56"
+              style={{ "--delay": "0.25s" } as CSSProperties}
+            />
+
+            <div className="relative z-10 text-center">
+              <BrandLogo
+                variant="horizontal"
+                className="mx-auto h-16 w-48 object-contain"
+              />
+              <p className="mt-8 text-xl font-bold">來賓報到</p>
+              <p className="mt-2 text-sm font-semibold text-charcoal/60">
+                2026 MonMate 年度峰會
+              </p>
+
+              <div className="mx-auto mt-9 flex h-36 w-36 items-center justify-center rounded-full bg-mint shadow-soft">
+                <CheckCircle2 className="text-white" size={86} strokeWidth={2.6} />
+              </div>
+
+              <h3 className="mt-8 text-3xl font-bold">報到成功！</h3>
+              <p className="mt-2 text-sm font-semibold text-charcoal/60">
+                王小明，電話末三碼 678
+              </p>
+
+              <div className="mt-8 grid gap-3">
+                <Link
+                  href="/event/monmate-demo/checkin"
+                  className="flex h-12 items-center justify-center rounded-lg bg-orange text-sm font-bold text-white shadow-soft"
+                >
+                  下一位來賓
+                </Link>
+                <Link
+                  href="/admin"
+                  className="flex h-12 items-center justify-center rounded-lg border border-orange/35 bg-white text-sm font-bold text-charcoal/70"
+                >
+                  查看報到紀錄
+                </Link>
               </div>
             </div>
           </div>

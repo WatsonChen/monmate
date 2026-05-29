@@ -22,6 +22,7 @@ export function BrandLogo({
       width={variant === "mark" ? 160 : 420}
       height={variant === "mark" ? 160 : 220}
       className={className}
+      unoptimized
       priority
     />
   );
