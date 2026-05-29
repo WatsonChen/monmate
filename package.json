@@ -1,0 +1,48 @@
+{
+  "name": "monmate",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MonMate activity check-in platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm run dev -w @monmate/web",
+    "dev:api": "npm run dev -w @monmate/api",
+    "build": "npm run build -ws --if-present",
+    "typecheck": "npm run typecheck -ws --if-present",
+    "lint": "npm run lint -ws --if-present",
+    "db:generate": "dotenv -e apps/api/.env -- prisma generate",
+    "db:migrate": "dotenv -e apps/api/.env -- prisma migrate dev",
+    "db:seed": "dotenv -e apps/api/.env -- tsx prisma/seed.ts",
+    "prisma:generate": "dotenv -e apps/api/.env -- prisma generate",
+    "prisma:migrate": "dotenv -e apps/api/.env -- prisma migrate dev",
+    "prisma:studio": "dotenv -e apps/api/.env -- prisma studio",
+    "seed": "dotenv -e apps/api/.env -- tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "dotenv-cli": "^7.4.4",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "prisma": {
+    "seed": "dotenv -e apps/api/.env -- tsx prisma/seed.ts"
+  },
+  "overrides": {
+    "postcss": "^8.5.10",
+    "next": {
+      "postcss": "^8.5.10"
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

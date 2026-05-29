@@ -1,0 +1,212 @@
+"use client";
+
+import type { CheckInResultDTO } from "@monmate/types";
+import {
+  Check,
+  Keyboard,
+  QrCode,
+  RotateCcw,
+  Search,
+  XCircle
+} from "lucide-react";
+import { useState } from "react";
+import { apiFetch } from "../lib/api";
+import { BrandLogo } from "./BrandLogo";
+
+type Method = "qr" | "manual";
+
+const statusCopy = {
+  SUCCESS: {
+    title: "報到成功！",
+    tone: "bg-mint/25 border-mint text-charcoal",
+    icon: Check
+  },
+  ALREADY_CHECKED_IN: {
+    title: "已報到過",
+    tone: "bg-orange/10 border-orange/30 text-charcoal",
+    icon: RotateCcw
+  },
+  NOT_FOUND: {
+    title: "找不到報名資料",
+    tone: "bg-orange/10 border-orange/30 text-charcoal",
+    icon: Search
+  },
+  INVALID: {
+    title: "QR Code / 序號無效",
+    tone: "bg-red-50 border-red-200 text-red-900",
+    icon: XCircle
+  }
+} as const;
+
+type CheckInClientProps = {
+  initialEventId?: string;
+  eventName?: string;
+  eventLocation?: string | null;
+  allowEventIdInput?: boolean;
+};
+
+export function CheckInClient({
+  initialEventId = "",
+  eventName,
+  eventLocation,
+  allowEventIdInput = false
+}: CheckInClientProps) {
+  const [eventId, setEventId] = useState(initialEventId);
+  const [method, setMethod] = useState<Method>("qr");
+  const [credential, setCredential] = useState("");
+  const [result, setResult] = useState<CheckInResultDTO | null>(null);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function submitCheckIn() {
+    setIsSubmitting(true);
+    setError("");
+    setResult(null);
+
+    const path =
+      method === "qr"
+        ? `/events/${eventId}/check-in/qr`
+        : `/events/${eventId}/check-in/manual`;
+    const body =
+      method === "qr" ? { qrToken: credential } : { checkInCode: credential };
+
+    try {
+      const response = await apiFetch<CheckInResultDTO>(path, {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+
+      if (!response.success || !response.data) {
+        setError(response.error?.message ?? "報到失敗");
+        return;
+      }
+
+      setResult(response.data);
+      setCredential("");
+    } catch {
+      setError("無法連線到報到服務");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const ResultIcon = result ? statusCopy[result.status].icon : null;
+
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 py-6">
+      <header className="flex items-center justify-between">
+        <BrandLogo
+          variant="horizontal"
+          className="h-14 w-40 object-contain object-left"
+        />
+        <span className="rounded-full bg-mint/30 px-3 py-1 text-xs font-semibold text-charcoal">
+          現場報到
+        </span>
+      </header>
+
+      <section className="mt-8 rounded-lg border border-charcoal/10 bg-white p-4 shadow-soft">
+        {eventName ? (
+          <div className="mb-5 rounded-lg bg-mint/15 px-4 py-3">
+            <p className="text-xs font-semibold text-charcoal/60">活動</p>
+            <h1 className="mt-1 text-xl font-bold text-charcoal">{eventName}</h1>
+            {eventLocation ? (
+              <p className="mt-1 text-sm font-semibold text-charcoal/60">
+                {eventLocation}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {allowEventIdInput ? (
+          <>
+            <label className="text-sm font-semibold text-charcoal" htmlFor="eventId">
+              活動 ID
+            </label>
+            <input
+              id="eventId"
+              value={eventId}
+              onChange={(event) => setEventId(event.target.value)}
+              className="mt-2 h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-base outline-none focus:border-mint"
+              placeholder="輸入後台活動 ID"
+            />
+          </>
+        ) : null}
+
+        <div className={allowEventIdInput ? "mt-5 grid grid-cols-2 gap-2 rounded-lg bg-cloud p-1" : "grid grid-cols-2 gap-2 rounded-lg bg-cloud p-1"}>
+          <button
+            type="button"
+            onClick={() => setMethod("qr")}
+            className={`flex h-12 items-center justify-center gap-2 rounded-md text-sm font-semibold ${
+              method === "qr" ? "bg-white text-charcoal shadow-sm" : "text-charcoal/70"
+            }`}
+          >
+            <QrCode size={18} />
+            QR Code
+          </button>
+          <button
+            type="button"
+            onClick={() => setMethod("manual")}
+            className={`flex h-12 items-center justify-center gap-2 rounded-md text-sm font-semibold ${
+              method === "manual" ? "bg-white text-charcoal shadow-sm" : "text-charcoal/70"
+            }`}
+          >
+            <Keyboard size={18} />
+            手動序號
+          </button>
+        </div>
+
+        <label className="mt-5 block text-sm font-semibold text-charcoal" htmlFor="credential">
+          {method === "qr" ? "QR Token" : "報到序號"}
+        </label>
+        <input
+          id="credential"
+          value={credential}
+          onChange={(event) => setCredential(event.target.value)}
+          className="mt-2 h-14 w-full rounded-lg border border-charcoal/15 bg-paper px-4 text-lg font-semibold tracking-wide outline-none focus:border-mint"
+          placeholder={method === "qr" ? "掃描後貼上或輸入 token" : "例如 MM0001"}
+        />
+
+        <button
+          type="button"
+          disabled={!eventId || !credential || isSubmitting}
+          onClick={submitCheckIn}
+          className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-orange text-base font-bold text-white shadow-soft disabled:cursor-not-allowed disabled:bg-charcoal/25"
+        >
+          <QrCode size={20} />
+          {isSubmitting ? "處理中..." : "開始掃描報到"}
+        </button>
+      </section>
+
+      {error ? (
+        <section className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-900">
+          {error}
+        </section>
+      ) : null}
+
+      {result ? (
+        <section className={`mt-4 rounded-lg border p-4 ${statusCopy[result.status].tone}`}>
+          <div className="flex items-center gap-3">
+            {ResultIcon ? (
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white">
+                <ResultIcon size={24} />
+              </span>
+            ) : null}
+            <div>
+              <p className="text-lg font-bold">{statusCopy[result.status].title}</p>
+              {result.attendee ? (
+                <p className="text-sm text-charcoal/70">
+                  {result.attendee.name}，電話末三碼 {result.attendee.phoneLastThree}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          {result.attendee?.checkedInAt ? (
+            <p className="mt-3 rounded-md bg-white/75 px-3 py-2 text-sm">
+              報到時間：{new Date(result.attendee.checkedInAt).toLocaleString("zh-TW")}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+    </main>
+  );
+}
