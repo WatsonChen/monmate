@@ -125,6 +125,36 @@ npm run typecheck
 npm run build
 ```
 
+## Vercel 部署
+
+如果 Vercel 出現：
+
+```txt
+No Output Directory named "public" found after the Build completed.
+```
+
+代表 Project Settings 裡的 Output Directory 被設成了 `public`。`public` 是 Next.js 靜態資產來源資料夾，不是 build output。
+
+建議設定：
+
+```txt
+Framework Preset: Next.js
+Root Directory: apps/web
+Build Command: npm run build
+Output Directory: .next
+Install Command: npm install
+```
+
+repo 內已提供 `apps/web/vercel.json`；如果 Vercel 專案 Root Directory 設為 `apps/web`，它會使用該設定。若 Root Directory 保持 repo root，則會使用根目錄 `vercel.json`，build `@monmate/web` 並使用 `apps/web/.next` 作為 output。
+
+前端部署時至少要設定：
+
+```txt
+NEXT_PUBLIC_API_URL=<你的 API URL>
+```
+
+目前 Express API 不會跟 Next app 一起部署到同一個 Vercel project。正式環境可先將 `apps/web` 部署到 Vercel，`apps/api` 之後再依 Neon / Vercel 或其他 Node runtime 的部署策略處理。
+
 ## API Routes
 
 ### Auth
