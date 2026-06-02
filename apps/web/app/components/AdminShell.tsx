@@ -18,8 +18,11 @@ const navItems = [
   { label: "活動列表", icon: ListChecks, href: "/admin/events" },
   { label: "新增活動", icon: CalendarPlus, href: "/admin/events/new" },
   { label: "匯入名單", icon: FileSpreadsheet, href: "/admin/import" },
-  { label: "寄送資訊", icon: Send, href: "/admin/notifications" },
-  { label: "匯出報表", icon: Download, href: "/admin/export" }
+  { label: "邀請簡訊", icon: Send, href: "/admin/invite" },
+  { label: "活動問卷", icon: Send, href: "/admin/survey" },
+  { label: "數據分析", icon: Download, href: "/admin/analytics" },
+  { label: "匯出報表", icon: Download, href: "/admin/export" },
+  { label: "工作人員掃描", icon: QrCode, href: "/staff/scan" }
 ];
 
 function isActive(pathname: string, href: string) {

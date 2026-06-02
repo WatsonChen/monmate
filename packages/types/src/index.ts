@@ -89,7 +89,7 @@ export type PaymentDTO = {
 };
 
 export type BillingStatusDTO = {
-  eventCredits: number;
+  attendeeCredits: number;
   recentPayments: PaymentDTO[];
 };
 
@@ -104,7 +104,7 @@ export type PricingTierDTO = {
   id: string;
   label: string;
   attendeeRange: string;
-  attendeeLimit: number;
+  attendeeCredits: number;
   amount: number;
   currency: "TWD";
 };
