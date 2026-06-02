@@ -17,7 +17,10 @@ export async function apiFetch<T>(
   }
 
   const headers = new Headers(init?.headers);
-  headers.set("Content-Type", "application/json");
+
+  if (!(init?.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (init?.token) {
     headers.set("Authorization", `Bearer ${init.token}`);
@@ -29,4 +32,8 @@ export async function apiFetch<T>(
   });
 
   return response.json() as Promise<ApiResponse<T>>;
+}
+
+export function getApiBaseUrl() {
+  return apiBaseUrl;
 }

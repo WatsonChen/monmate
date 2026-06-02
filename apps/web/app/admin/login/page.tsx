@@ -3,12 +3,14 @@
 import type { UserDTO } from "@monmate/types";
 import { LogIn } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
 import { apiFetch } from "../../lib/api";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("admin@monmate.local");
-  const [password, setPassword] = useState("monmate123");
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
   async function login() {
@@ -28,6 +30,7 @@ export default function AdminLoginPage() {
 
     window.localStorage.setItem("monmate.token", response.data.token);
     setMessage(`已登入：${response.data.user.name}`);
+    router.push("/admin");
   }
 
   return (

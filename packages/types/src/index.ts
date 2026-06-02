@@ -17,12 +17,21 @@ export type CheckInLogStatus =
   | "ALREADY_CHECKED_IN"
   | "NOT_FOUND"
   | "INVALID";
+export type PaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "EXPIRED"
+  | "CANCELED"
+  | "FAILED"
+  | "REFUNDED";
+export type PaymentProduct = "EVENT_CREDIT";
 
 export type UserDTO = {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  eventCredits: number;
 };
 
 export type EventDTO = {
@@ -33,6 +42,11 @@ export type EventDTO = {
   startAt: string;
   endAt?: string | null;
   location?: string | null;
+  attendeeLimit?: number | null;
+  attendeeCount?: number;
+  checkInLogCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type AttendeeDTO = {
@@ -55,4 +69,42 @@ export type CheckInResultDTO = {
     phoneLastThree: string;
   };
   checkedInAt?: string;
+};
+
+export type PaymentDTO = {
+  id: string;
+  status: PaymentStatus;
+  product: PaymentProduct;
+  quantity: number;
+  creditsGranted: number;
+  amountTotal?: number | null;
+  currency?: string | null;
+  pricingTier?: string | null;
+  attendeeLimit?: number | null;
+  providerOrderNo?: string | null;
+  providerTradeNo?: string | null;
+  consumedAt?: string | null;
+  paidAt?: string | null;
+  createdAt: string;
+};
+
+export type BillingStatusDTO = {
+  eventCredits: number;
+  recentPayments: PaymentDTO[];
+};
+
+export type CheckoutSessionDTO = {
+  paymentId: string;
+  action: string;
+  method: "POST";
+  fields: Record<string, string>;
+};
+
+export type PricingTierDTO = {
+  id: string;
+  label: string;
+  attendeeRange: string;
+  attendeeLimit: number;
+  amount: number;
+  currency: "TWD";
 };
