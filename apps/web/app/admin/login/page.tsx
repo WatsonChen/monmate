@@ -1,6 +1,7 @@
 "use client";
 
 import type { UserDTO } from "@monmate/types";
+import { GoogleLogin } from "@react-oauth/google";
 import { LogIn } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -68,6 +69,40 @@ export default function AdminLoginPage() {
             登入後台
           </button>
         </div>
+
+        <div className="mt-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-charcoal/10" />
+          <span className="text-xs font-semibold text-charcoal/40">或</span>
+          <div className="h-px flex-1 bg-charcoal/10" />
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              if (!credentialResponse.credential) return;
+              setMessage("");
+              const response = await apiFetch<{ token: string; user: UserDTO }>(
+                "/auth/google",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ credential: credentialResponse.credential })
+                }
+              );
+              if (!response.success || !response.data) {
+                setMessage(response.error?.message ?? "Google 登入失敗");
+                return;
+              }
+              window.localStorage.setItem("monmate.token", response.data.token);
+              router.push("/admin");
+            }}
+            onError={() => setMessage("Google 登入失敗，請再試")}
+            locale="zh-TW"
+            text="signin_with"
+            shape="rectangular"
+            size="large"
+          />
+        </div>
+
         {message ? (
           <p className="mt-4 rounded-lg bg-mint/20 px-3 py-2 text-sm font-semibold">
             {message}
