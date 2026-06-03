@@ -104,7 +104,7 @@ export default function HomePage() {
               登入
             </Link>
             <Link
-              href="/admin"
+              href="/admin/login"
               className="flex h-10 items-center rounded-lg bg-orange px-4 text-sm font-bold text-white"
             >
               建立活動
@@ -138,7 +138,7 @@ export default function HomePage() {
 
           <div className="relative z-10 mt-7 flex flex-wrap gap-3">
             <Link
-              href="/admin"
+              href="/admin/login"
               className="flex h-12 items-center gap-2 rounded-lg bg-orange px-5 text-sm font-bold text-white shadow-soft"
             >
               <CalendarPlus size={18} />
@@ -387,7 +387,7 @@ export default function HomePage() {
               <Link href="/admin/login" className="hover:text-charcoal">
                 登入後台
               </Link>
-              <Link href="/admin" className="hover:text-charcoal">
+              <Link href="/admin/login" className="hover:text-charcoal">
                 建立活動
               </Link>
               <Link

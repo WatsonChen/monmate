@@ -38,6 +38,12 @@ export default function AdminLoginPage() {
     <main className="grid min-h-dvh place-items-center px-5 py-10">
       <section className="w-full max-w-sm rounded-lg border border-charcoal/10 bg-white p-6 shadow-soft">
         <BrandLogo variant="slogan" className="mx-auto h-28 w-64 object-contain" />
+        {message ? (
+          <p className="mt-4 rounded-lg bg-mint/20 px-3 py-2 text-sm font-semibold">
+            {message}
+          </p>
+        ) : null}
+
         <div className="mt-6 space-y-4">
           <label className="block text-sm font-semibold" htmlFor="email">
             Email
@@ -103,11 +109,6 @@ export default function AdminLoginPage() {
           />
         </div>
 
-        {message ? (
-          <p className="mt-4 rounded-lg bg-mint/20 px-3 py-2 text-sm font-semibold">
-            {message}
-          </p>
-        ) : null}
       </section>
     </main>
   );
