@@ -42,7 +42,7 @@ export const eventService = {
     location?: string;
     createdById: string;
   }) {
-    const slug = input.slug?.trim() || createSlug(input.name);
+    const slug = input.slug?.trim() || createSlug(input.name) || `event-${Date.now()}`;
 
     return eventRepository.create({
       name: input.name,

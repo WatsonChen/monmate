@@ -8,6 +8,7 @@ import type {
 } from "@monmate/types";
 import { CalendarPlus, CreditCard, QrCode, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DateTimePicker } from "./DateTimePicker";
 import { apiFetch } from "../lib/api";
 import { AdminShell } from "./AdminShell";
 import { CopyLink } from "./CopyLink";
@@ -158,13 +159,11 @@ export function AdminNewEventClient() {
             </label>
             <label className="text-sm font-semibold">
               開始時間
-              <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
+              <DateTimePicker value={startAt} onChange={setStartAt} />
             </label>
             <label className="text-sm font-semibold">
               結束時間
-              <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
+              <DateTimePicker value={endAt} onChange={setEndAt} placeholder="選擇結束時間（選填）" />
             </label>
             <label className="sm:col-span-2 text-sm font-semibold">
               地點

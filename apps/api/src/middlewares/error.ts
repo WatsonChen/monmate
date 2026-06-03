@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { AppError, fail } from "../lib/http";
@@ -18,6 +19,15 @@ export function errorHandler(
 
   if (error instanceof ZodError) {
     return fail(res, 400, "VALIDATION_ERROR", error.issues[0]?.message ?? "資料格式錯誤");
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2002") {
+      return fail(res, 409, "DUPLICATE_RECORD", "資料已存在，請改用其他名稱或代碼");
+    }
+    if (error.code === "P2025") {
+      return fail(res, 404, "RECORD_NOT_FOUND", "找不到資料");
+    }
   }
 
   console.error(error);

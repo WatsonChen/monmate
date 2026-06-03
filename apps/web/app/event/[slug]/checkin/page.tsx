@@ -1,7 +1,7 @@
 import type { ApiResponse, EventDTO } from "@monmate/types";
 import Link from "next/link";
 import { BrandLogo } from "../../../components/BrandLogo";
-import { CheckInClient } from "../../../components/CheckInClient";
+import { SelfCheckInClient } from "../../../components/SelfCheckInClient";
 
 async function getPublicEvent(slug: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -50,8 +50,8 @@ export default async function EventCheckInPage({
   }
 
   return (
-    <CheckInClient
-      initialEventId={event.id}
+    <SelfCheckInClient
+      eventId={event.id}
       eventName={event.name}
       eventLocation={event.location}
     />

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  BarChart2,
   ClipboardCheck,
   Download,
   FileSpreadsheet,
@@ -20,7 +21,7 @@ const navItems = [
   { label: "匯入名單", icon: FileSpreadsheet, href: "/admin/import" },
   { label: "邀請簡訊", icon: Send, href: "/admin/invite" },
   { label: "活動問卷", icon: ClipboardCheck, href: "/admin/survey" },
-  { label: "數據分析", icon: Download, href: "/admin/analytics" },
+  { label: "數據分析", icon: BarChart2, href: "/admin/analytics" },
   { label: "匯出報表", icon: Download, href: "/admin/export" },
   { label: "工作人員掃描", icon: QrCode, href: "/staff/scan" }
 ];

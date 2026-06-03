@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon, Link as LinkIcon } from "lucide-react";
 
 interface Props {
@@ -12,8 +12,15 @@ interface Props {
 export function RichEditor({ value, onChange, placeholder }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const isComposing = useRef(false);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+
+  useEffect(() => {
+    if (ref.current && ref.current.innerHTML !== value) {
+      ref.current.innerHTML = value;
+    }
+  }, [value]);
 
   function exec(cmd: string, val?: string) {
     ref.current?.focus();
@@ -119,8 +126,14 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
         ref={ref}
         contentEditable
         suppressContentEditableWarning
-        dangerouslySetInnerHTML={{ __html: value }}
-        onInput={() => onChange(ref.current?.innerHTML ?? "")}
+        onCompositionStart={() => { isComposing.current = true; }}
+        onCompositionEnd={() => {
+          isComposing.current = false;
+          onChange(ref.current?.innerHTML ?? "");
+        }}
+        onInput={() => {
+          if (!isComposing.current) onChange(ref.current?.innerHTML ?? "");
+        }}
         data-placeholder={placeholder ?? "活動內容說明…"}
         className="min-h-[160px] p-3 text-sm outline-none [&:empty]:before:text-charcoal/30 [&:empty]:before:content-[attr(data-placeholder)]"
       />

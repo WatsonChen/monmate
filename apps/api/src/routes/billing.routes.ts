@@ -7,6 +7,25 @@ import { billingService } from "../services/billing.service";
 
 export const billingRouter = Router();
 
+// Webhook endpoints — no auth, called by NewebPay
+billingRouter.post(
+  "/newebpay/notify",
+  asyncHandler(async (req, res) => {
+    await billingService.handleNewebPayNotify(req.body as Record<string, unknown>);
+    return res.type("text/plain").send("1|OK");
+  })
+);
+
+billingRouter.post(
+  "/newebpay/return",
+  asyncHandler(async (req, res) => {
+    const returnUrl = await billingService.getNewebPayReturnUrl(
+      req.body as Record<string, unknown>
+    );
+    return res.status(303).setHeader("Location", returnUrl).send();
+  })
+);
+
 billingRouter.use(requireAuth);
 
 billingRouter.get(
@@ -28,7 +47,7 @@ billingRouter.post(
   "/checkout-session",
   asyncHandler(async (req, res) => {
     const { tierId } = z.object({ tierId: z.string().min(1) }).parse(req.body);
-    const session = billingService.createCheckoutSession(req.user!.id, tierId);
+    const session = await billingService.createCheckoutSession(req.user!.id, tierId);
     return ok(res, session, 201);
   })
 );
