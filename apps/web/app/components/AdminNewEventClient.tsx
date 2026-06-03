@@ -149,27 +149,27 @@ export function AdminNewEventClient() {
             <label className="text-sm font-semibold">
               活動名稱
               <input value={name} onChange={(e) => setName(e.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
             </label>
             <label className="text-sm font-semibold">
               活動 Slug（網址）
               <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="留空自動產生"
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
             </label>
             <label className="text-sm font-semibold">
               開始時間
               <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
             </label>
             <label className="text-sm font-semibold">
               結束時間
               <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
             </label>
             <label className="sm:col-span-2 text-sm font-semibold">
               地點
               <input value={location} onChange={(e) => setLocation(e.target.value)}
-                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint accent-orange" />
             </label>
           </div>
 
@@ -184,12 +184,17 @@ export function AdminNewEventClient() {
             <RichEditor value={content} onChange={setContent} placeholder="活動詳細說明、注意事項…" />
           </div>
 
-          <label className="mt-4 flex items-center gap-2 text-sm font-semibold cursor-pointer">
-            <input type="checkbox" checked={registrationRequired}
-              onChange={(e) => setRegistrationRequired(e.target.checked)}
-              className="h-4 w-4 rounded" />
-            需要填寫報名資訊才能取得 QR Code
-          </label>
+          <div className="mt-4">
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" checked={registrationRequired}
+                onChange={(e) => setRegistrationRequired(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded accent-orange" />
+              <div>
+                <p className="text-sm font-semibold">需要填寫報名資訊才能取得 QR Code</p>
+                <p className="mt-0.5 text-xs text-charcoal/55">發送報到簡訊時，會同時附上報名資料填寫表單連結；受邀者填寫完成後才會顯示 QR Code</p>
+              </div>
+            </label>
+          </div>
 
           <button type="button" disabled={!token || isCreating} onClick={() => void createEvent()}
             className="mt-5 flex h-11 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40">
@@ -223,7 +228,8 @@ export function AdminNewEventClient() {
                     NT$ {tier.amount}
                     <input type="radio" name="pricingTier" value={tier.id}
                       checked={selectedTierId === tier.id}
-                      onChange={(e) => setSelectedTierId(e.target.value)} />
+                      onChange={(e) => setSelectedTierId(e.target.value)}
+                      className="accent-orange" />
                   </span>
                 </label>
               ))}

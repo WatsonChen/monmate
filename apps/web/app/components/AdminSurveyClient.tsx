@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { Send, Plus, Trash2 } from "lucide-react";
+import { Send, Plus, Trash2, ClipboardList } from "lucide-react";
 
 type Question = { id?: string; question: string; type: string; options: string[]; order: number };
 type Survey = { id: string; title: string; sentAt: string | null; questions: Question[] };
@@ -13,6 +13,7 @@ export function AdminSurveyClient() {
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [survey, setSurvey] = useState<Survey | null>(null);
+  const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
@@ -31,11 +32,18 @@ export function AdminSurveyClient() {
 
   useEffect(() => {
     if (!selectedId || !token) return;
+    setLoading(true);
+    setSurvey(null);
+    setMessage("");
     void apiFetch<Survey>(`/events/${selectedId}/survey`, { token }).then((res) => {
-      if (!res.success || !res.data) return;
-      setSurvey(res.data);
-      setTitle(res.data.title);
-      setQuestions(res.data.questions);
+      setLoading(false);
+      if (res.success && res.data) {
+        setSurvey(res.data);
+        setTitle(res.data.title);
+        setQuestions(res.data.questions);
+      } else {
+        setMessage(res.error?.message ?? "載入問卷失敗");
+      }
     });
   }, [selectedId, token]);
 
@@ -49,6 +57,7 @@ export function AdminSurveyClient() {
     });
     setSaving(false);
     if (res.success && res.data) { setSurvey(res.data); setMessage("已儲存"); }
+    else setMessage(res.error?.message ?? "儲存失敗");
   }
 
   async function sendSurvey() {
@@ -61,7 +70,7 @@ export function AdminSurveyClient() {
     setSending(false);
     setConfirmSend(false);
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "發送失敗"); return; }
-    setMessage(`✅ 問卷已發送給 ${res.data.sent} 位已報到的參與者`);
+    setMessage(`問卷已發送給 ${res.data.sent} 位已報到的參與者`);
   }
 
   function addQuestion() {
@@ -92,13 +101,30 @@ export function AdminSurveyClient() {
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            className="mt-2 h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint"
+            className="mt-2 h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint accent-orange"
           >
             <option value="">— 請選擇 —</option>
             {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
           </select>
         </label>
       </section>
+
+      {!selectedId && (
+        <section className="mt-4 rounded-lg border border-dashed border-charcoal/15 bg-white p-10 text-center">
+          <ClipboardList size={36} className="mx-auto mb-3 text-charcoal/25" />
+          <p className="text-sm font-semibold text-charcoal/50">請先選擇活動，系統將自動載入或建立問卷</p>
+        </section>
+      )}
+
+      {selectedId && loading && (
+        <section className="mt-4 rounded-lg border border-charcoal/10 bg-white p-8 text-center">
+          <p className="text-sm text-charcoal/50">載入中…</p>
+        </section>
+      )}
+
+      {message && (
+        <div className="mt-4 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm font-semibold">{message}</div>
+      )}
 
       {survey && (
         <>
@@ -170,7 +196,7 @@ export function AdminSurveyClient() {
 
           {hoursUntilAutoSend !== null && hoursUntilAutoSend > 0 && (
             <p className="mt-3 text-xs text-charcoal/50">
-              ⏱ 活動結束後 3 小時自動發送（約 {hoursUntilAutoSend} 小時後）
+              活動結束後 3 小時自動發送（約 {hoursUntilAutoSend} 小時後）
             </p>
           )}
           {survey.sentAt && (
@@ -198,10 +224,6 @@ export function AdminSurveyClient() {
             </div>
           </div>
         </div>
-      )}
-
-      {message && (
-        <div className="mt-4 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm font-semibold">{message}</div>
       )}
     </div>
   );

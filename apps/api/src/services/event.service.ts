@@ -3,8 +3,8 @@ import { AppError } from "../lib/http";
 import { eventRepository } from "../repositories/event.repository";
 
 export const eventService = {
-  list() {
-    return eventRepository.list();
+  list(userId?: string) {
+    return eventRepository.list(userId);
   },
 
   async get(eventId: string) {
@@ -35,6 +35,8 @@ export const eventService = {
     name: string;
     slug?: string;
     description?: string;
+    content?: string;
+    registrationRequired?: boolean;
     startAt: string;
     endAt?: string;
     location?: string;
@@ -46,6 +48,8 @@ export const eventService = {
       name: input.name,
       slug,
       description: input.description,
+      content: input.content,
+      registrationRequired: input.registrationRequired ?? false,
       startAt: new Date(input.startAt),
       endAt: input.endAt ? new Date(input.endAt) : undefined,
       location: input.location,
@@ -59,6 +63,8 @@ export const eventService = {
       name: string;
       slug: string;
       description: string | null;
+      content: string | null;
+      registrationRequired: boolean;
       startAt: string;
       endAt: string | null;
       location: string | null;

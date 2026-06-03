@@ -2,8 +2,9 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 export const eventRepository = {
-  list() {
+  list(userId?: string) {
     return prisma.event.findMany({
+      where: userId ? { createdById: userId } : undefined,
       orderBy: { startAt: "desc" },
       include: {
         _count: {
@@ -32,6 +33,8 @@ export const eventRepository = {
         name: true,
         slug: true,
         description: true,
+        content: true,
+        registrationRequired: true,
         startAt: true,
         endAt: true,
         location: true

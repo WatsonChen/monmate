@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  CalendarPlus,
+  ClipboardCheck,
   Download,
   FileSpreadsheet,
   Home,
   ListChecks,
+  LogOut,
   QrCode,
   Send
 } from "lucide-react";
@@ -16,10 +17,9 @@ import { BrandLogo } from "./BrandLogo";
 const navItems = [
   { label: "總覽", icon: Home, href: "/admin" },
   { label: "活動列表", icon: ListChecks, href: "/admin/events" },
-  { label: "新增活動", icon: CalendarPlus, href: "/admin/events/new" },
   { label: "匯入名單", icon: FileSpreadsheet, href: "/admin/import" },
   { label: "邀請簡訊", icon: Send, href: "/admin/invite" },
-  { label: "活動問卷", icon: Send, href: "/admin/survey" },
+  { label: "活動問卷", icon: ClipboardCheck, href: "/admin/survey" },
   { label: "數據分析", icon: Download, href: "/admin/analytics" },
   { label: "匯出報表", icon: Download, href: "/admin/export" },
   { label: "工作人員掃描", icon: QrCode, href: "/staff/scan" }
@@ -35,6 +35,12 @@ function isActive(pathname: string, href: string) {
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  function logout() {
+    window.localStorage.removeItem("monmate.token");
+    router.push("/admin/login");
+  }
 
   return (
     <main className="min-h-dvh bg-paper text-charcoal">
@@ -66,14 +72,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <div className="border-t border-charcoal/10 p-4">
-            <Link
-              href="/event/monmate-demo/checkin"
-              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white"
+          <div className="border-t border-charcoal/10 p-4 space-y-2">
+            <button
+              type="button"
+              onClick={logout}
+              className="flex h-10 w-full items-center gap-2 rounded-lg px-3 text-sm font-semibold text-charcoal/55 hover:bg-paper hover:text-charcoal"
             >
-              <QrCode size={18} />
-              Demo 報到頁
-            </Link>
+              <LogOut size={16} />
+              登出
+            </button>
           </div>
         </aside>
 
@@ -84,13 +91,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 variant="horizontal"
                 className="h-14 w-40 object-contain object-left"
               />
-              <Link
-                href="/event/monmate-demo/checkin"
-                className="flex h-10 items-center gap-2 rounded-lg bg-orange px-3 text-sm font-bold text-white"
+              <button
+                type="button"
+                onClick={logout}
+                className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 px-3 text-sm font-bold"
               >
-                <QrCode size={16} />
-                報到
-              </Link>
+                <LogOut size={16} />
+                登出
+              </button>
             </div>
             <nav className="flex gap-2 overflow-x-auto px-4 pb-3">
               {navItems.map((item) => {

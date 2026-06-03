@@ -30,31 +30,50 @@ enum CheckInLogStatus {
   INVALID
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProduct {
+  EVENT_CREDIT
+  ATTENDEE_CREDIT
+}
+
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         UserRole @default(ADMIN)
-  events       Event[]  @relation("EventCreator")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            UserRole  @default(ADMIN)
+  attendeeCredits Int       @default(0)
+  events          Event[]   @relation("EventCreator")
+  payments        Payment[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Event {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String       @unique
-  description String?
-  startAt     DateTime
-  endAt       DateTime?
-  location    String?
-  createdById String
-  createdBy   User         @relation("EventCreator", fields: [createdById], references: [id])
-  attendees   Attendee[]
-  checkInLogs CheckInLog[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                   String       @id @default(cuid())
+  name                 String
+  slug                 String       @unique
+  description          String?
+  content              String?
+  registrationRequired Boolean      @default(false)
+  startAt              DateTime
+  endAt                DateTime?
+  location             String?
+  createdById          String
+  createdBy            User         @relation("EventCreator", fields: [createdById], references: [id])
+  attendees            Attendee[]
+  checkInLogs          CheckInLog[]
+  survey               Survey?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 }
 
 model Attendee {
@@ -65,11 +84,12 @@ model Attendee {
   phone         String
   checkInCode   String
   qrToken       String
-  checkInStatus CheckInStatus @default(NOT_CHECKED_IN)
-  checkedInAt   DateTime?
-  checkInLogs   CheckInLog[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  checkInStatus   CheckInStatus    @default(NOT_CHECKED_IN)
+  checkedInAt     DateTime?
+  checkInLogs     CheckInLog[]
+  surveyResponses SurveyResponse[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@unique([eventId, checkInCode])
   @@unique([eventId, qrToken])
@@ -90,4 +110,64 @@ model CheckInLog {
 
   @@index([eventId, createdAt])
   @@index([attendeeId])
+}
+
+model Survey {
+  id        String           @id @default(cuid())
+  eventId   String           @unique
+  event     Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title     String           @default("活動問卷")
+  sentAt    DateTime?
+  questions SurveyQuestion[]
+  responses SurveyResponse[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model SurveyQuestion {
+  id        String   @id @default(cuid())
+  surveyId  String
+  survey    Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  question  String
+  type      String
+  options   String[]
+  order     Int
+  createdAt DateTime @default(now())
+}
+
+model SurveyResponse {
+  id         String    @id @default(cuid())
+  surveyId   String
+  survey     Survey    @relation(fields: [surveyId], references: [id])
+  attendeeId String?
+  attendee   Attendee? @relation(fields: [attendeeId], references: [id], onDelete: SetNull)
+  answers    Json
+  createdAt  DateTime  @default(now())
+
+  @@index([surveyId])
+}
+
+model Payment {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        String         @default("newebpay")
+  product         PaymentProduct @default(ATTENDEE_CREDIT)
+  status          PaymentStatus  @default(PENDING)
+  quantity        Int            @default(1)
+  creditsGranted  Int            @default(0)
+  amountTotal     Int?
+  currency        String?        @default("TWD")
+  pricingTier     String?
+  attendeeLimit   Int?
+  providerOrderNo String?        @unique
+  providerTradeNo String?        @unique
+  checkoutUrl     String?
+  consumedAt      DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
 }
