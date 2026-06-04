@@ -1,13 +1,12 @@
 "use client";
 
 import type { BillingStatusDTO, EventDTO, RegistrationField } from "@monmate/types";
-import { CalendarPlus, CreditCard, QrCode } from "lucide-react";
+import { CalendarPlus, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
 import { apiFetch } from "../lib/api";
 import { AdminShell } from "./AdminShell";
-import { CopyLink } from "./CopyLink";
 import { RichEditor } from "./RichEditor";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 
@@ -21,7 +20,6 @@ const CREDIT_PRESETS = [50, 100, 200, 500] as const;
 export function AdminNewEventClient() {
   const router = useRouter();
   const [token, setToken] = useState("");
-  const [origin, setOrigin] = useState("http://localhost:3000");
   const [credits, setCredits] = useState(0);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -35,7 +33,6 @@ export function AdminNewEventClient() {
   const [selectedLimit, setSelectedLimit] = useState<number>(50);
   const [customLimit, setCustomLimit] = useState("");
   const [isCustom, setIsCustom] = useState(false);
-  const [createdEvent, setCreatedEvent] = useState<EventDTO | null>(null);
   const [message, setMessage] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [showCreditModal, setShowCreditModal] = useState(false);
@@ -47,7 +44,6 @@ export function AdminNewEventClient() {
   useEffect(() => {
     const storedToken = window.localStorage.getItem("monmate.token") ?? "";
     setToken(storedToken);
-    setOrigin(window.location.origin);
     if (!storedToken) return;
     void apiFetch<BillingStatusDTO>("/billing/status", { token: storedToken }).then((res) => {
       if (res.success && res.data) setCredits(res.data.attendeeCredits);
@@ -86,13 +82,11 @@ export function AdminNewEventClient() {
       setMessage(response.error?.message ?? "建立活動失敗");
       return;
     }
-    setCreatedEvent(response.data);
+    const ev = response.data;
     setCredits((prev) => prev - attendeeLimit);
-    setMessage("活動已建立！");
-    setName(""); setSlug(""); setLocation(""); setDescription(""); setContent("");
+    router.push(`/admin/events/${ev.id}?created=1`);
   }
 
-  const checkInUrl = createdEvent ? `${origin}/event/${createdEvent.slug}/checkin` : "";
 
   return (
     <AdminShell>
@@ -297,29 +291,6 @@ export function AdminNewEventClient() {
         </button>
       </div>
 
-      {/* 建立後的連結 */}
-      <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-mint/30">
-            <QrCode size={20} />
-          </span>
-          <div>
-            <h2 className="text-lg font-bold">建立後的報到連結</h2>
-            <p className="text-sm text-charcoal/60">
-              {createdEvent ? createdEvent.name : "建立活動後會在這裡出現"}
-            </p>
-          </div>
-        </div>
-        <div className="mt-5">
-          {checkInUrl ? (
-            <CopyLink value={checkInUrl} />
-          ) : (
-            <div className="rounded-lg border border-dashed border-charcoal/20 bg-paper p-5 text-sm font-semibold text-charcoal/55">
-              尚未建立活動
-            </div>
-          )}
-        </div>
-      </section>
     </AdminShell>
   );
 }

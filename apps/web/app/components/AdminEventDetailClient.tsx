@@ -6,11 +6,13 @@ import {
   ArrowLeft,
   Check,
   ClipboardList,
+  FileSpreadsheet,
   MessageSquare,
   Pencil,
   Plus,
-  QrCode,
+  Send,
   Trash2,
+  Upload,
   Users,
   UserCog,
   X
@@ -20,8 +22,9 @@ import { apiFetch } from "../lib/api";
 import { AdminShell } from "./AdminShell";
 import { DateTimePicker } from "./DateTimePicker";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
+import { VenueQrButton } from "./VenueQrModal";
 
-type Props = { eventId: string };
+type Props = { eventId: string; created?: boolean };
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString("zh-TW", {
@@ -44,12 +47,22 @@ const statusLabel: Record<string, string> = {
   NOT_CHECKED_IN: "未報到"
 };
 
-export function AdminEventDetailClient({ eventId }: Props) {
+export function AdminEventDetailClient({ eventId, created }: Props) {
   const [token, setToken] = useState("");
   const [event, setEvent] = useState<EventDTO | null>(null);
   const [attendees, setAttendees] = useState<AttendeeDTO[]>([]);
   const [staffList, setStaffList] = useState<StaffDTO[]>([]);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(created ? "活動已建立！現在可以匯入名單並發送邀請。" : "");
+
+  // Import state
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState("");
+
+  // Invite state
+  const [smsTemplate, setSmsTemplate] = useState<"with-registration" | "without-registration">("without-registration");
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState("");
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -65,7 +78,7 @@ export function AdminEventDetailClient({ eventId }: Props) {
 
   // SMS resend state
   const [smsLoadingId, setSmsLoadingId] = useState<string | null>(null);
-  const [smsTemplate, setSmsTemplate] = useState<"with-registration" | "without-registration">("without-registration");
+  const [smsResendTemplate, setSmsResendTemplate] = useState<"with-registration" | "without-registration">("without-registration");
 
   // Staff add form state
   const [showStaffForm, setShowStaffForm] = useState(false);
@@ -165,12 +178,50 @@ export function AdminEventDetailClient({ eventId }: Props) {
     setStaffMsg("");
   }
 
+  async function importAttendees() {
+    if (!importFile) return;
+    setIsImporting(true);
+    setImportMsg("");
+    const form = new FormData();
+    form.append("file", importFile);
+    const res = await apiFetch<{ imported: number }>(`/events/${eventId}/attendees/import`, {
+      method: "POST",
+      token,
+      body: form
+    });
+    setIsImporting(false);
+    if (!res.success || !res.data) {
+      setImportMsg(res.error?.message ?? "匯入失敗");
+      return;
+    }
+    setImportMsg(`已匯入 ${res.data.imported} 筆名單`);
+    setImportFile(null);
+    const attendeesRes = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
+    if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
+  }
+
+  async function sendInvites() {
+    setIsSendingInvite(true);
+    setInviteMsg("");
+    const res = await apiFetch<{ sent: number; failed: number }>(`/events/${eventId}/invite`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ template: smsTemplate })
+    });
+    setIsSendingInvite(false);
+    if (!res.success || !res.data) {
+      setInviteMsg(res.error?.message ?? "發送失敗");
+      return;
+    }
+    setInviteMsg(`已發送 ${res.data.sent} 則，失敗 ${res.data.failed} 則`);
+  }
+
   async function resendSms(attendeeId: string) {
     setSmsLoadingId(attendeeId);
     const res = await apiFetch<SmsResultDTO>(`/events/${eventId}/attendees/${attendeeId}/invite`, {
       method: "POST",
       token,
-      body: JSON.stringify({ template: smsTemplate })
+      body: JSON.stringify({ template: smsResendTemplate })
     });
     setSmsLoadingId(null);
     setMessage(res.success && res.data ? res.data.message : res.error?.message ?? "簡訊發送失敗");
@@ -263,14 +314,7 @@ export function AdminEventDetailClient({ eventId }: Props) {
                     <Pencil size={14} />
                     編輯
                   </button>
-                  <Link
-                    href={`/event/${event.slug}/checkin`}
-                    target="_blank"
-                    className="flex h-10 items-center gap-2 rounded-lg bg-mint px-4 text-sm font-bold"
-                  >
-                    <QrCode size={16} />
-                    開啟報到頁
-                  </Link>
+                  <VenueQrButton eventId={event.id} eventName={event.name} token={token} />
                 </div>
               </div>
             ) : (
@@ -479,6 +523,84 @@ export function AdminEventDetailClient({ eventId }: Props) {
             )}
           </section>
 
+          {/* 匯入名單 */}
+          <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <FileSpreadsheet size={18} />
+              <h2 className="text-lg font-bold">匯入名單</h2>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="text-sm font-semibold">
+                Excel 檔案（需含姓名、電話欄位）
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+                  className="mt-2 block h-11 w-full max-w-xs rounded-lg border border-charcoal/15 bg-paper px-3 py-2 text-sm outline-none focus:border-mint"
+                />
+              </label>
+              <button
+                type="button"
+                disabled={!importFile || isImporting}
+                onClick={() => void importAttendees()}
+                className="flex h-11 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
+              >
+                <Upload size={16} />
+                {isImporting ? "匯入中…" : "匯入"}
+              </button>
+            </div>
+            {importMsg && (
+              <p className={`mt-3 text-sm font-semibold ${importMsg.includes("已匯入") ? "text-green-600" : "text-red-600"}`}>
+                {importMsg}
+              </p>
+            )}
+          </section>
+
+          {/* 發送邀請 */}
+          <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Send size={18} />
+              <h2 className="text-lg font-bold">發送邀請簡訊</h2>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="text-sm font-semibold">
+                簡訊模板
+                <div className="mt-2 flex gap-2">
+                  {([
+                    { id: "without-registration", label: "直接附票券連結" },
+                    { id: "with-registration", label: "需填寫報名資料" }
+                  ] as const).map((t) => (
+                    <label key={t.id} className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${smsTemplate === t.id ? "border-orange bg-orange/10 text-orange" : "border-charcoal/15 bg-paper"}`}>
+                      <input
+                        type="radio"
+                        name="smsTemplate"
+                        value={t.id}
+                        checked={smsTemplate === t.id}
+                        onChange={() => setSmsTemplate(t.id)}
+                        className="sr-only"
+                      />
+                      {t.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={attendees.length === 0 || isSendingInvite}
+                onClick={() => void sendInvites()}
+                className="flex h-11 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
+              >
+                <Send size={16} />
+                {isSendingInvite ? "發送中…" : `發送全部（${attendees.length} 人）`}
+              </button>
+            </div>
+            {inviteMsg && (
+              <p className={`mt-3 text-sm font-semibold ${inviteMsg.includes("已發送") ? "text-green-600" : "text-red-600"}`}>
+                {inviteMsg}
+              </p>
+            )}
+          </section>
+
           {/* 報名名單 */}
           <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -499,8 +621,8 @@ export function AdminEventDetailClient({ eventId }: Props) {
                     <MessageSquare size={13} className="text-charcoal/50" />
                     <span className="text-xs font-semibold text-charcoal/60">補發：</span>
                     <select
-                      value={smsTemplate}
-                      onChange={(e) => setSmsTemplate(e.target.value as typeof smsTemplate)}
+                      value={smsResendTemplate}
+                      onChange={(e) => setSmsResendTemplate(e.target.value as typeof smsResendTemplate)}
                       className="bg-transparent text-xs font-semibold outline-none"
                     >
                       <option value="without-registration">附票券連結</option>

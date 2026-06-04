@@ -2,9 +2,11 @@ import { AdminEventDetailClient } from "../../../components/AdminEventDetailClie
 
 type Props = {
   params: Promise<{ eventId: string }>;
+  searchParams: Promise<{ created?: string }>;
 };
 
-export default async function AdminEventDetailPage({ params }: Props) {
+export default async function AdminEventDetailPage({ params, searchParams }: Props) {
   const { eventId } = await params;
-  return <AdminEventDetailClient eventId={eventId} />;
+  const { created } = await searchParams;
+  return <AdminEventDetailClient eventId={eventId} created={created === "1"} />;
 }

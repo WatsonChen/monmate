@@ -5,13 +5,11 @@ import Link from "next/link";
 import {
   CalendarPlus,
   ClipboardCheck,
-  QrCode,
   Search
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { AdminShell } from "./AdminShell";
-import { CopyLink } from "./CopyLink";
 import { VenueQrButton } from "./VenueQrModal";
 
 function formatDate(value: string) {
@@ -28,12 +26,10 @@ export function AdminEventsClient() {
   const [events, setEvents] = useState<EventDTO[]>([]);
   const [search, setSearch] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [origin, setOrigin] = useState("http://localhost:3000");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     setToken(window.localStorage.getItem("monmate.token") ?? "");
-    setOrigin(window.location.origin);
   }, []);
 
   useEffect(() => {
@@ -116,16 +112,7 @@ export function AdminEventsClient() {
                 <p className="text-sm text-charcoal/60">slug: {selectedEvent.slug}</p>
               </div>
             </div>
-            <Link
-              href={`/event/${selectedEvent.slug}/checkin`}
-              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-mint px-4 text-sm font-bold"
-            >
-              <QrCode size={18} />
-              開啟報到頁
-            </Link>
-          </div>
-          <div className="mt-5">
-            <CopyLink value={`${origin}/event/${selectedEvent.slug}/checkin`} />
+            <VenueQrButton eventId={selectedEvent.id} eventName={selectedEvent.name} token={token} />
           </div>
         </section>
       ) : null}
