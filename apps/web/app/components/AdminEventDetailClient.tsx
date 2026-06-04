@@ -590,12 +590,19 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     </label>
                   ))}
                 </div>
+                {smsTemplate === "with-registration" && (
+                  <p className="mt-2 text-xs font-normal text-charcoal/55">
+                    {event.registrationRequired
+                      ? `報名欄位已啟用，參加者點開連結後須填寫後才能取得 QR Code。`
+                      : `目前活動未啟用報名欄位，請先在「編輯」中開啟並設定欄位。`}
+                  </p>
+                )}
               </div>
               <button
                 type="button"
                 disabled={attendees.length === 0 || isSendingInvite}
                 onClick={() => void sendInvites()}
-                className="flex h-11 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
+                className="flex h-10 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
               >
                 <Send size={16} />
                 {isSendingInvite ? "發送中…" : `發送全部（${attendees.length} 人）`}
