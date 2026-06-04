@@ -34,6 +34,11 @@ export type UserDTO = {
   eventCredits: number;
 };
 
+export type RegistrationField = {
+  key: "email" | "age" | "gender";
+  required: boolean;
+};
+
 export type EventDTO = {
   id: string;
   name: string;
@@ -43,6 +48,8 @@ export type EventDTO = {
   endAt?: string | null;
   location?: string | null;
   attendeeLimit?: number | null;
+  registrationRequired?: boolean;
+  registrationFields?: RegistrationField[];
   attendeeCount?: number;
   checkInLogCount?: number;
   createdAt?: string;

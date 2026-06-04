@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { AdminShell } from "./AdminShell";
 import { CopyLink } from "./CopyLink";
+import { VenueQrButton } from "./VenueQrModal";
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString("zh-TW", {
@@ -165,7 +166,10 @@ export function AdminEventsClient() {
                   <span>{formatDate(event.startAt)}</span>
                   <span>{event.attendeeCount ?? 0}</span>
                   <span>{event.checkInLogCount ?? 0}</span>
-                  <span className="font-bold text-orange">可使用</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-orange">可使用</span>
+                    <VenueQrButton eventId={event.id} eventName={event.name} token={token} />
+                  </div>
                 </div>
               ))
             ) : (
