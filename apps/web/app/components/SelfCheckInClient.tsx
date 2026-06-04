@@ -33,9 +33,10 @@ type Props = {
   eventId: string;
   eventName?: string;
   eventLocation?: string | null;
+  venueCode: string;
 };
 
-export function SelfCheckInClient({ eventId, eventName, eventLocation }: Props) {
+export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode }: Props) {
   const [code, setCode] = useState("");
   const [result, setResult] = useState<CheckInResultDTO | null>(null);
   const [error, setError] = useState("");
@@ -50,8 +51,8 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation }: Props) 
 
     try {
       const response = await apiFetch<CheckInResultDTO>(
-        `/events/${eventId}/check-in/manual`,
-        { method: "POST", body: JSON.stringify({ checkInCode: trimmed }) }
+        `/events/${eventId}/check-in/self`,
+        { method: "POST", body: JSON.stringify({ checkInCode: trimmed, venueCode }) }
       );
 
       if (!response.success || !response.data) {

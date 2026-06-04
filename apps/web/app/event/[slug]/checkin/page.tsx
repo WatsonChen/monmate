@@ -22,11 +22,14 @@ async function getPublicEvent(slug: string) {
 }
 
 export default async function EventCheckInPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ v?: string }>;
 }) {
   const { slug } = await params;
+  const { v: venueCode } = await searchParams;
   const event = await getPublicEvent(slug);
 
   if (!event) {
@@ -49,11 +52,26 @@ export default async function EventCheckInPage({
     );
   }
 
+  if (!venueCode) {
+    return (
+      <main className="mx-auto grid min-h-dvh max-w-md place-items-center px-5 py-8">
+        <section className="w-full rounded-lg border border-charcoal/10 bg-white p-6 text-center shadow-soft">
+          <BrandLogo variant="horizontal" className="mx-auto h-16 w-48 object-contain" />
+          <h1 className="mt-6 text-xl font-bold">請至活動現場掃描 QR Code</h1>
+          <p className="mt-2 text-sm leading-6 text-charcoal/65">
+            自助報到需在活動現場，掃描現場張貼的 QR Code 後即可完成報到。
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <SelfCheckInClient
       eventId={event.id}
       eventName={event.name}
       eventLocation={event.location}
+      venueCode={venueCode}
     />
   );
 }
