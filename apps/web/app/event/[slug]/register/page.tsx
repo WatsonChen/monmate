@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@monmate/types";
 import Link from "next/link";
-import { BrandLogo } from "../../../../components/BrandLogo";
-import { EventRegisterClient } from "../../../../components/EventRegisterClient";
+import { BrandLogo } from "../../../components/BrandLogo";
+import { EventRegisterClient } from "../../../components/EventRegisterClient";
 
 type PublicEvent = {
   id: string;
