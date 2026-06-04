@@ -33,6 +33,11 @@ export function AdminNewEventClient() {
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [registrationRequired, setRegistrationRequired] = useState(false);
+  const [regFields, setRegFields] = useState({
+    email: false, emailRequired: false,
+    age: false, ageRequired: false,
+    gender: false, genderRequired: false
+  });
   const [createdEvent, setCreatedEvent] = useState<EventDTO | null>(null);
   const [message, setMessage] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -79,7 +84,12 @@ export function AdminNewEventClient() {
         location: location.trim() || undefined,
         description: description.trim() || undefined,
         content: content || undefined,
-        registrationRequired
+        registrationRequired,
+        registrationFields: registrationRequired ? [
+          ...(regFields.email ? [{ key: "email" as const, required: regFields.emailRequired }] : []),
+          ...(regFields.age ? [{ key: "age" as const, required: regFields.ageRequired }] : []),
+          ...(regFields.gender ? [{ key: "gender" as const, required: regFields.genderRequired }] : [])
+        ] : []
       })
     });
     setIsCreating(false);
@@ -190,9 +200,39 @@ export function AdminNewEventClient() {
                 className="mt-0.5 h-4 w-4 rounded accent-orange" />
               <div>
                 <p className="text-sm font-semibold">需要填寫報名資訊才能取得 QR Code</p>
-                <p className="mt-0.5 text-xs text-charcoal/55">發送報到簡訊時，會同時附上報名資料填寫表單連結；受邀者填寫完成後才會顯示 QR Code</p>
+                <p className="mt-0.5 text-xs text-charcoal/55">發送報到簡訊時附上報名表連結；受邀者填寫完成後才會顯示 QR Code</p>
               </div>
             </label>
+
+            {registrationRequired && (
+              <div className="mt-3 ml-6 rounded-lg border border-charcoal/10 bg-paper p-4 space-y-2">
+                <p className="text-xs font-bold text-charcoal/60 mb-3">額外收集的欄位（姓名、手機永遠必填）</p>
+                {([
+                  { key: "email", label: "電子郵件", field: "email" as const, reqField: "emailRequired" as const },
+                  { key: "age", label: "年齡", field: "age" as const, reqField: "ageRequired" as const },
+                  { key: "gender", label: "性別", field: "gender" as const, reqField: "genderRequired" as const }
+                ]).map(({ key, label, field, reqField }) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold">
+                      <input type="checkbox"
+                        checked={regFields[field]}
+                        onChange={(e) => setRegFields((p) => ({ ...p, [field]: e.target.checked, ...(e.target.checked ? {} : { [reqField]: false }) }))}
+                        className="h-4 w-4 rounded accent-orange" />
+                      {label}
+                    </label>
+                    {regFields[field] && (
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-charcoal/60">
+                        <input type="checkbox"
+                          checked={regFields[reqField]}
+                          onChange={(e) => setRegFields((p) => ({ ...p, [reqField]: e.target.checked }))}
+                          className="h-3.5 w-3.5 rounded accent-orange" />
+                        必填
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button type="button" disabled={!token || isCreating} onClick={() => void createEvent()}
