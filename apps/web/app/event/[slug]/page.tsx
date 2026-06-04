@@ -1,9 +1,7 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { apiFetch } from "../../lib/api";
+import type { ApiResponse } from "@monmate/types";
+import { redirect } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
+import { EventLandingClient } from "../../components/EventLandingClient";
 
 type PublicEvent = {
   id: string;
@@ -17,70 +15,74 @@ type PublicEvent = {
   registrationRequired: boolean;
 };
 
-export default function PublicEventPage() {
-  const params = useParams<{ slug: string }>();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const [event, setEvent] = useState<PublicEvent | null>(null);
-  const [loading, setLoading] = useState(true);
+type TicketData = {
+  event: PublicEvent;
+  attendee: { id: string; checkInStatus: string } | null;
+};
 
-  useEffect(() => {
-    void apiFetch<PublicEvent>(`/events/public/${params.slug}`)
-      .then((res) => { if (res.success && res.data) setEvent(res.data); })
-      .finally(() => setLoading(false));
-  }, [params.slug]);
+async function getEvent(slug: string) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  if (!apiUrl) return null;
+  try {
+    const res = await fetch(`${apiUrl}/events/public/${slug}`, { cache: "no-store" });
+    const body = (await res.json()) as ApiResponse<PublicEvent>;
+    return body.success ? (body.data ?? null) : null;
+  } catch {
+    return null;
+  }
+}
 
-  if (loading) return <main className="grid min-h-dvh place-items-center"><p className="text-charcoal/50">載入中…</p></main>;
+async function getTicket(slug: string, token: string) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  if (!apiUrl) return null;
+  try {
+    const res = await fetch(`${apiUrl}/events/ticket/${slug}?token=${token}`, { cache: "no-store" });
+    const body = (await res.json()) as ApiResponse<TicketData>;
+    return body.success ? (body.data ?? null) : null;
+  } catch {
+    return null;
+  }
+}
 
-  if (!event) return (
-    <main className="grid min-h-dvh place-items-center p-6 text-center">
-      <p className="font-semibold text-charcoal/60">找不到此活動</p>
-    </main>
-  );
+export default async function PublicEventPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
+}) {
+  const { slug } = await params;
+  const { token } = await searchParams;
 
-  const startDate = new Date(event.startAt);
+  const event = await getEvent(slug);
 
-  // CTA URL：有 token 時直接去票券或報名頁；無 token 時不顯示 CTA
-  const ctaUrl = token
-    ? event.registrationRequired
-      ? `/event/${event.slug}/register?token=${token}`
-      : `/event/${event.slug}/ticket?token=${token}`
-    : null;
-  const ctaLabel = event.registrationRequired ? "前往填寫報名資料" : "查看入場票券";
-
-  return (
-    <main className="min-h-dvh bg-paper">
-      <div className="bg-white border-b border-charcoal/10 px-4 py-6">
-        <div className="mx-auto max-w-2xl">
-          <BrandLogo variant="horizontal" className="h-10 w-32 object-contain object-left" />
-          <h1 className="mt-4 text-2xl font-bold">{event.name}</h1>
-          <div className="mt-2 flex flex-col gap-1 text-sm text-charcoal/60">
-            <span>📅 {startDate.toLocaleString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
-            {event.endAt && <span>⏰ 結束 {new Date(event.endAt).toLocaleString("zh-TW", { hour: "2-digit", minute: "2-digit" })}</span>}
-            {event.location && <span>📍 {event.location}</span>}
-          </div>
-          {event.description && (
-            <p className="mt-3 text-sm leading-relaxed text-charcoal/70">{event.description}</p>
-          )}
-          {ctaUrl && (
-            <a
-              href={ctaUrl}
-              className="mt-5 inline-flex h-11 items-center rounded-lg bg-orange px-5 text-sm font-bold text-white"
-            >
-              {ctaLabel}
-            </a>
-          )}
+  if (!event) {
+    return (
+      <main className="grid min-h-dvh place-items-center p-6 text-center">
+        <div className="space-y-2">
+          <BrandLogo variant="horizontal" className="mx-auto h-14 w-40 object-contain" />
+          <p className="mt-4 font-semibold text-charcoal/60">找不到此活動</p>
         </div>
-      </div>
+      </main>
+    );
+  }
 
-      {event.content && (
-        <div className="mx-auto max-w-2xl px-4 py-8">
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: event.content }}
-          />
-        </div>
-      )}
-    </main>
-  );
+  // 有 token 時：查詢票券狀態，決定是否直接跳轉
+  if (token) {
+    const ticket = await getTicket(slug, token);
+
+    // 已完成報名（attendee 存在）→ 直接去票券頁
+    if (ticket?.attendee) {
+      redirect(`/event/${slug}/ticket?token=${token}`);
+    }
+
+    // 無需填表 → 直接去票券頁（第一次開也沒有 attendee，但 ticket 不存在時代表 token 無效）
+    if (!event.registrationRequired) {
+      redirect(`/event/${slug}/ticket?token=${token}`);
+    }
+
+    // 需要填表且尚未報名 → 顯示 landing，CTA 指向報名表
+  }
+
+  return <EventLandingClient event={event} token={token ?? null} />;
 }

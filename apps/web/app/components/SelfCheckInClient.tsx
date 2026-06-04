@@ -1,7 +1,7 @@
 "use client";
 
 import { type CSSProperties, useState } from "react";
-import { Check, KeyRound, RotateCcw, Search, XCircle } from "lucide-react";
+import { Check, Phone, RotateCcw, Search, XCircle } from "lucide-react";
 import type { CheckInResultDTO } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
@@ -23,7 +23,7 @@ const statusCopy = {
     icon: Search
   },
   INVALID: {
-    title: "序號無效",
+    title: "號碼無效",
     tone: "bg-red-50 border-red-200 text-red-900",
     icon: XCircle
   }
@@ -37,13 +37,13 @@ type Props = {
 };
 
 export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode }: Props) {
-  const [code, setCode] = useState("");
+  const [phone, setPhone] = useState("");
   const [result, setResult] = useState<CheckInResultDTO | null>(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function submitCheckIn() {
-    const trimmed = code.trim().toUpperCase();
+    const trimmed = phone.trim();
     if (!trimmed) return;
     setIsSubmitting(true);
     setError("");
@@ -52,7 +52,7 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
     try {
       const response = await apiFetch<CheckInResultDTO>(
         `/events/${eventId}/check-in/self`,
-        { method: "POST", body: JSON.stringify({ checkInCode: trimmed, venueCode }) }
+        { method: "POST", body: JSON.stringify({ phone: trimmed, venueCode }) }
       );
 
       if (!response.success || !response.data) {
@@ -122,7 +122,7 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
               onClick={() => {
                 setResult(null);
                 setError("");
-                setCode("");
+                setPhone("");
               }}
               className="mt-9 flex h-14 w-full items-center justify-center rounded-lg bg-orange text-base font-bold text-white shadow-soft"
             >
@@ -143,37 +143,34 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
               </div>
             ) : null}
 
-            <label className="block text-sm font-semibold text-charcoal" htmlFor="code">
-              輸入報到序號
+            <label className="block text-sm font-semibold text-charcoal" htmlFor="phone">
+              輸入手機號碼
             </label>
             <p className="mt-0.5 text-xs text-charcoal/50">
-              序號在您收到的票券簡訊或連結中，例如 MM0001
+              輸入您報名時填寫的手機號碼即可完成報到
             </p>
             <input
-              id="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              id="phone"
+              type="tel"
+              inputMode="numeric"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && void submitCheckIn()}
-              className="mt-3 h-16 w-full rounded-lg border border-charcoal/15 bg-paper px-4 text-center text-2xl font-bold tracking-widest uppercase outline-none focus:border-mint"
-              placeholder="MM0001"
+              className="mt-3 h-16 w-full rounded-lg border border-charcoal/15 bg-paper px-4 text-center text-2xl font-bold tracking-widest outline-none focus:border-mint"
+              placeholder="0912345678"
               autoFocus
-              autoComplete="off"
-              autoCapitalize="characters"
+              autoComplete="tel"
             />
 
             <button
               type="button"
-              disabled={!code.trim() || isSubmitting}
+              disabled={!phone.trim() || isSubmitting}
               onClick={() => void submitCheckIn()}
               className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-orange text-base font-bold text-white shadow-soft disabled:cursor-not-allowed disabled:bg-charcoal/25"
             >
-              <KeyRound size={20} />
+              <Phone size={20} />
               {isSubmitting ? "處理中…" : "確認報到"}
             </button>
-
-            <p className="mt-4 text-center text-xs text-charcoal/40">
-              沒有序號？請查看報名時收到的簡訊或 Email
-            </p>
           </section>
 
           {error ? (
