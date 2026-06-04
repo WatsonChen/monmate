@@ -27,6 +27,7 @@ export function AdminEventsClient() {
   const [token, setToken] = useState("");
   const [events, setEvents] = useState<EventDTO[]>([]);
   const [search, setSearch] = useState("");
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [origin, setOrigin] = useState("http://localhost:3000");
   const [message, setMessage] = useState("");
 
@@ -49,6 +50,7 @@ export function AdminEventsClient() {
       }
 
       setEvents(response.data);
+      setSelectedEventId((prev) => prev ?? response.data![0]?.id ?? null);
     }
 
     void loadEvents();
@@ -65,7 +67,8 @@ export function AdminEventsClient() {
     );
   }, [events, search]);
 
-  const firstEvent = filteredEvents[0];
+  const selectedEvent =
+    filteredEvents.find((e) => e.id === selectedEventId) ?? filteredEvents[0];
 
   return (
     <AdminShell>
@@ -101,7 +104,7 @@ export function AdminEventsClient() {
         </section>
       ) : null}
 
-      {firstEvent ? (
+      {selectedEvent ? (
         <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -109,12 +112,12 @@ export function AdminEventsClient() {
                 <ClipboardCheck size={20} />
               </span>
               <div>
-                <h2 className="text-lg font-bold">{firstEvent.name}</h2>
-                <p className="text-sm text-charcoal/60">slug: {firstEvent.slug}</p>
+                <h2 className="text-lg font-bold">{selectedEvent.name}</h2>
+                <p className="text-sm text-charcoal/60">slug: {selectedEvent.slug}</p>
               </div>
             </div>
             <Link
-              href={`/event/${firstEvent.slug}/checkin`}
+              href={`/event/${selectedEvent.slug}/checkin`}
               className="flex h-10 items-center justify-center gap-2 rounded-lg bg-mint px-4 text-sm font-bold"
             >
               <QrCode size={18} />
@@ -122,7 +125,7 @@ export function AdminEventsClient() {
             </Link>
           </div>
           <div className="mt-5">
-            <CopyLink value={`${origin}/event/${firstEvent.slug}/checkin`} />
+            <CopyLink value={`${origin}/event/${selectedEvent.slug}/checkin`} />
           </div>
         </section>
       ) : null}
@@ -153,14 +156,19 @@ export function AdminEventsClient() {
               filteredEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="grid grid-cols-[1.4fr_1fr_1fr_1fr_1fr] border-t border-charcoal/10 px-4 py-4 text-sm"
+                  onClick={() => setSelectedEventId(event.id)}
+                  className={`grid cursor-pointer grid-cols-[1.4fr_1fr_1fr_1fr_1fr] items-center border-t border-charcoal/10 px-4 py-4 text-sm transition-colors ${selectedEvent?.id === event.id ? "bg-mint/10" : "hover:bg-charcoal/5"}`}
                 >
                   <span>
-                    <Link href={`/event/${event.slug}/checkin`} className="font-bold">
+                    <Link
+                      href={`/admin/events/${event.id}`}
+                      className="font-bold hover:text-orange"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {event.name}
                     </Link>
                     <span className="mt-1 block text-xs font-semibold text-charcoal/50">
-                      {event.slug}
+                      {event.slug || "—"}
                     </span>
                   </span>
                   <span>{formatDate(event.startAt)}</span>

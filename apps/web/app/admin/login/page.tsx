@@ -2,7 +2,7 @@
 
 import type { UserDTO } from "@monmate/types";
 import { GoogleLogin } from "@react-oauth/google";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
@@ -12,43 +12,38 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   async function login() {
-    if (loading) return;
-    setError("");
-    setLoading(true);
-    try {
-      const response = await apiFetch<{ token: string; user: UserDTO }>(
-        "/auth/login",
-        {
-          method: "POST",
-          body: JSON.stringify({ email, password })
-        }
-      );
+    setMessage("");
+    const response = await apiFetch<{ token: string; user: UserDTO }>(
+      "auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      },
+    );
 
-      if (!response.success || !response.data) {
-        setError(response.error?.message ?? "帳號或密碼錯誤，請再試一次");
-        return;
-      }
-
-      window.localStorage.setItem("monmate.token", response.data.token);
-      router.push("/admin");
-    } catch {
-      setError("無法連線到伺服器，請檢查網路後再試");
-    } finally {
-      setLoading(false);
+    if (!response.success || !response.data) {
+      setMessage(response.error?.message ?? "登入失敗");
+      return;
     }
+
+    window.localStorage.setItem("monmate.token", response.data.token);
+    setMessage(`已登入：${response.data.user.name}`);
+    router.push("/admin");
   }
 
   return (
     <main className="grid min-h-dvh place-items-center px-5 py-10">
       <section className="w-full max-w-sm rounded-lg border border-charcoal/10 bg-white p-6 shadow-soft">
-        <BrandLogo variant="slogan" className="mx-auto h-28 w-64 object-contain" />
-        {error ? (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600">
-            {error}
+        <BrandLogo
+          variant="slogan"
+          className="mx-auto h-28 w-64 object-contain"
+        />
+        {message ? (
+          <p className="mt-4 rounded-lg bg-mint/20 px-3 py-2 text-sm font-semibold">
+            {message}
           </p>
         ) : null}
 
@@ -58,11 +53,9 @@ export default function AdminLoginPage() {
           </label>
           <input
             id="email"
-            type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            disabled={loading}
-            className="h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint disabled:opacity-50"
+            className="h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
           />
 
           <label className="block text-sm font-semibold" htmlFor="password">
@@ -73,28 +66,16 @@ export default function AdminLoginPage() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && login()}
-            disabled={loading}
-            className="h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint disabled:opacity-50"
+            className="h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
           />
 
           <button
             type="button"
             onClick={login}
-            disabled={loading}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-orange font-bold text-white disabled:opacity-70"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-orange font-bold text-white"
           >
-            {loading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                登入中…
-              </>
-            ) : (
-              <>
-                <LogIn size={18} />
-                登入後台
-              </>
-            )}
+            <LogIn size={18} />
+            登入後台
           </button>
         </div>
 
@@ -108,36 +89,30 @@ export default function AdminLoginPage() {
           <GoogleLogin
             onSuccess={async (credentialResponse) => {
               if (!credentialResponse.credential) return;
-              setError("");
-              setLoading(true);
-              try {
-                const response = await apiFetch<{ token: string; user: UserDTO }>(
-                  "/auth/google",
-                  {
-                    method: "POST",
-                    body: JSON.stringify({ credential: credentialResponse.credential })
-                  }
-                );
-                if (!response.success || !response.data) {
-                  setError(response.error?.message ?? "Google 登入失敗，請再試");
-                  return;
-                }
-                window.localStorage.setItem("monmate.token", response.data.token);
-                router.push("/admin");
-              } catch {
-                setError("無法連線到伺服器，請檢查網路後再試");
-              } finally {
-                setLoading(false);
+              setMessage("");
+              const response = await apiFetch<{ token: string; user: UserDTO }>(
+                "/auth/google",
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    credential: credentialResponse.credential,
+                  }),
+                },
+              );
+              if (!response.success || !response.data) {
+                setMessage(response.error?.message ?? "Google 登入失敗");
+                return;
               }
+              window.localStorage.setItem("monmate.token", response.data.token);
+              router.push("/admin");
             }}
-            onError={() => setError("Google 登入失敗，請再試")}
+            onError={() => setMessage("Google 登入失敗，請再試")}
             locale="zh-TW"
             text="signin_with"
             shape="rectangular"
             size="large"
           />
         </div>
-
       </section>
     </main>
   );

@@ -26,7 +26,7 @@ type AttendeeBasic = {
 };
 
 async function getData(slug: string, token: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
   if (!apiUrl) return null;
   try {
     const [eventRes, ticketRes] = await Promise.all([

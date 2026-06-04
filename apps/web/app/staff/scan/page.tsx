@@ -17,17 +17,25 @@ export default function StaffScanPage() {
 
   useEffect(() => {
     const token = window.localStorage.getItem("monmate.token");
-    if (!token) { router.replace("/admin/login"); return; }
+    if (!token) { router.replace("/staff/login"); return; }
+
     void apiFetch<UserDTO>("/auth/me", { token }).then((res) => {
-      if (!res.success || !res.data) { router.replace("/admin/login"); return; }
-      if (res.data.role === "ADMIN" || res.data.role === "OWNER" || res.data.role === "STAFF") {
-        setUser(res.data);
+      if (!res.success || !res.data) { router.replace("/staff/login"); return; }
+      const u = res.data;
+      if (u.role !== "ADMIN" && u.role !== "OWNER" && u.role !== "STAFF") {
+        router.replace("/staff/login");
+        return;
+      }
+      setUser(u);
+
+      // STAFF: auto-load assigned event; ADMIN/OWNER: restore from localStorage
+      if (u.role === "STAFF" && u.assignedEventId) {
+        setEventId(u.assignedEventId);
       } else {
-        router.replace("/admin/login");
+        const stored = window.localStorage.getItem("monmate.staff.eventId");
+        if (stored) setEventId(stored);
       }
     });
-    const stored = window.localStorage.getItem("monmate.staff.eventId");
-    if (stored) setEventId(stored);
   }, [router]);
 
   async function checkIn(code: string) {
@@ -41,7 +49,11 @@ export default function StaffScanPage() {
       ? `/events/${eventId}/check-in/qr`
       : `/events/${eventId}/check-in/manual`;
     const body = isQr ? { qrToken: code } : { checkInCode: code };
-    const res = await apiFetch<CheckInResultDTO>(endpoint, { method: "POST", token, body: JSON.stringify(body) });
+    const res = await apiFetch<CheckInResultDTO>(endpoint, {
+      method: "POST",
+      token,
+      body: JSON.stringify(body)
+    });
     setIsChecking(false);
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
     setResult(res.data);
@@ -65,25 +77,48 @@ export default function StaffScanPage() {
     result?.status === "NOT_FOUND" ? "❌ 找不到此代碼" :
     result?.status === "INVALID" ? "❌ 代碼無效" : "";
 
+  const isStaff = user?.role === "STAFF";
+
   return (
     <main className="min-h-dvh bg-charcoal/5 p-4">
       <div className="mx-auto max-w-sm space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">工作人員報到</h1>
-          {user && <span className="text-sm text-charcoal/60">{user.name}</span>}
+          <div>
+            <h1 className="text-xl font-bold">工作人員報到</h1>
+            {user && <p className="text-sm text-charcoal/60">{user.name}</p>}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.localStorage.removeItem("monmate.token");
+              router.push("/staff/login");
+            }}
+            className="rounded-lg border border-charcoal/15 bg-white px-3 py-1.5 text-xs font-semibold"
+          >
+            登出
+          </button>
         </div>
 
-        <div className="rounded-lg border border-charcoal/10 bg-white p-4">
-          <label className="block text-sm font-semibold">
-            活動 ID
-            <input
-              value={eventId}
-              onChange={(e) => saveEventId(e.target.value)}
-              placeholder="貼上活動 ID"
-              className="mt-2 h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint"
-            />
-          </label>
-        </div>
+        {/* ADMIN/OWNER 才顯示手動輸入活動 ID */}
+        {!isStaff && (
+          <div className="rounded-lg border border-charcoal/10 bg-white p-4">
+            <label className="block text-sm font-semibold">
+              活動 ID
+              <input
+                value={eventId}
+                onChange={(e) => saveEventId(e.target.value)}
+                placeholder="貼上活動 ID"
+                className="mt-2 h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint"
+              />
+            </label>
+          </div>
+        )}
+
+        {isStaff && (
+          <div className="rounded-lg border border-mint/40 bg-mint/10 p-3 text-sm font-semibold text-charcoal/80">
+            已指派活動，可直接開始掃描
+          </div>
+        )}
 
         <div className="rounded-lg border border-charcoal/10 bg-white p-4">
           <p className="mb-3 text-sm font-semibold">輸入代碼 / 掃描 QR</p>

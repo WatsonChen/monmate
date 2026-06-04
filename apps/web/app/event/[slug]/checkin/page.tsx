@@ -4,7 +4,7 @@ import { BrandLogo } from "../../../components/BrandLogo";
 import { SelfCheckInClient } from "../../../components/SelfCheckInClient";
 
 async function getPublicEvent(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
   if (!apiUrl) {
     return null;

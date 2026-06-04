@@ -31,11 +31,22 @@ export type UserDTO = {
   name: string;
   email: string;
   role: UserRole;
-  eventCredits: number;
+  attendeeCredits: number;
+  assignedEventId?: string | null;
+};
+
+export type StaffDTO = {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
 };
 
 export type RegistrationField = {
-  key: "email" | "age" | "gender";
+  key: string; // preset: "email" | "age" | "gender"; custom: any other string
+  label?: string; // display label — required for custom fields
+  type?: "text" | "number" | "select"; // defaults to "text" for custom fields
+  options?: string[]; // only for type="select"
   required: boolean;
 };
 
@@ -65,6 +76,13 @@ export type AttendeeDTO = {
   qrToken: string;
   checkInStatus: CheckInStatus;
   checkedInAt?: string | null;
+  customFields?: Record<string, string | number | null> | null;
+};
+
+export type SmsResultDTO = {
+  success: boolean;
+  message: string;
+  preview: string;
 };
 
 export type CheckInResultDTO = {

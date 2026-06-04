@@ -5,15 +5,20 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart2,
   ClipboardCheck,
+  CreditCard,
   Download,
   FileSpreadsheet,
   Home,
   ListChecks,
   LogOut,
   QrCode,
-  Send
+  Send,
+  Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { apiFetch } from "../lib/api";
+import type { UserDTO } from "@monmate/types";
 
 const navItems = [
   { label: "總覽", icon: Home, href: "/admin" },
@@ -23,20 +28,28 @@ const navItems = [
   { label: "活動問卷", icon: ClipboardCheck, href: "/admin/survey" },
   { label: "數據分析", icon: BarChart2, href: "/admin/analytics" },
   { label: "匯出報表", icon: Download, href: "/admin/export" },
-  { label: "工作人員掃描", icon: QrCode, href: "/staff/scan" }
+  { label: "工作人員掃描", icon: QrCode, href: "/staff/scan" },
 ];
 
 function isActive(pathname: string, href: string) {
   if (href === "/admin") {
     return pathname === href;
   }
-
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem("monmate.token");
+    if (!token) return;
+    void apiFetch<UserDTO>("/auth/me", { token }).then((res) => {
+      if (res.success && res.data) setCredits(res.data.attendeeCredits);
+    });
+  }, []);
 
   function logout() {
     window.localStorage.removeItem("monmate.token");
@@ -52,11 +65,24 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               variant="horizontal"
               className="h-16 w-44 object-contain object-left"
             />
+            {credits !== null && (
+              <Link
+                href="/admin/billing"
+                className="mt-3 flex h-10 items-center justify-between rounded-lg bg-orange px-3 text-sm font-bold text-white hover:bg-orange/90 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <CreditCard size={15} />
+                  <span>人次額度</span>
+                </div>
+                <span className="rounded-full bg-white/25 px-2.5 py-0.5 text-xs font-bold">
+                  {credits}
+                </span>
+              </Link>
+            )}
           </div>
           <nav className="flex-1 px-3">
             {navItems.map((item) => {
               const active = isActive(pathname, item.href);
-
               return (
                 <Link
                   key={item.href}
@@ -74,6 +100,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="border-t border-charcoal/10 p-4 space-y-2">
+            <Link
+              href="/admin/billing"
+              className={`flex h-10 w-full items-center gap-2 rounded-lg px-3 text-sm font-bold transition-colors ${
+                isActive(pathname, "/admin/billing")
+                  ? "bg-orange/15 text-orange"
+                  : "text-charcoal/65 hover:bg-paper hover:text-charcoal"
+              }`}
+            >
+              <CreditCard size={16} />
+              儲值 / 購買額度
+            </Link>
             <button
               type="button"
               onClick={logout}
@@ -92,19 +129,29 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 variant="horizontal"
                 className="h-14 w-40 object-contain object-left"
               />
-              <button
-                type="button"
-                onClick={logout}
-                className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 px-3 text-sm font-bold"
-              >
-                <LogOut size={16} />
-                登出
-              </button>
+              <div className="flex items-center gap-2">
+                {credits !== null && (
+                  <Link
+                    href="/admin/billing"
+                    className="flex h-9 items-center gap-1.5 rounded-lg border border-orange/20 bg-orange/10 px-3 text-xs font-bold text-orange"
+                  >
+                    <CreditCard size={13} />
+                    {credits} 人次
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 px-3 text-sm font-bold"
+                >
+                  <LogOut size={16} />
+                  登出
+                </button>
+              </div>
             </div>
             <nav className="flex gap-2 overflow-x-auto px-4 pb-3">
               {navItems.map((item) => {
                 const active = isActive(pathname, item.href);
-
                 return (
                   <Link
                     key={item.href}

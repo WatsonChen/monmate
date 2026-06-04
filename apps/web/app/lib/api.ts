@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@monmate/types";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
 export async function apiFetch<T>(
   path: string,
@@ -26,7 +26,7 @@ export async function apiFetch<T>(
     headers.set("Authorization", `Bearer ${init.token}`);
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(`${apiBaseUrl}/${path.replace(/^\//, "")}`, {
     ...init,
     headers
   });
