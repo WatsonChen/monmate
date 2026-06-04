@@ -7,12 +7,10 @@ import {
   ClipboardCheck,
   CreditCard,
   Download,
-  FileSpreadsheet,
   Home,
   ListChecks,
   LogOut,
   QrCode,
-  Send,
   Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -23,8 +21,6 @@ import type { UserDTO } from "@monmate/types";
 const navItems = [
   { label: "總覽", icon: Home, href: "/admin" },
   { label: "活動列表", icon: ListChecks, href: "/admin/events" },
-  { label: "匯入名單", icon: FileSpreadsheet, href: "/admin/import" },
-  { label: "邀請簡訊", icon: Send, href: "/admin/invite" },
   { label: "活動問卷", icon: ClipboardCheck, href: "/admin/survey" },
   { label: "數據分析", icon: BarChart2, href: "/admin/analytics" },
   { label: "匯出報表", icon: Download, href: "/admin/export" },
