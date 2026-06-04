@@ -8,10 +8,10 @@ type Question = { id?: string; question: string; type: string; options: string[]
 type Survey = { id: string; title: string; sentAt: string | null; questions: Question[] };
 type EventSummary = { id: string; name: string; endAt: string | null };
 
-export function AdminSurveyClient() {
+export function AdminSurveyClient({ initialEventId }: { initialEventId?: string }) {
   const [token, setToken] = useState("");
   const [events, setEvents] = useState<EventSummary[]>([]);
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState(initialEventId ?? "");
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);

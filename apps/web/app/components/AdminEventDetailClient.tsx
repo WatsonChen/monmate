@@ -314,6 +314,13 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     <Pencil size={14} />
                     編輯
                   </button>
+                  <Link
+                    href={`/admin/survey?eventId=${event.id}`}
+                    className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+                  >
+                    <ClipboardList size={14} />
+                    活動問卷
+                  </Link>
                   <VenueQrButton eventId={event.id} eventName={event.name} token={token} />
                 </div>
               </div>
