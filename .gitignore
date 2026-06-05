@@ -10,3 +10,4 @@ coverage
 *.tsbuildinfo
 prisma/migrations/*/migration_lock.toml
 .vercel
+.env*
