@@ -59,6 +59,13 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [isImporting, setIsImporting] = useState(false);
   const [importMsg, setImportMsg] = useState("");
 
+  // Manual add state
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addPhone, setAddPhone] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [addMsg, setAddMsg] = useState("");
+
   // Invite state
   const [smsTemplate, setSmsTemplate] = useState<"with-registration" | "without-registration">("without-registration");
   const [smsSenderName, setSmsSenderName] = useState("");
@@ -225,6 +232,40 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setImportFile(null);
     const attendeesRes = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
     if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
+  }
+
+  async function addAttendee() {
+    if (!addName.trim() || !addPhone.trim()) { setAddMsg("請填寫姓名與電話"); return; }
+    setIsAdding(true);
+    setAddMsg("");
+    const res = await apiFetch<AttendeeDTO>(`/events/${eventId}/attendees`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ name: addName.trim(), phone: addPhone.trim() })
+    });
+    setIsAdding(false);
+    if (!res.success || !res.data) { setAddMsg(res.error?.message ?? "新增失敗"); return; }
+    setAttendees((prev) => [...prev, res.data!]);
+    setAddName("");
+    setAddPhone("");
+    setShowAddForm(false);
+    setAddMsg("");
+  }
+
+  async function downloadExport(format: "csv" | "xlsx") {
+    const { getApiBaseUrl } = await import("../lib/api");
+    const base = getApiBaseUrl();
+    const res = await fetch(`${base}/events/${eventId}/attendees/export?format=${format}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `attendees.${format}`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function sendInvites() {
@@ -549,12 +590,13 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             </div>
             <div className="flex flex-wrap items-end gap-3">
               <label className="text-sm font-semibold">
-                Excel 檔案（需含姓名、電話欄位）
+                選擇檔案
+                <p className="mt-0.5 mb-2 text-xs font-normal text-charcoal/50">支援 Excel (.xlsx / .xls)、CSV、Numbers、ODS，需含「姓名」與「電話」欄位</p>
                 <input
                   type="file"
-                  accept=".xlsx,.xls"
+                  accept=".xlsx,.xls,.csv,.numbers,.ods"
                   onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
-                  className="mt-2 block h-11 w-full max-w-xs rounded-lg border border-charcoal/15 bg-paper px-3 py-2 text-sm outline-none focus:border-mint"
+                  className="block h-11 w-full max-w-sm rounded-lg border border-charcoal/15 bg-paper px-3 py-2 text-sm outline-none focus:border-mint"
                 />
               </label>
               <button
@@ -695,7 +737,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 <Users size={18} />
                 <h2 className="text-lg font-bold">報名名單</h2>
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="text-charcoal/60">
                   共 <strong>{attendees.length}</strong> 人
                 </span>
@@ -717,8 +759,80 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     </select>
                   </div>
                 )}
+                <button
+                  type="button"
+                  onClick={() => void downloadExport("xlsx")}
+                  className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper"
+                >
+                  <FileSpreadsheet size={13} />
+                  匯出 XLSX
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void downloadExport("csv")}
+                  className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper"
+                >
+                  <FileSpreadsheet size={13} />
+                  匯出 CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddForm((v) => !v); setAddMsg(""); }}
+                  className="flex h-8 items-center gap-1.5 rounded-lg bg-orange px-3 text-xs font-bold text-white hover:bg-orange/90"
+                >
+                  <Plus size={13} />
+                  新增
+                </button>
               </div>
             </div>
+
+            {/* 手動新增表單 */}
+            {showAddForm && (
+              <div className="mb-4 rounded-lg border border-charcoal/10 bg-paper p-4">
+                <p className="mb-3 text-sm font-bold">新增參與者</p>
+                {addMsg && <p className="mb-3 text-xs font-semibold text-red-500">{addMsg}</p>}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-xs font-semibold">
+                    姓名
+                    <input
+                      value={addName}
+                      onChange={(e) => setAddName(e.target.value)}
+                      className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
+                      placeholder="王小明"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold">
+                    電話
+                    <input
+                      value={addPhone}
+                      onChange={(e) => setAddPhone(e.target.value)}
+                      className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
+                      placeholder="0912345678"
+                    />
+                  </label>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddForm(false); setAddMsg(""); }}
+                    className="h-9 rounded-lg border border-charcoal/15 px-4 text-sm font-semibold hover:bg-white"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isAdding}
+                    onClick={() => void addAttendee()}
+                    className="flex h-9 items-center gap-1.5 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
+                  >
+                    <Plus size={14} />
+                    {isAdding ? "新增中…" : "新增"}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-charcoal/50">每新增一位消耗 1 個報到額度</p>
+              </div>
+            )}
+
 
             {attendees.length === 0 ? (
               <div className="py-8 text-center text-sm text-charcoal/50">
