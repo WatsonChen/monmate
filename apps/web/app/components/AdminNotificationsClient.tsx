@@ -4,7 +4,6 @@ import type { EventDTO } from "@monmate/types";
 import { Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 
 export function AdminNotificationsClient() {
   const [token, setToken] = useState("");
@@ -65,7 +64,7 @@ export function AdminNotificationsClient() {
   }
 
   return (
-    <AdminShell>
+    <>
       <div>
         <p className="text-sm font-bold text-orange">寄送資訊</p>
         <h1 className="text-2xl font-bold">行前說明與報到連結</h1>
@@ -118,6 +117,6 @@ export function AdminNotificationsClient() {
           {isSubmitting ? "建立中..." : "建立寄送任務"}
         </button>
       </section>
-    </AdminShell>
+    </>
   );
 }

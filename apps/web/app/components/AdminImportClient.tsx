@@ -4,7 +4,6 @@ import type { EventDTO } from "@monmate/types";
 import { FileSpreadsheet, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 
 export function AdminImportClient() {
   const [token, setToken] = useState("");
@@ -71,7 +70,7 @@ export function AdminImportClient() {
   }
 
   return (
-    <AdminShell>
+    <>
       <div>
         <p className="text-sm font-bold text-orange">匯入名單</p>
         <h1 className="text-2xl font-bold">上傳報名 Excel</h1>
@@ -133,6 +132,6 @@ export function AdminImportClient() {
           {file ? file.name : "Excel 上傳區"}
         </div>
       </section>
-    </AdminShell>
+    </>
   );
 }

@@ -8,7 +8,6 @@ import type {
 import { CreditCard, RefreshCcw, Receipt } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString("zh-TW", {
@@ -103,7 +102,7 @@ export function AdminBillingClient() {
   const selectedTier = pricingTiers.find((t) => t.id === selectedTierId);
 
   return (
-    <AdminShell>
+    <>
       <div>
         <p className="text-sm font-bold text-orange">儲值</p>
         <h1 className="text-2xl font-bold">人次額度管理</h1>
@@ -248,6 +247,6 @@ export function AdminBillingClient() {
           </div>
         </section>
       )}
-    </AdminShell>
+    </>
   );
 }

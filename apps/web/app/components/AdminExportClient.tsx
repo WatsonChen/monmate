@@ -4,7 +4,6 @@ import type { EventDTO } from "@monmate/types";
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch, getApiBaseUrl } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 
 export function AdminExportClient() {
   const [token, setToken] = useState("");
@@ -71,7 +70,7 @@ export function AdminExportClient() {
   }
 
   return (
-    <AdminShell>
+    <>
       <div>
         <p className="text-sm font-bold text-orange">匯出報表</p>
         <h1 className="text-2xl font-bold">下載報到紀錄</h1>
@@ -120,6 +119,6 @@ export function AdminExportClient() {
           </button>
         </div>
       </section>
-    </AdminShell>
+    </>
   );
 }

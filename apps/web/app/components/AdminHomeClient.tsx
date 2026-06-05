@@ -6,7 +6,6 @@ import Link from "next/link";
 import { CalendarPlus, ClipboardCheck, CreditCard, QrCode } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 
 export function AdminHomeClient() {
   const [token, setToken] = useState("");
@@ -60,7 +59,7 @@ export function AdminHomeClient() {
   }, [events]);
 
   return (
-    <AdminShell>
+    <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-bold text-orange">MonMate Admin</p>
@@ -163,6 +162,6 @@ export function AdminHomeClient() {
           />
         </div>
       </section>
-    </AdminShell>
+    </>
   );
 }

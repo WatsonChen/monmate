@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 import { DateTimePicker } from "./DateTimePicker";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 import { VenueQrButton } from "./VenueQrModal";
@@ -230,7 +229,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const checkedIn = attendees.filter((a) => a.checkInStatus === "CHECKED_IN").length;
 
   return (
-    <AdminShell>
+    <>
       <div className="flex items-center gap-3">
         <Link href="/admin/events" className="flex h-9 w-9 items-center justify-center rounded-lg border border-charcoal/15 bg-white hover:bg-cloud transition-colors">
           <ArrowLeft size={16} />
@@ -706,6 +705,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
           </div>
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 import { VenueQrButton } from "./VenueQrModal";
 
 function formatDate(value: string) {
@@ -67,7 +66,7 @@ export function AdminEventsClient() {
     filteredEvents.find((e) => e.id === selectedEventId) ?? filteredEvents[0];
 
   return (
-    <AdminShell>
+    <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-bold text-orange">活動列表</p>
@@ -175,6 +174,6 @@ export function AdminEventsClient() {
           </div>
         </div>
       </section>
-    </AdminShell>
+    </>
   );
 }

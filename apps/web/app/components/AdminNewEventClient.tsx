@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
 import { apiFetch } from "../lib/api";
-import { AdminShell } from "./AdminShell";
 import { RichEditor } from "./RichEditor";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 
@@ -89,7 +88,7 @@ export function AdminNewEventClient() {
 
 
   return (
-    <AdminShell>
+    <>
       <div>
         <p className="text-sm font-bold text-orange">新增活動</p>
         <h1 className="text-2xl font-bold">建立活動並產生報到 URL</h1>
@@ -291,6 +290,6 @@ export function AdminNewEventClient() {
         </button>
       </div>
 
-    </AdminShell>
+    </>
   );
 }
