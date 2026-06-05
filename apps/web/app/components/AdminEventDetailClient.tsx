@@ -61,8 +61,15 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
 
   // Invite state
   const [smsTemplate, setSmsTemplate] = useState<"with-registration" | "without-registration">("without-registration");
+  const [smsSenderName, setSmsSenderName] = useState("");
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
+
+  // Registration settings (lives in SMS card)
+  const [regRequired, setRegRequired] = useState(false);
+  const [regFields, setRegFields] = useState<RegistrationField[]>([]);
+  const [isSavingReg, setIsSavingReg] = useState(false);
+  const [regMsg, setRegMsg] = useState("");
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -117,6 +124,8 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       setEditDescription(ev.description ?? "");
       setEditRegistrationRequired(ev.registrationRequired ?? false);
       setEditRegFields((ev.registrationFields as RegistrationField[]) ?? []);
+      setRegRequired(ev.registrationRequired ?? false);
+      setRegFields((ev.registrationFields as RegistrationField[]) ?? []);
 
       if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
       if (staffRes.success && staffRes.data) setStaffList(staffRes.data);
@@ -138,9 +147,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         startAt: new Date(editStartAt).toISOString(),
         endAt: editEndAt ? new Date(editEndAt).toISOString() : null,
         location: editLocation.trim() || null,
-        description: editDescription.trim() || null,
-        registrationRequired: editRegistrationRequired,
-        registrationFields: editRegistrationRequired ? editRegFields : []
+        description: editDescription.trim() || null
       })
     });
     setIsSaving(false);
@@ -151,6 +158,26 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setEvent(res.data);
     setIsEditing(false);
     setMessage("活動已更新！");
+  }
+
+  async function saveRegistration() {
+    setIsSavingReg(true);
+    setRegMsg("");
+    const res = await apiFetch<EventDTO>(`/events/${eventId}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({
+        registrationRequired: regRequired,
+        registrationFields: regRequired ? regFields : []
+      })
+    });
+    setIsSavingReg(false);
+    if (!res.success || !res.data) {
+      setRegMsg(res.error?.message ?? "儲存失敗");
+      return;
+    }
+    setEvent(res.data);
+    setRegMsg("報名設定已儲存");
   }
 
   async function addStaff() {
@@ -206,7 +233,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     const res = await apiFetch<{ sent: number; failed: number }>(`/events/${eventId}/invite`, {
       method: "POST",
       token,
-      body: JSON.stringify({ template: smsTemplate })
+      body: JSON.stringify({ template: smsTemplate, senderName: smsSenderName.trim() || undefined })
     });
     setIsSendingInvite(false);
     if (!res.success || !res.data) {
@@ -221,7 +248,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     const res = await apiFetch<SmsResultDTO>(`/events/${eventId}/attendees/${attendeeId}/invite`, {
       method: "POST",
       token,
-      body: JSON.stringify({ template: smsResendTemplate })
+      body: JSON.stringify({ template: smsResendTemplate, senderName: smsSenderName.trim() || undefined })
     });
     setSmsLoadingId(null);
     setMessage(res.success && res.data ? res.data.message : res.error?.message ?? "簡訊發送失敗");
@@ -272,6 +299,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             {!isEditing ? (
               <div className="flex items-start justify-between gap-4">
                 <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <span className="text-charcoal/50">活動名稱</span>
+                    <p className="font-semibold">{event.name}</p>
+                  </div>
                   <div>
                     <span className="text-charcoal/50">Slug</span>
                     <p className="font-semibold">{event.slug || "—"}</p>
@@ -378,26 +409,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                       className="mt-2 w-full rounded-lg border border-charcoal/15 bg-paper p-3 text-sm outline-none focus:border-mint"
                     />
                   </label>
-                </div>
-                {/* 報名欄位 */}
-                <div className="mt-4">
-                  <label className="flex cursor-pointer items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={editRegistrationRequired}
-                      onChange={(e) => setEditRegistrationRequired(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded accent-orange"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold">需要填寫報名資訊</p>
-                      <p className="mt-0.5 text-xs text-charcoal/55">受邀者填寫完成後才會顯示 QR Code</p>
-                    </div>
-                  </label>
-                  {editRegistrationRequired && (
-                    <div className="ml-6 mt-3">
-                      <RegistrationFieldsEditor fields={editRegFields} onChange={setEditRegFields} />
-                    </div>
-                  )}
                 </div>
                 <div className="mt-4 flex gap-3">
                   <button
@@ -565,54 +576,116 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
 
           {/* 發送邀請 */}
           <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-5">
               <Send size={18} />
               <h2 className="text-lg font-bold">發送邀請簡訊</h2>
             </div>
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="text-sm font-semibold">
-                簡訊模板
-                <div className="mt-2 flex gap-2">
-                  {([
-                    { id: "without-registration", label: "直接附票券連結" },
-                    { id: "with-registration", label: "需填寫報名資料" }
-                  ] as const).map((t) => (
-                    <label key={t.id} className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${smsTemplate === t.id ? "border-orange bg-orange/10 text-orange" : "border-charcoal/15 bg-paper"}`}>
-                      <input
-                        type="radio"
-                        name="smsTemplate"
-                        value={t.id}
-                        checked={smsTemplate === t.id}
-                        onChange={() => setSmsTemplate(t.id)}
-                        className="sr-only"
-                      />
-                      {t.label}
-                    </label>
-                  ))}
+
+            {/* 發件單位名稱 */}
+            <div className="max-w-sm">
+              <p className="mb-2 text-sm font-semibold">發件單位名稱</p>
+              <input
+                value={smsSenderName}
+                onChange={(e) => setSmsSenderName(e.target.value)}
+                maxLength={20}
+                placeholder="MonMate"
+                className="h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint"
+              />
+              <p className="mt-1.5 text-xs text-charcoal/50">
+                預覽：【{smsSenderName.trim() || "MonMate"}】姓名 您好，…
+              </p>
+            </div>
+
+            {/* 簡訊模板 */}
+            <div className="mt-5">
+              <p className="mb-2 text-sm font-semibold">簡訊模板</p>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { id: "without-registration", label: "直接附票券連結", desc: "直接發送 QR Code 連結" },
+                  { id: "with-registration",    label: "需填寫報名資料", desc: "受邀者先填資料再取得票券" }
+                ] as const).map((t) => (
+                  <label
+                    key={t.id}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${smsTemplate === t.id ? "border-orange bg-orange/5" : "border-charcoal/15 hover:bg-paper"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="smsTemplate"
+                      value={t.id}
+                      checked={smsTemplate === t.id}
+                      onChange={() => setSmsTemplate(t.id)}
+                      className="mt-0.5 accent-orange"
+                    />
+                    <div>
+                      <p className={`text-sm font-semibold ${smsTemplate === t.id ? "text-orange" : ""}`}>{t.label}</p>
+                      <p className="text-xs text-charcoal/50">{t.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {smsTemplate === "with-registration" && !regRequired && (
+                <p className="mt-2 text-xs text-amber-600">
+                  請先在下方啟用並儲存報名欄位設定。
+                </p>
+              )}
+            </div>
+
+            {/* 第二列：報名設定 inset box — 僅在選「需填寫報名資料」時顯示 */}
+            {smsTemplate === "with-registration" && (
+            <div className="mt-5 rounded-lg bg-paper p-4">
+              <p className="mb-3 text-sm font-bold">報名欄位設定</p>
+              <label className="flex cursor-pointer items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={regRequired}
+                  onChange={(e) => setRegRequired(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded accent-orange"
+                />
+                <div>
+                  <p className="text-sm font-semibold">需要填寫報名資訊</p>
+                  <p className="mt-0.5 text-xs text-charcoal/55">受邀者填寫完成後才會顯示 QR Code</p>
                 </div>
-                {smsTemplate === "with-registration" && (
-                  <p className="mt-2 text-xs font-normal text-charcoal/55">
-                    {event.registrationRequired
-                      ? `報名欄位已啟用，參加者點開連結後須填寫後才能取得 QR Code。`
-                      : `目前活動未啟用報名欄位，請先在「編輯」中開啟並設定欄位。`}
-                  </p>
+              </label>
+              {regRequired && (
+                <div className="ml-6 mt-3">
+                  <RegistrationFieldsEditor fields={regFields} onChange={setRegFields} />
+                </div>
+              )}
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={isSavingReg}
+                  onClick={() => void saveRegistration()}
+                  className="flex h-9 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-semibold hover:bg-cloud disabled:opacity-40"
+                >
+                  {isSavingReg ? "儲存中…" : "儲存設定"}
+                </button>
+                {regMsg && (
+                  <span className={`text-xs font-semibold ${regMsg.includes("已儲存") ? "text-green-600" : "text-red-500"}`}>
+                    {regMsg}
+                  </span>
                 )}
               </div>
+            </div>
+            )}
+
+            {/* 發送 */}
+            <div className="mt-5 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {inviteMsg ? (
+                <p className={`text-sm font-semibold ${inviteMsg.includes("已發送") ? "text-green-600" : "text-red-600"}`}>
+                  {inviteMsg}
+                </p>
+              ) : <span className="hidden sm:block" />}
               <button
                 type="button"
                 disabled={attendees.length === 0 || isSendingInvite}
                 onClick={() => void sendInvites()}
-                className="flex h-10 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-orange px-5 text-sm font-bold text-white disabled:opacity-40 sm:w-auto sm:h-10"
               >
                 <Send size={16} />
                 {isSendingInvite ? "發送中…" : `發送全部（${attendees.length} 人）`}
               </button>
             </div>
-            {inviteMsg && (
-              <p className={`mt-3 text-sm font-semibold ${inviteMsg.includes("已發送") ? "text-green-600" : "text-red-600"}`}>
-                {inviteMsg}
-              </p>
-            )}
           </section>
 
           {/* 報名名單 */}
