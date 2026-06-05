@@ -232,6 +232,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setImportMsg(`已匯入 ${res.data.imported} 筆名單`);
     setImportFile(null);
     setShowImportForm(false);
+    window.dispatchEvent(new CustomEvent("credits-changed"));
     const attendeesRes = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
     if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
   }
@@ -252,6 +253,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setAddPhone("");
     setShowAddForm(false);
     setAddMsg("");
+    window.dispatchEvent(new CustomEvent("credits-changed"));
   }
 
   async function downloadExport(format: "csv" | "xlsx") {

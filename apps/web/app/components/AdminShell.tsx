@@ -39,12 +39,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<UserDTO | null>(null);
 
-  useEffect(() => {
+  function fetchUser() {
     const token = window.localStorage.getItem("monmate.token");
     if (!token) return;
     void apiFetch<UserDTO>("/auth/me", { token }).then((res) => {
       if (res.success && res.data) setUser(res.data);
     });
+  }
+
+  useEffect(() => {
+    fetchUser();
+    window.addEventListener("credits-changed", fetchUser);
+    return () => window.removeEventListener("credits-changed", fetchUser);
   }, []);
 
   const credits = user?.attendeeCredits ?? null;
