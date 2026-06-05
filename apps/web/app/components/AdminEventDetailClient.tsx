@@ -55,6 +55,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [message, setMessage] = useState(created ? "活動已建立！現在可以匯入名單並發送邀請。" : "");
 
   // Import state
+  const [showImportForm, setShowImportForm] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importMsg, setImportMsg] = useState("");
@@ -230,6 +231,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     }
     setImportMsg(`已匯入 ${res.data.imported} 筆名單`);
     setImportFile(null);
+    setShowImportForm(false);
     const attendeesRes = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
     if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
   }
@@ -582,40 +584,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             )}
           </section>
 
-          {/* 匯入名單 */}
-          <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <FileSpreadsheet size={18} />
-              <h2 className="text-lg font-bold">匯入名單</h2>
-            </div>
-            <div className="flex flex-wrap items-end gap-3">
-              <label className="text-sm font-semibold">
-                選擇檔案
-                <p className="mt-0.5 mb-2 text-xs font-normal text-charcoal/50">支援 Excel (.xlsx / .xls)、CSV、Numbers、ODS，需含「姓名」與「電話」欄位</p>
-                <input
-                  type="file"
-                  accept=".xlsx,.xls,.csv,.numbers,.ods"
-                  onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
-                  className="block h-11 w-full max-w-sm rounded-lg border border-charcoal/15 bg-paper px-3 py-2 text-sm outline-none focus:border-mint"
-                />
-              </label>
-              <button
-                type="button"
-                disabled={!importFile || isImporting}
-                onClick={() => void importAttendees()}
-                className="flex h-11 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
-              >
-                <Upload size={16} />
-                {isImporting ? "匯入中…" : "匯入"}
-              </button>
-            </div>
-            {importMsg && (
-              <p className={`mt-3 text-sm font-semibold ${importMsg.includes("已匯入") ? "text-green-600" : "text-red-600"}`}>
-                {importMsg}
-              </p>
-            )}
-          </section>
-
           {/* 發送邀請 */}
           <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
             <div className="flex items-center gap-2 mb-5">
@@ -777,7 +745,15 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setShowAddForm((v) => !v); setAddMsg(""); }}
+                  onClick={() => { setShowImportForm((v) => !v); setShowAddForm(false); setImportMsg(""); }}
+                  className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper"
+                >
+                  <Upload size={13} />
+                  匯入
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddForm((v) => !v); setShowImportForm(false); setAddMsg(""); }}
                   className="flex h-8 items-center gap-1.5 rounded-lg bg-orange px-3 text-xs font-bold text-white hover:bg-orange/90"
                 >
                   <Plus size={13} />
@@ -830,6 +806,43 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   </button>
                 </div>
                 <p className="mt-2 text-xs text-charcoal/50">每新增一位消耗 1 個報到額度</p>
+              </div>
+            )}
+
+            {/* 匯入 inline 表單 */}
+            {showImportForm && (
+              <div className="mb-4 rounded-lg border border-charcoal/10 bg-paper p-4">
+                <p className="mb-1 text-sm font-bold">匯入名單</p>
+                <p className="mb-3 text-xs text-charcoal/50">支援 Excel (.xlsx / .xls)、CSV、Numbers、ODS，需含「姓名」與「電話」欄位</p>
+                <div className="flex flex-wrap items-end gap-3">
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls,.csv,.numbers,.ods"
+                    onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+                    className="h-10 rounded-lg border border-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-mint"
+                  />
+                  <button
+                    type="button"
+                    disabled={!importFile || isImporting}
+                    onClick={() => void importAttendees()}
+                    className="flex h-10 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
+                  >
+                    <Upload size={15} />
+                    {isImporting ? "匯入中…" : "匯入"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowImportForm(false); setImportFile(null); setImportMsg(""); }}
+                    className="h-10 rounded-lg border border-charcoal/15 px-4 text-sm font-semibold hover:bg-white"
+                  >
+                    取消
+                  </button>
+                </div>
+                {importMsg && (
+                  <p className={`mt-2 text-xs font-semibold ${importMsg.includes("已匯入") ? "text-green-600" : "text-red-600"}`}>
+                    {importMsg}
+                  </p>
+                )}
               </div>
             )}
 
