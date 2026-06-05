@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
             id="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
+            className="h-10 w-full rounded-xl border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
           />
 
           <label className="block text-sm font-semibold" htmlFor="password">
@@ -66,13 +66,13 @@ export default function AdminLoginPage() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="h-12 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
+            className="h-10 w-full rounded-xl border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
           />
 
           <button
             type="button"
             onClick={login}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-orange font-bold text-white"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-orange font-bold text-white"
           >
             <LogIn size={18} />
             登入後台
@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
             onError={() => setMessage("Google 登入失敗，請再試")}
             locale="zh-TW"
             text="signin_with"
-            shape="rectangular"
+            shape="pill"
             size="large"
           />
         </div>

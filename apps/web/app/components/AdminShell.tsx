@@ -57,7 +57,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   function logout() {
     window.localStorage.removeItem("monmate.token");
-    router.push("/admin/login");
+    router.push("/");
   }
 
   return (

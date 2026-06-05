@@ -353,7 +353,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-charcoal/10 bg-white">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 md:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
           <div>
             <BrandLogo
               variant="horizontal"
@@ -398,11 +398,25 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+          <div>
+            <h3 className="text-sm font-bold">條款與政策</h3>
+            <div className="mt-3 grid gap-2 text-sm font-semibold text-charcoal/65">
+              <Link href="/privacy" className="hover:text-charcoal">
+                隱私權條款
+              </Link>
+              <Link href="/refund" className="hover:text-charcoal">
+                退款條款
+              </Link>
+            </div>
+          </div>
         </div>
         <div className="border-t border-charcoal/10 px-5 py-4">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 text-xs font-semibold text-charcoal/50 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 MonMate. All rights reserved.</p>
-            <p>活動報到的神隊友</p>
+            <div className="flex gap-4">
+              <Link href="/privacy" className="hover:text-charcoal">隱私權條款</Link>
+              <Link href="/refund" className="hover:text-charcoal">退款條款</Link>
+            </div>
           </div>
         </div>
       </footer>
