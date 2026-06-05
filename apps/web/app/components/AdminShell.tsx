@@ -37,15 +37,17 @@ function isActive(pathname: string, href: string) {
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [credits, setCredits] = useState<number | null>(null);
+  const [user, setUser] = useState<UserDTO | null>(null);
 
   useEffect(() => {
     const token = window.localStorage.getItem("monmate.token");
     if (!token) return;
     void apiFetch<UserDTO>("/auth/me", { token }).then((res) => {
-      if (res.success && res.data) setCredits(res.data.attendeeCredits);
+      if (res.success && res.data) setUser(res.data);
     });
   }, []);
+
+  const credits = user?.attendeeCredits ?? null;
 
   function logout() {
     window.localStorage.removeItem("monmate.token");
@@ -96,6 +98,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="border-t border-charcoal/10 p-4 space-y-2">
+            {user && (
+              <div className="flex items-center gap-2.5 rounded-lg bg-paper px-3 py-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mint/30 text-sm font-bold">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{user.name}</p>
+                  <p className="truncate text-xs text-charcoal/50">{user.email}</p>
+                </div>
+              </div>
+            )}
             <Link
               href="/admin/billing"
               className={`flex h-10 w-full items-center gap-2 rounded-lg px-3 text-sm font-bold transition-colors ${
