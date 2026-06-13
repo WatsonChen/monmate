@@ -58,9 +58,15 @@ export default function StaffScanPage() {
     setResult(null);
     setMessage("");
     const token = window.localStorage.getItem("monmate.token") ?? "";
-    const isQr = code.length > 10;
-    const endpoint = isQr ? `/events/${eventId}/check-in/qr` : `/events/${eventId}/check-in/manual`;
-    const body = isQr ? { qrToken: code } : { checkInCode: code };
+    const trimmed = code.trim();
+    const isQr = trimmed.length > 10 && !/^\d+$/.test(trimmed);
+    const isPhone = !isQr && /^\d{9,12}$/.test(trimmed);
+    const endpoint = isQr
+      ? `/events/${eventId}/check-in/qr`
+      : isPhone
+      ? `/events/${eventId}/check-in/phone`
+      : `/events/${eventId}/check-in/manual`;
+    const body = isQr ? { qrToken: trimmed } : isPhone ? { phone: trimmed } : { checkInCode: trimmed };
     const res = await apiFetch<CheckInResultDTO>(endpoint, { method: "POST", token, body: JSON.stringify(body) });
     setIsChecking(false);
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
