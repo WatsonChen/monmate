@@ -4,7 +4,55 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "../../lib/api";
 import type { CheckInResultDTO, EventDTO, UserDTO } from "@monmate/types";
-import { Info, Camera, CameraOff } from "lucide-react";
+import { Info, Camera, CameraOff, Check, RotateCcw, Search, XCircle } from "lucide-react";
+
+function fireConfetti() {
+  void import("canvas-confetti").then(({ default: confetti }) => {
+    const burst = (angle: number, origin: { x: number; y: number }) =>
+      confetti({
+        particleCount: 60,
+        angle,
+        spread: 55,
+        origin,
+        colors: ["#8ee6c1", "#ff7231", "#ffd166", "#06d6a0", "#118ab2"],
+        scalar: 1.1,
+        zIndex: 9999
+      });
+    burst(60, { x: 0, y: 0.65 });
+    burst(120, { x: 1, y: 0.65 });
+    setTimeout(() => {
+      burst(75, { x: 0.1, y: 0.5 });
+      burst(105, { x: 0.9, y: 0.5 });
+    }, 180);
+  });
+}
+
+const resultConfig = {
+  SUCCESS: {
+    color: "bg-mint/20 border-mint/50",
+    icon: Check,
+    iconBg: "bg-mint",
+    label: "報到成功！"
+  },
+  ALREADY_CHECKED_IN: {
+    color: "bg-orange/10 border-orange/30",
+    icon: RotateCcw,
+    iconBg: "bg-orange/80",
+    label: "已報到過"
+  },
+  NOT_FOUND: {
+    color: "bg-red-50 border-red-200",
+    icon: Search,
+    iconBg: "bg-red-400",
+    label: "找不到此代碼"
+  },
+  INVALID: {
+    color: "bg-red-50 border-red-200",
+    icon: XCircle,
+    iconBg: "bg-red-400",
+    label: "代碼無效"
+  }
+} as const;
 
 export default function StaffScanPage() {
   const router = useRouter();
@@ -70,6 +118,7 @@ export default function StaffScanPage() {
     const res = await apiFetch<CheckInResultDTO>(endpoint, { method: "POST", token, body: JSON.stringify(body) });
     setIsChecking(false);
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
+    if (res.data.status === "SUCCESS") fireConfetti();
     setResult(res.data);
     setManualCode("");
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -121,17 +170,6 @@ export default function StaffScanPage() {
   }
 
   const isStaff = user?.role === "STAFF";
-
-  const statusColor =
-    result?.status === "SUCCESS" ? "bg-green-50 border-green-300 text-green-800" :
-    result?.status === "ALREADY_CHECKED_IN" ? "bg-yellow-50 border-yellow-300 text-yellow-800" :
-    "bg-red-50 border-red-300 text-red-800";
-
-  const statusText =
-    result?.status === "SUCCESS" ? "✅ 報到成功" :
-    result?.status === "ALREADY_CHECKED_IN" ? "⚠️ 已報到" :
-    result?.status === "NOT_FOUND" ? "❌ 找不到此代碼" :
-    result?.status === "INVALID" ? "❌ 代碼無效" : "";
 
   return (
     <main className="min-h-dvh bg-charcoal/5 p-4">
@@ -200,7 +238,6 @@ export default function StaffScanPage() {
               {scannerOn ? <><CameraOff size={13} />關閉</> : <><Camera size={13} />開啟掃描</>}
             </button>
           </div>
-          {/* html5-qrcode mounts into this div */}
           <div id="qr-reader" className={scannerOn ? "overflow-hidden rounded-lg" : "hidden"} />
         </div>
 
@@ -229,18 +266,28 @@ export default function StaffScanPage() {
           <p className="text-xs text-charcoal/50">掃碼槍掃描後會自動觸發</p>
         </div>
 
-        {/* Result */}
-        {result && (
-          <div className={`rounded-lg border p-4 ${statusColor}`}>
-            <p className="text-lg font-bold">{statusText}</p>
-            {result.attendee && (
-              <div className="mt-2 space-y-1 text-sm">
-                <p className="font-semibold">{result.attendee.name}</p>
-                <p className="text-charcoal/60">…{result.attendee.phoneLastThree}</p>
+        {/* Result card */}
+        {result && (() => {
+          const cfg = resultConfig[result.status];
+          const Icon = cfg.icon;
+          return (
+            <div className={`rounded-xl border-2 p-5 ${cfg.color}`}>
+              <div className="flex items-center gap-3">
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${cfg.iconBg}`}>
+                  <Icon size={22} className="text-white" strokeWidth={2.5} />
+                </span>
+                <div>
+                  <p className="text-lg font-extrabold tracking-tight">{cfg.label}</p>
+                  {result.attendee && (
+                    <p className="text-sm font-semibold text-charcoal/70">
+                      {result.attendee.name}・…{result.attendee.phoneLastThree}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {message && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
