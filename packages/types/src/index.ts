@@ -77,6 +77,9 @@ export type AttendeeDTO = {
   checkInStatus: CheckInStatus;
   checkedInAt?: string | null;
   customFields?: Record<string, string | number | null> | null;
+  note?: string | null;
+  checkInCapacity?: number;
+  checkInCount?: number;
 };
 
 export type SmsResultDTO = {
@@ -87,13 +90,12 @@ export type SmsResultDTO = {
 
 export type CheckInResultDTO = {
   status: CheckInLogStatus;
+  isLookup?: boolean;
   attendee?: Pick<
     AttendeeDTO,
-    "id" | "name" | "phone" | "checkInStatus" | "checkedInAt"
+    "id" | "name" | "phone" | "checkInStatus" | "checkedInAt" | "customFields" | "note" | "checkInCapacity" | "checkInCount"
   > & {
     phoneLastThree: string;
-    customFields?: Record<string, string> | null;
-    note?: string | null;
   };
   checkedInAt?: string;
 };

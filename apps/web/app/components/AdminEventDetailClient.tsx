@@ -83,6 +83,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [addName, setAddName] = useState("");
   const [addPhone, setAddPhone] = useState("");
+  const [addCapacity, setAddCapacity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [addMsg, setAddMsg] = useState("");
   const [smsLoadingId, setSmsLoadingId] = useState<string | null>(null);
@@ -183,12 +184,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setIsAdding(true); setAddMsg("");
     const res = await apiFetch<AttendeeDTO>(`/events/${eventId}/attendees`, {
       method: "POST", token,
-      body: JSON.stringify({ name: addName.trim(), phone: addPhone.trim() })
+      body: JSON.stringify({ name: addName.trim(), phone: addPhone.trim(), capacity: addCapacity })
     });
     setIsAdding(false);
     if (!res.success || !res.data) { setAddMsg(res.error?.message ?? "新增失敗"); return; }
     setAttendees((prev) => [...prev, res.data!]);
-    setAddName(""); setAddPhone(""); setShowAddForm(false); setAddMsg("");
+    setAddName(""); setAddPhone(""); setAddCapacity(1); setShowAddForm(false); setAddMsg("");
     window.dispatchEvent(new CustomEvent("credits-changed"));
   }
 
@@ -416,6 +417,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     <input value={addPhone} onChange={(e) => setAddPhone(e.target.value)} placeholder="0912345678"
                       className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
                   </label>
+                  <label className="text-xs font-semibold">
+                    參加人數（含本人）
+                    <input type="number" min={1} max={20} value={addCapacity}
+                      onChange={(e) => setAddCapacity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
+                  </label>
                 </div>
                 <div className="mt-3 flex gap-2">
                   <button type="button" onClick={() => { setShowAddForm(false); setAddMsg(""); }}
@@ -458,19 +465,27 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[640px] overflow-hidden rounded-lg border border-charcoal/10">
-                  <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
-                    <span>姓名</span><span>電話</span><span>報到碼</span><span>狀態</span><span>簡訊</span>
+                <div className="min-w-[800px] overflow-hidden rounded-lg border border-charcoal/10">
+                  <div className="grid grid-cols-[1.5fr_1fr_1fr_0.8fr_0.8fr_1.5fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
+                    <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span><span>狀態</span><span>備註</span><span>簡訊</span>
                   </div>
                   {attendees.map((attendee) => (
                     <div key={attendee.id}
-                      className="grid grid-cols-[1.5fr_1fr_1fr_1fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
+                      className="grid grid-cols-[1.5fr_1fr_1fr_0.8fr_0.8fr_1.5fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
                       <span className="font-semibold">{attendee.name}</span>
                       <span className="text-charcoal/70">{attendee.phone}</span>
                       <span className="font-mono text-xs text-charcoal/60">{attendee.checkInCode}</span>
+                      <span className="text-xs text-charcoal/70">
+                        {(attendee.checkInCapacity ?? 1) > 1
+                          ? `${attendee.checkInCount ?? 0}／${attendee.checkInCapacity} 人`
+                          : "1 人"}
+                      </span>
                       <span className={`inline-flex items-center gap-1 text-xs font-bold ${attendee.checkInStatus === "CHECKED_IN" ? "text-green-600" : "text-charcoal/40"}`}>
                         {attendee.checkInStatus === "CHECKED_IN" && <Check size={12} />}
                         {statusLabel[attendee.checkInStatus] ?? attendee.checkInStatus}
+                      </span>
+                      <span className="truncate text-xs text-charcoal/60" title={attendee.note ?? ""}>
+                        {attendee.note ?? <span className="text-charcoal/30">—</span>}
                       </span>
                       <button type="button" disabled={smsLoadingId === attendee.id} onClick={() => void resendSms(attendee.id)}
                         title="補發簡訊"
