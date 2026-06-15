@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "../../lib/api";
 import type { CheckInResultDTO, EventDTO, UserDTO } from "@monmate/types";
-import { Info, Camera, CameraOff, Check, RotateCcw, Search, XCircle } from "lucide-react";
+import { Info, Camera, CameraOff, Check, RotateCcw, Search, XCircle, StickyNote } from "lucide-react";
 
 function fireConfetti() {
   void import("canvas-confetti").then(({ default: confetti }) => {
@@ -65,6 +65,9 @@ export default function StaffScanPage() {
   const [message, setMessage] = useState("");
   const [isChecking, setIsChecking] = useState(false);
   const [scannerOn, setScannerOn] = useState(false);
+  const [note, setNote] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const scannerRef = useRef<any>(null);
@@ -120,6 +123,8 @@ export default function StaffScanPage() {
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
     if (res.data.status === "SUCCESS") fireConfetti();
     setResult(res.data);
+    setNote(res.data.attendee?.note ?? "");
+    setNoteSaved(false);
     setManualCode("");
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [eventId, isChecking]);
@@ -162,6 +167,19 @@ export default function StaffScanPage() {
     };
   }, [scannerOn, checkIn]);
 
+  async function saveNote() {
+    if (!result?.attendee?.id || noteSaving) return;
+    setNoteSaving(true);
+    const token = window.localStorage.getItem("monmate.token") ?? "";
+    await apiFetch(`/events/${eventId}/attendees/${result.attendee.id}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({ note: note.trim() || null })
+    });
+    setNoteSaving(false);
+    setNoteSaved(true);
+  }
+
   function selectEvent(id: string) {
     const ev = events.find((e) => e.id === id);
     setEventId(id);
@@ -172,7 +190,7 @@ export default function StaffScanPage() {
   const isStaff = user?.role === "STAFF";
 
   return (
-    <main className="min-h-dvh bg-charcoal/5 p-4">
+    <main className="min-h-dvh bg-paper p-4">
       <div className="mx-auto max-w-sm space-y-4">
 
         {/* Header */}
@@ -270,8 +288,9 @@ export default function StaffScanPage() {
         {result && (() => {
           const cfg = resultConfig[result.status];
           const Icon = cfg.icon;
+          const customFields = result.attendee?.customFields;
           return (
-            <div className={`rounded-xl border-2 p-5 ${cfg.color}`}>
+            <div className={`rounded-xl border-2 p-5 space-y-4 ${cfg.color}`}>
               <div className="flex items-center gap-3">
                 <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${cfg.iconBg}`}>
                   <Icon size={22} className="text-white" strokeWidth={2.5} />
@@ -285,6 +304,42 @@ export default function StaffScanPage() {
                   )}
                 </div>
               </div>
+
+              {/* 攜伴 / customFields */}
+              {customFields && Object.keys(customFields).length > 0 && (
+                <div className="rounded-lg bg-white/60 px-3 py-2 space-y-1">
+                  {Object.entries(customFields).map(([key, val]) => (
+                    <p key={key} className="text-sm text-charcoal/80">
+                      <span className="font-semibold">{key}：</span>{val}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {/* Note */}
+              {result.attendee && (
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-charcoal/60">
+                    <StickyNote size={12} />
+                    工作人員備註
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={note}
+                    onChange={(e) => { setNote(e.target.value); setNoteSaved(false); }}
+                    placeholder="輸入備註，所有工作人員可見…"
+                    className="w-full resize-none rounded-lg border border-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-mint"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void saveNote()}
+                    disabled={noteSaving}
+                    className="rounded-lg bg-charcoal/10 px-3 py-1.5 text-xs font-semibold text-charcoal/70 disabled:opacity-40"
+                  >
+                    {noteSaving ? "儲存中…" : noteSaved ? "✓ 已儲存" : "儲存備註"}
+                  </button>
+                </div>
+              )}
             </div>
           );
         })()}

@@ -92,6 +92,8 @@ export type CheckInResultDTO = {
     "id" | "name" | "phone" | "checkInStatus" | "checkedInAt"
   > & {
     phoneLastThree: string;
+    customFields?: Record<string, string> | null;
+    note?: string | null;
   };
   checkedInAt?: string;
 };
