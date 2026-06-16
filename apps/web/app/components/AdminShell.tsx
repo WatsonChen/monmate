@@ -139,46 +139,48 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         <section className="min-w-0">
           <header className="sticky top-0 z-20 border-b border-charcoal/10 bg-white/95 backdrop-blur md:hidden">
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex h-16 min-w-0 items-center justify-between gap-2 px-3 sm:px-4">
               <BrandLogo
                 variant="horizontal"
-                className="h-14 w-40 object-contain object-left"
+                className="h-12 w-32 shrink-0 object-contain object-left sm:h-14 sm:w-40"
               />
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 {credits !== null && (
                   <Link
                     href="/admin/billing"
-                    className="flex h-9 items-center gap-1.5 rounded-lg border border-orange/20 bg-orange/10 px-3 text-xs font-bold text-orange"
+                    className="flex h-9 items-center gap-1 rounded-lg border border-orange/20 bg-orange/10 px-2 text-xs font-bold text-orange whitespace-nowrap sm:gap-1.5 sm:px-3"
                   >
-                    <CreditCard size={13} />
-                    {credits} 人次
+                    <CreditCard size={13} className="shrink-0" />
+                    <span>{credits} 人次</span>
                   </Link>
                 )}
                 <button
                   type="button"
                   onClick={logout}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 px-3 text-sm font-bold"
+                  aria-label="登出"
+                  title="登出"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-charcoal/15 text-sm font-bold sm:w-auto sm:gap-2 sm:px-3"
                 >
                   <LogOut size={16} />
-                  登出
+                  <span className="hidden sm:inline">登出</span>
                 </button>
               </div>
             </div>
-            <nav className="flex gap-2 overflow-x-auto px-4 pb-3">
+            <nav className="grid grid-cols-3 gap-2 px-3 pb-3 sm:flex sm:max-w-full sm:overflow-x-auto sm:px-4">
               {navItems.map((item) => {
                 const active = isActive(pathname, item.href);
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-bold ${
+                    className={`flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-bold sm:shrink-0 sm:justify-start sm:gap-2 sm:px-3 sm:text-sm ${
                       active
                         ? "bg-mint/30 text-charcoal"
                         : "bg-paper text-charcoal/65"
                     }`}
                   >
-                    <item.icon size={16} />
-                    {item.label}
+                    <item.icon size={16} className="shrink-0" />
+                    <span className="truncate whitespace-nowrap">{item.label}</span>
                   </Link>
                 );
               })}

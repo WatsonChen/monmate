@@ -33,6 +33,7 @@ export type UserDTO = {
   role: UserRole;
   attendeeCredits: number;
   assignedEventId?: string | null;
+  assignedEventIds?: string[];
 };
 
 export type StaffDTO = {

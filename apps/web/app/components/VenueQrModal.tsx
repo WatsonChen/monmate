@@ -41,7 +41,7 @@ export function VenueQrButton({ eventId, eventName, token }: Props) {
       <button
         type="button"
         onClick={() => void openModal()}
-        className="flex h-10 items-center gap-1.5 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+        className="flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:w-auto sm:px-4"
       >
         <QrCode size={14} />
         現場 QR
