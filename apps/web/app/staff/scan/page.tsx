@@ -46,6 +46,7 @@ export default function StaffScanPage() {
   const [note, setNote] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+  const [noteMessage, setNoteMessage] = useState("");
 
   const [scannerOn, setScannerOn] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,10 +62,22 @@ export default function StaffScanPage() {
       if (u.role !== "ADMIN" && u.role !== "OWNER" && u.role !== "STAFF") { router.replace("/admin/login"); return; }
       setUser(u);
       if (u.role === "STAFF") {
-        if (u.assignedEventId) {
-          setEventId(u.assignedEventId);
-          const evRes = await apiFetch<EventDTO>(`/events/${u.assignedEventId}`, { token });
-          if (evRes.success && evRes.data) setEventName(evRes.data.name);
+        const assignedIds = Array.from(new Set([...(u.assignedEventIds ?? []), u.assignedEventId].filter(Boolean) as string[]));
+        if (assignedIds.length > 0) {
+          const eventResults = await Promise.all(
+            assignedIds.map((id) => apiFetch<EventDTO>(`/events/${id}`, { token }))
+          );
+          const assignedEvents = eventResults
+            .map((eventRes) => eventRes.success ? eventRes.data : null)
+            .filter((ev): ev is EventDTO => Boolean(ev));
+          setEvents(assignedEvents);
+          const stored = window.localStorage.getItem("monmate.staff.eventId");
+          const selected = assignedEvents.find((e) => e.id === stored) ?? assignedEvents[0];
+          if (selected) {
+            setEventId(selected.id);
+            setEventName(selected.name);
+            window.localStorage.setItem("monmate.staff.eventId", selected.id);
+          }
         }
       } else {
         const evRes = await apiFetch<EventDTO[]>("/events/", { token });
@@ -116,6 +129,7 @@ export default function StaffScanPage() {
     setPreview(res.data);
     setNote(res.data.attendee?.note ?? "");
     setNoteSaved(false);
+    setNoteMessage("");
     setManualCode("");
   }, [eventId, isChecking]);
 
@@ -126,9 +140,14 @@ export default function StaffScanPage() {
     const token = window.localStorage.getItem("monmate.token") ?? "";
     const { type, value } = pendingCredential;
     const endpoint = `/events/${eventId}/check-in/${type === "qr" ? "qr" : type === "phone" ? "phone" : "manual"}`;
-    const credBody = type === "qr" ? { qrToken: value, count: pendingCount }
-      : type === "phone" ? { phone: value, count: pendingCount }
-      : { checkInCode: value, count: pendingCount };
+    const attendee = preview?.attendee;
+    const remaining = attendee
+      ? Math.max(1, (attendee.checkInCapacity ?? 1) - (attendee.checkInCount ?? 0))
+      : pendingCount;
+    const countToCheckIn = Math.min(pendingCount, remaining);
+    const credBody = type === "qr" ? { qrToken: value, count: countToCheckIn }
+      : type === "phone" ? { phone: value, count: countToCheckIn }
+      : { checkInCode: value, count: countToCheckIn };
 
     const res = await apiFetch<CheckInResultDTO>(endpoint, {
       method: "POST", token, body: JSON.stringify(credBody)
@@ -139,21 +158,36 @@ export default function StaffScanPage() {
 
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
     if (res.data.status === "SUCCESS") fireConfetti();
-    setLastCount(pendingCount);
+    setLastCount(countToCheckIn);
     setResult(res.data);
     setNote(res.data.attendee?.note ?? "");
     setNoteSaved(false);
+    setNoteMessage("");
     setTimeout(() => inputRef.current?.focus(), 100);
   }
 
   async function saveNote(attendeeId: string) {
     if (noteSaving) return;
     setNoteSaving(true);
+    setNoteMessage("");
     const token = window.localStorage.getItem("monmate.token") ?? "";
-    await apiFetch(`/events/${eventId}/attendees/${attendeeId}`, {
+    const trimmedNote = note.trim();
+    const res = await apiFetch(`/events/${eventId}/attendees/${attendeeId}`, {
       method: "PATCH", token, body: JSON.stringify({ note: note.trim() || null })
     });
     setNoteSaving(false);
+    if (!res.success) {
+      setNoteSaved(false);
+      setNoteMessage(res.error?.message ?? "備註儲存失敗");
+      return;
+    }
+    const savedNote = trimmedNote || null;
+    setPreview((current) => current?.attendee?.id === attendeeId
+      ? { ...current, attendee: { ...current.attendee, note: savedNote } }
+      : current);
+    setResult((current) => current?.attendee?.id === attendeeId
+      ? { ...current, attendee: { ...current.attendee, note: savedNote } }
+      : current);
     setNoteSaved(true);
   }
 
@@ -240,10 +274,17 @@ export default function StaffScanPage() {
           <p className="text-sm font-semibold">活動</p>
           {isStaff ? (
             <>
-              <p className="text-sm font-medium text-charcoal">{eventName || "載入中…"}</p>
+              {events.length > 1 ? (
+                <select value={eventId} onChange={(e) => selectEvent(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint">
+                  {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
+              ) : (
+                <p className="text-sm font-medium text-charcoal">{eventName || "載入中…"}</p>
+              )}
               <div className="flex items-start gap-2 rounded-lg bg-mint/10 px-3 py-2 text-xs text-charcoal/70">
                 <Info size={13} className="mt-0.5 shrink-0 text-mint" />
-                <span>你的帳號已綁定至此活動，只能看到被指派的活動。</span>
+                <span>你的帳號只能看到被指派的活動。</span>
               </div>
             </>
           ) : (
@@ -343,14 +384,15 @@ export default function StaffScanPage() {
                 <StickyNote size={12} />備註
               </label>
               <textarea rows={2} value={note}
-                onChange={(e) => { setNote(e.target.value); setNoteSaved(false); }}
+                onChange={(e) => { setNote(e.target.value); setNoteSaved(false); setNoteMessage(""); }}
                 placeholder="輸入備註，所有工作人員可見…"
                 className="w-full resize-none rounded-lg border border-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-mint" />
               <button type="button" onClick={() => void saveNote(preview.attendee!.id)}
                 disabled={noteSaving}
-                className="rounded-lg bg-charcoal/10 px-3 py-1.5 text-xs font-semibold text-charcoal/70 disabled:opacity-40">
+                className="rounded-lg bg-mint px-3 py-1.5 text-xs font-bold text-charcoal shadow-sm hover:bg-mint/90 disabled:opacity-40">
                 {noteSaving ? "儲存中…" : noteSaved ? "✓ 已儲存" : "儲存備註"}
               </button>
+              {noteMessage && <p className="text-xs font-semibold text-red-600">{noteMessage}</p>}
             </div>
 
             {/* 確認按鈕 */}
@@ -406,15 +448,16 @@ export default function StaffScanPage() {
                     <StickyNote size={12} />工作人員備註
                   </label>
                   <textarea rows={2} value={note}
-                    onChange={(e) => { setNote(e.target.value); setNoteSaved(false); }}
+                    onChange={(e) => { setNote(e.target.value); setNoteSaved(false); setNoteMessage(""); }}
                     placeholder="輸入備註，所有工作人員可見…"
                     className="w-full resize-none rounded-lg border border-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-mint" />
                   <button type="button"
                     onClick={() => void saveNote(result.attendee!.id)}
                     disabled={noteSaving}
-                    className="rounded-lg bg-charcoal/10 px-3 py-1.5 text-xs font-semibold text-charcoal/70 disabled:opacity-40">
+                    className="rounded-lg bg-mint px-3 py-1.5 text-xs font-bold text-charcoal shadow-sm hover:bg-mint/90 disabled:opacity-40">
                     {noteSaving ? "儲存中…" : noteSaved ? "✓ 已儲存" : "儲存備註"}
                   </button>
+                  {noteMessage && <p className="text-xs font-semibold text-red-600">{noteMessage}</p>}
                 </div>
               )}
             </div>
