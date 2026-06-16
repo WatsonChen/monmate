@@ -479,9 +479,9 @@ export default function StaffScanPage() {
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{message}</div>
         )}
 
-        {(user?.role === "ADMIN" || user?.role === "OWNER") && (
+        {(user?.role === "ADMIN" || user?.role === "OWNER") && eventId && (
           <button type="button"
-            onClick={() => { setScannerOn(false); router.push("/admin"); }}
+            onClick={() => { setScannerOn(false); router.push(`/admin/events/${eventId}`); }}
             className="w-full rounded-lg border border-charcoal/15 bg-white py-2 text-sm font-semibold">
             返回後台
           </button>
