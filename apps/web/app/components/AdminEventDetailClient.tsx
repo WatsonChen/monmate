@@ -316,14 +316,21 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   }).length;
 
   const q = searchQuery.trim().toLowerCase();
+
+  function statusRank(a: AttendeeDTO) {
+    const cap = a.checkInCapacity ?? 1;
+    const count = a.checkInCount ?? 0;
+    if (count >= cap) return 2;   // 已報到
+    if (count > 0) return 1;      // 部分報到
+    return 0;                      // 未報到
+  }
+
   const displayedAttendees = attendees
     .filter((a) => !q || a.name.toLowerCase().includes(q) || a.phone.includes(q) || (a.checkInCode ?? "").toLowerCase().includes(q))
     .sort((a, b) => {
       if (!statusSort) return 0;
-      const aChecked = (a.checkInCount ?? 0) >= (a.checkInCapacity ?? 1);
-      const bChecked = (b.checkInCount ?? 0) >= (b.checkInCapacity ?? 1);
-      if (aChecked === bChecked) return 0;
-      return statusSort === "checked" ? (aChecked ? -1 : 1) : (aChecked ? 1 : -1);
+      const diff = statusRank(a) - statusRank(b);
+      return statusSort === "checked" ? -diff : diff;
     });
 
   return (
@@ -432,6 +439,23 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <div className="flex items-center gap-2">
                 <Users size={18} />
                 <h2 className="text-lg font-bold">報名名單</h2>
+                {attendees.length > 0 && (
+                  <div className="relative">
+                    <Search size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-charcoal/40 pointer-events-none" />
+                    <input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="搜尋…"
+                      className="h-8 w-44 rounded-lg border border-charcoal/15 bg-paper pl-7 pr-6 text-xs outline-none focus:border-mint"
+                    />
+                    {searchQuery && (
+                      <button type="button" onClick={() => setSearchQuery("")}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal">
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="text-charcoal/60">共 <strong>{attendees.length}</strong> 人</span>
@@ -555,18 +579,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 {importMsg && (
                   <p className={`mt-2 text-xs font-semibold ${importMsg.includes("已匯入") ? "text-green-600" : "text-red-600"}`}>{importMsg}</p>
                 )}
-              </div>
-            )}
-
-            {attendees.length > 0 && (
-              <div className="mb-4 relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/40" />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="搜尋姓名、電話或報到碼…"
-                  className="h-9 w-full rounded-lg border border-charcoal/15 bg-paper pl-8 pr-3 text-sm outline-none focus:border-mint"
-                />
               </div>
             )}
 
