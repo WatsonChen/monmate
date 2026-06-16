@@ -38,7 +38,17 @@ function toDatetimeLocal(value: string) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-const statusLabel: Record<string, string> = { CHECKED_IN: "已報到", NOT_CHECKED_IN: "未報到" };
+function getAttendanceState(attendee: AttendeeDTO) {
+  const capacity = attendee.checkInCapacity ?? 1;
+  const count = attendee.checkInCount ?? (attendee.checkInStatus === "CHECKED_IN" ? capacity : 0);
+  if (count >= capacity) {
+    return { label: "已報到", tone: "text-green-600", showCheck: true };
+  }
+  if (count > 0) {
+    return { label: "部分報到", tone: "text-orange", showCheck: false };
+  }
+  return { label: "未報到", tone: "text-charcoal/40", showCheck: false };
+}
 
 export function AdminEventDetailClient({ eventId, created }: Props) {
   const [token, setToken] = useState("");
@@ -90,6 +100,14 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [smsResendTemplate, setSmsResendTemplate] = useState<"with-registration" | "without-registration">("without-registration");
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
+  const [editingAttendee, setEditingAttendee] = useState<AttendeeDTO | null>(null);
+  const [editAttendeeName, setEditAttendeeName] = useState("");
+  const [editAttendeePhone, setEditAttendeePhone] = useState("");
+  const [editAttendeeCapacity, setEditAttendeeCapacity] = useState<string>("1");
+  const [editAttendeeCount, setEditAttendeeCount] = useState(0);
+  const [editAttendeeNote, setEditAttendeeNote] = useState("");
+  const [editAttendeeMsg, setEditAttendeeMsg] = useState("");
+  const [isSavingAttendee, setIsSavingAttendee] = useState(false);
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
@@ -119,6 +137,14 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       if (staffRes.success && staffRes.data) setStaffList(staffRes.data);
     }
     void load();
+
+    async function refetchAttendees() {
+      const r = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
+      if (r.success && r.data) setAttendees(r.data);
+    }
+    const onVisible = () => { if (document.visibilityState === "visible") void refetchAttendees(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, [token, eventId]);
 
   async function saveEdit() {
@@ -193,6 +219,53 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     window.dispatchEvent(new CustomEvent("credits-changed"));
   }
 
+  function openEditAttendee(attendee: AttendeeDTO) {
+    setEditingAttendee(attendee);
+    setEditAttendeeName(attendee.name);
+    setEditAttendeePhone(attendee.phone);
+    setEditAttendeeCapacity(String(attendee.checkInCapacity ?? 1));
+    setEditAttendeeCount(attendee.checkInCount ?? 0);
+    setEditAttendeeNote(attendee.note ?? "");
+    setEditAttendeeMsg("");
+  }
+
+  async function saveAttendeeEdit() {
+    if (!editingAttendee) return;
+    const capacity = Math.max(1, parseInt(editAttendeeCapacity) || 1);
+    const count = Math.max(0, editAttendeeCount || 0);
+    if (!editAttendeeName.trim() || !editAttendeePhone.trim()) {
+      setEditAttendeeMsg("請填寫姓名與電話");
+      return;
+    }
+    if (count > capacity) {
+      setEditAttendeeMsg("實際報到人數不能超過預期人數");
+      return;
+    }
+    setIsSavingAttendee(true);
+    setEditAttendeeMsg("");
+    const res = await apiFetch<AttendeeDTO>(`/events/${eventId}/attendees/${editingAttendee.id}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({
+        name: editAttendeeName.trim(),
+        phone: editAttendeePhone.trim(),
+        checkInCapacity: capacity,
+        checkInCount: count,
+        checkInStatus: count > 0 ? "CHECKED_IN" : "NOT_CHECKED_IN",
+        checkedInAt: count > 0 ? (editingAttendee.checkedInAt ?? new Date().toISOString()) : null,
+        note: editAttendeeNote.trim() || null
+      })
+    });
+    setIsSavingAttendee(false);
+    if (!res.success || !res.data) {
+      setEditAttendeeMsg(res.error?.message ?? "儲存失敗");
+      return;
+    }
+    setAttendees((prev) => prev.map((attendee) => attendee.id === res.data!.id ? res.data! : attendee));
+    setEditingAttendee(null);
+    setMessage("報名資料已更新！");
+  }
+
   async function downloadExport(format: "csv" | "xlsx") {
     const { getApiBaseUrl } = await import("../lib/api");
     const res = await fetch(`${getApiBaseUrl()}/events/${eventId}/attendees/export?format=${format}`, {
@@ -227,17 +300,26 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setMessage(res.success && res.data ? res.data.message : res.error?.message ?? "簡訊發送失敗");
   }
 
-  const checkedIn = attendees.filter((a) => a.checkInStatus === "CHECKED_IN").length;
+  const checkedIn = attendees.filter((a) => {
+    const capacity = a.checkInCapacity ?? 1;
+    const count = a.checkInCount ?? (a.checkInStatus === "CHECKED_IN" ? capacity : 0);
+    return count >= capacity;
+  }).length;
+  const partiallyCheckedIn = attendees.filter((a) => {
+    const capacity = a.checkInCapacity ?? 1;
+    const count = a.checkInCount ?? (a.checkInStatus === "CHECKED_IN" ? capacity : 0);
+    return count > 0 && count < capacity;
+  }).length;
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <Link href="/admin/events" className="flex h-9 w-9 items-center justify-center rounded-lg border border-charcoal/15 bg-white hover:bg-cloud transition-colors">
+      <div className="flex items-start gap-3">
+        <Link href="/admin/events" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-charcoal/15 bg-white hover:bg-cloud transition-colors">
           <ArrowLeft size={16} />
         </Link>
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-bold text-orange">活動詳情</p>
-          <h1 className="text-2xl font-bold">{event?.name ?? "載入中…"}</h1>
+          <h1 className="break-words text-2xl font-bold leading-tight">{event?.name ?? "載入中…"}</h1>
         </div>
       </div>
 
@@ -252,31 +334,31 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       {event && (
         <>
           {/* 活動資訊卡 */}
-          <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
-            <div className="flex items-start justify-between gap-4">
+          <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-4 sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <span className="text-charcoal/50">活動名稱</span>
-                  <p className="font-semibold">{event.name}</p>
+                  <p className="break-words font-semibold">{event.name}</p>
                 </div>
                 <div>
                   <span className="text-charcoal/50">Slug</span>
-                  <p className="font-semibold">{event.slug || "—"}</p>
+                  <p className="break-all font-semibold">{event.slug || "—"}</p>
                 </div>
                 <div>
                   <span className="text-charcoal/50">開始時間</span>
-                  <p className="font-semibold">{formatDate(event.startAt)}</p>
+                  <p className="break-words font-semibold">{formatDate(event.startAt)}</p>
                 </div>
                 {event.endAt && (
                   <div>
                     <span className="text-charcoal/50">結束時間</span>
-                    <p className="font-semibold">{formatDate(event.endAt)}</p>
+                    <p className="break-words font-semibold">{formatDate(event.endAt)}</p>
                   </div>
                 )}
                 {event.location && (
                   <div>
                     <span className="text-charcoal/50">地點</span>
-                    <p className="font-semibold">{event.location}</p>
+                    <p className="break-words font-semibold">{event.location}</p>
                   </div>
                 )}
                 {event.attendeeLimit && (
@@ -288,15 +370,15 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 {event.description && (
                   <div className="sm:col-span-2">
                     <span className="text-charcoal/50">簡短說明</span>
-                    <p className="font-semibold">{event.description}</p>
+                    <p className="whitespace-pre-wrap break-words font-semibold">{event.description}</p>
                   </div>
                 )}
               </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
+              <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:w-auto lg:shrink-0 lg:justify-end">
                 <button
                   type="button"
                   onClick={() => setShowEditModal(true)}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
                 >
                   <Pencil size={14} />
                   編輯
@@ -304,7 +386,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowStaffModal(true)}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
                 >
                   <UserCog size={14} />
                   工作人員
@@ -312,14 +394,14 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowSmsModal(true)}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
                 >
                   <Settings2 size={14} />
                   簡訊設定
                 </button>
                 <Link
                   href={`/admin/survey?eventId=${event.id}`}
-                  className="flex h-10 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
                 >
                   <ClipboardList size={14} />
                   活動問卷
@@ -341,6 +423,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 <span className="flex items-center gap-1 font-semibold text-green-600">
                   <Check size={14} />已報到 {checkedIn}
                 </span>
+                {partiallyCheckedIn > 0 && (
+                  <span className="font-semibold text-orange">部分 {partiallyCheckedIn}</span>
+                )}
                 {attendees.length > 0 && (
                   <div className="flex items-center gap-2 rounded-lg border border-charcoal/15 px-2 py-1">
                     <MessageSquare size={13} className="text-charcoal/50" />
@@ -465,42 +550,116 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[800px] overflow-hidden rounded-lg border border-charcoal/10">
-                  <div className="grid grid-cols-[1.5fr_1fr_1fr_0.8fr_0.8fr_1.5fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
-                    <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span><span>狀態</span><span>備註</span><span>簡訊</span>
+                <div className="min-w-[920px] overflow-hidden rounded-lg border border-charcoal/10">
+                  <div className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto_auto] bg-cloud px-4 py-3 text-sm font-bold">
+                    <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span><span>狀態</span><span>備註</span><span>操作</span><span>簡訊</span>
                   </div>
                   {attendees.map((attendee) => (
-                    <div key={attendee.id}
-                      className="grid grid-cols-[1.5fr_1fr_1fr_0.8fr_0.8fr_1.5fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
-                      <span className="font-semibold">{attendee.name}</span>
-                      <span className="text-charcoal/70">{attendee.phone}</span>
-                      <span className="font-mono text-xs text-charcoal/60">{attendee.checkInCode}</span>
-                      <span className="text-xs text-charcoal/70">
-                        {(attendee.checkInCapacity ?? 1) > 1
-                          ? `${attendee.checkInCount ?? 0}／${attendee.checkInCapacity} 人`
-                          : "1 人"}
-                      </span>
-                      <span className={`inline-flex items-center gap-1 text-xs font-bold ${attendee.checkInStatus === "CHECKED_IN" ? "text-green-600" : "text-charcoal/40"}`}>
-                        {attendee.checkInStatus === "CHECKED_IN" && <Check size={12} />}
-                        {statusLabel[attendee.checkInStatus] ?? attendee.checkInStatus}
-                      </span>
-                      <span className="truncate text-xs text-charcoal/60" title={attendee.note ?? ""}>
-                        {attendee.note ?? <span className="text-charcoal/30">—</span>}
-                      </span>
-                      <button type="button" disabled={smsLoadingId === attendee.id} onClick={() => void resendSms(attendee.id)}
-                        title="補發簡訊"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-orange/30 hover:text-orange disabled:opacity-40 transition-colors">
-                        {smsLoadingId === attendee.id
-                          ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-orange border-t-transparent" />
-                          : <MessageSquare size={13} />}
-                      </button>
-                    </div>
+                    (() => {
+                      const attendance = getAttendanceState(attendee);
+                      return (
+                        <div key={attendee.id}
+                          className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
+                          <span className="font-semibold">{attendee.name}</span>
+                          <span className="text-charcoal/70">{attendee.phone}</span>
+                          <span className="font-mono text-xs text-charcoal/60">{attendee.checkInCode}</span>
+                          <span className="text-xs text-charcoal/70">
+                            {(attendee.checkInCapacity ?? 1) > 1
+                              ? `${attendee.checkInCount ?? 0}／${attendee.checkInCapacity} 人`
+                              : "1 人"}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 text-xs font-bold ${attendance.tone}`}>
+                            {attendance.showCheck && <Check size={12} />}
+                            {attendance.label}
+                          </span>
+                          <span className="truncate text-xs text-charcoal/60" title={attendee.note ?? ""}>
+                            {attendee.note ?? <span className="text-charcoal/30">—</span>}
+                          </span>
+                          <button type="button" onClick={() => openEditAttendee(attendee)}
+                            title="編輯報名資料"
+                            className="mr-2 flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-mint/60 hover:text-charcoal transition-colors">
+                            <Pencil size={13} />
+                          </button>
+                          <button type="button" disabled={smsLoadingId === attendee.id} onClick={() => void resendSms(attendee.id)}
+                            title="補發簡訊"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-orange/30 hover:text-orange disabled:opacity-40 transition-colors">
+                            {smsLoadingId === attendee.id
+                              ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-orange border-t-transparent" />
+                              : <MessageSquare size={13} />}
+                          </button>
+                        </div>
+                      );
+                    })()
                   ))}
                 </div>
               </div>
             )}
           </section>
         </>
+      )}
+
+      {/* ── 編輯報名資料 Modal ── */}
+      {editingAttendee && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16"
+          onClick={() => setEditingAttendee(null)}>
+          <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl sm:p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Pencil size={18} />
+                <h2 className="text-lg font-bold">編輯報名資料</h2>
+              </div>
+              <button type="button" onClick={() => setEditingAttendee(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-charcoal/15 hover:bg-paper">
+                <X size={15} />
+              </button>
+            </div>
+
+            {editAttendeeMsg && <p className="mb-3 text-sm font-semibold text-red-600">{editAttendeeMsg}</p>}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-sm font-semibold">
+                姓名
+                <input value={editAttendeeName} onChange={(e) => setEditAttendeeName(e.target.value)}
+                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+              </label>
+              <label className="text-sm font-semibold">
+                電話
+                <input value={editAttendeePhone} onChange={(e) => setEditAttendeePhone(e.target.value)}
+                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+              </label>
+              <label className="text-sm font-semibold">
+                預期人數
+                <input type="number" min={1} max={999} value={editAttendeeCapacity}
+                  onChange={(e) => setEditAttendeeCapacity(e.target.value)}
+                  onBlur={(e) => {
+                    const n = parseInt(e.target.value);
+                    setEditAttendeeCapacity(String(isNaN(n) || n < 1 ? 1 : n));
+                  }}
+                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+              </label>
+              <label className="text-sm font-semibold">
+                實際報到人數
+                <input type="number" min={0} max={parseInt(editAttendeeCapacity) || 1} value={editAttendeeCount}
+                  onChange={(e) => setEditAttendeeCount(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+              </label>
+              <label className="sm:col-span-2 text-sm font-semibold">
+                備註
+                <textarea rows={3} value={editAttendeeNote} onChange={(e) => setEditAttendeeNote(e.target.value)}
+                  className="mt-2 w-full resize-none rounded-lg border border-charcoal/15 bg-paper p-3 text-sm outline-none focus:border-mint" />
+              </label>
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button type="button" onClick={() => setEditingAttendee(null)}
+                className="h-10 rounded-lg border border-charcoal/15 px-4 text-sm font-semibold hover:bg-paper">取消</button>
+              <button type="button" disabled={isSavingAttendee} onClick={() => void saveAttendeeEdit()}
+                className="h-10 rounded-lg bg-orange px-5 text-sm font-bold text-white disabled:opacity-40">
+                {isSavingAttendee ? "儲存中…" : "儲存變更"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── 編輯活動 Modal ── */}
@@ -579,7 +738,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       {showStaffModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16"
           onClick={() => setShowStaffModal(false)}>
-          <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl rounded-xl bg-white p-4 shadow-xl sm:p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UserCog size={18} />
@@ -637,17 +796,26 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
             ) : (
               <div className="overflow-hidden rounded-lg border border-charcoal/10">
-                <div className="grid grid-cols-[1fr_1.5fr_1fr] bg-cloud px-4 py-3 text-sm font-bold">
+                <div className="hidden grid-cols-[1fr_1.5fr_1fr] bg-cloud px-4 py-3 text-sm font-bold sm:grid">
                   <span>姓名</span><span>Email</span><span>建立時間</span>
                 </div>
                 {staffList.map((s) => (
-                  <div key={s.id} className="grid grid-cols-[1fr_1.5fr_1fr] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
-                    <span className="font-semibold">{s.name}</span>
-                    <span className="text-charcoal/70">{s.email}</span>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-charcoal/50">{formatDate(s.createdAt)}</span>
+                  <div key={s.id} className="grid gap-3 border-t border-charcoal/10 px-4 py-3 text-sm first:border-t-0 sm:grid-cols-[1fr_1.5fr_1fr] sm:items-center sm:first:border-t">
+                    <div className="min-w-0">
+                      <span className="mb-0.5 block text-xs font-semibold text-charcoal/45 sm:hidden">姓名</span>
+                      <span className="break-words font-semibold">{s.name}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <span className="mb-0.5 block text-xs font-semibold text-charcoal/45 sm:hidden">Email</span>
+                      <span className="break-all text-charcoal/70">{s.email}</span>
+                    </div>
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="mb-0.5 block text-xs font-semibold text-charcoal/45 sm:hidden">建立時間</span>
+                        <span className="text-xs text-charcoal/50">{formatDate(s.createdAt)}</span>
+                      </div>
                       <button type="button" onClick={() => void removeStaff(s.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-charcoal/40 hover:bg-red-50 hover:text-red-500 transition-colors">
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-charcoal/40 hover:bg-red-50 hover:text-red-500 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
