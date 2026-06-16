@@ -115,8 +115,10 @@ export default function StaffScanPage() {
       return;
     }
 
-    if (res.data.status === "NOT_FOUND" || res.data.status === "INVALID") {
+    if (res.data.status === "NOT_FOUND" || res.data.status === "INVALID" || res.data.status === "ALREADY_CHECKED_IN") {
       setResult(res.data);
+      setNote(res.data.attendee?.note ?? "");
+      setNoteSaved(false);
       setManualCode("");
       setTimeout(() => inputRef.current?.focus(), 100);
       return;
@@ -138,6 +140,15 @@ export default function StaffScanPage() {
     if (!pendingCredential || !eventId || isChecking) return;
     setIsChecking(true);
     const token = window.localStorage.getItem("monmate.token") ?? "";
+
+    // 自動儲存尚未儲存的備註
+    const attendeeId = preview?.attendee?.id;
+    if (attendeeId && !noteSaved) {
+      void apiFetch(`/events/${eventId}/attendees/${attendeeId}`, {
+        method: "PATCH", token, body: JSON.stringify({ note: note.trim() || null })
+      }).then(() => setNoteSaved(true));
+    }
+
     const { type, value } = pendingCredential;
     const endpoint = `/events/${eventId}/check-in/${type === "qr" ? "qr" : type === "phone" ? "phone" : "manual"}`;
     const attendee = preview?.attendee;
