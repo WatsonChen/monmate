@@ -4,12 +4,14 @@ import type { AttendeeDTO, EventDTO, RegistrationField, SmsResultDTO, StaffDTO }
 import Link from "next/link";
 import {
   ArrowLeft,
+  ArrowUpDown,
   Check,
   ClipboardList,
   FileSpreadsheet,
   MessageSquare,
   Pencil,
   Plus,
+  Search,
   Send,
   Settings2,
   Trash2,
@@ -108,6 +110,8 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editAttendeeNote, setEditAttendeeNote] = useState("");
   const [editAttendeeMsg, setEditAttendeeMsg] = useState("");
   const [isSavingAttendee, setIsSavingAttendee] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusSort, setStatusSort] = useState<"" | "checked" | "unchecked">("");
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
@@ -310,6 +314,17 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     const count = a.checkInCount ?? (a.checkInStatus === "CHECKED_IN" ? capacity : 0);
     return count > 0 && count < capacity;
   }).length;
+
+  const q = searchQuery.trim().toLowerCase();
+  const displayedAttendees = attendees
+    .filter((a) => !q || a.name.toLowerCase().includes(q) || a.phone.includes(q) || (a.checkInCode ?? "").toLowerCase().includes(q))
+    .sort((a, b) => {
+      if (!statusSort) return 0;
+      const aChecked = (a.checkInCount ?? 0) >= (a.checkInCapacity ?? 1);
+      const bChecked = (b.checkInCount ?? 0) >= (b.checkInCapacity ?? 1);
+      if (aChecked === bChecked) return 0;
+      return statusSort === "checked" ? (aChecked ? -1 : 1) : (aChecked ? 1 : -1);
+    });
 
   return (
     <>
@@ -543,18 +558,37 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
             )}
 
+            {attendees.length > 0 && (
+              <div className="mb-4 relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/40" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="搜尋姓名、電話或報到碼…"
+                  className="h-9 w-full rounded-lg border border-charcoal/15 bg-paper pl-8 pr-3 text-sm outline-none focus:border-mint"
+                />
+              </div>
+            )}
+
             {attendees.length === 0 ? (
               <div className="py-8 text-center text-sm text-charcoal/50">
                 <ClipboardList size={32} className="mx-auto mb-2 opacity-30" />
                 目前沒有報名資料
               </div>
+            ) : displayedAttendees.length === 0 ? (
+              <div className="py-8 text-center text-sm text-charcoal/50">沒有符合的搜尋結果</div>
             ) : (
               <div className="overflow-x-auto">
                 <div className="min-w-[920px] overflow-hidden rounded-lg border border-charcoal/10">
                   <div className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto_auto] bg-cloud px-4 py-3 text-sm font-bold">
-                    <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span><span>狀態</span><span>備註</span><span>操作</span><span>簡訊</span>
+                    <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span>
+                    <button type="button" onClick={() => setStatusSort((s) => s === "" ? "checked" : s === "checked" ? "unchecked" : "")}
+                      className={`flex items-center gap-1 transition-colors ${statusSort ? "text-orange" : "hover:text-charcoal/60"}`}>
+                      狀態<ArrowUpDown size={12} />
+                    </button>
+                    <span>備註</span><span>操作</span><span>簡訊</span>
                   </div>
-                  {attendees.map((attendee) => (
+                  {displayedAttendees.map((attendee) => (
                     (() => {
                       const attendance = getAttendanceState(attendee);
                       return (
