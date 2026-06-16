@@ -38,6 +38,7 @@ export default function StaffScanPage() {
 
   // 確認後結果
   const [result, setResult] = useState<CheckInResultDTO | null>(null);
+  const [lastCount, setLastCount] = useState(1);
   const [message, setMessage] = useState("");
   const [isChecking, setIsChecking] = useState(false);
 
@@ -138,6 +139,7 @@ export default function StaffScanPage() {
 
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
     if (res.data.status === "SUCCESS") fireConfetti();
+    setLastCount(pendingCount);
     setResult(res.data);
     setNote(res.data.attendee?.note ?? "");
     setNoteSaved(false);
@@ -190,16 +192,29 @@ export default function StaffScanPage() {
   const isStaff = user?.role === "STAFF";
   const displayAttendee = (preview ?? result)?.attendee;
 
-  function renderCountBadge(attendee: typeof displayAttendee) {
-    if (!attendee || attendee.checkInCapacity === 1) return null;
-    const after = result?.status === "SUCCESS"
-      ? attendee.checkInCount
-      : attendee.checkInCount;
+  function renderCapacityBar(attendee: typeof displayAttendee, mode: "preview" | "result") {
+    if (!attendee) return null;
+    const cap = attendee.checkInCapacity ?? 1;
+    const done = attendee.checkInCount ?? 0;
+    const remaining = cap - done;
+    if (cap <= 1) return null;
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-xs font-bold text-charcoal/70">
-        <Users size={11} />
-        已到 {after}/{attendee.checkInCapacity} 人
-      </span>
+      <div className="rounded-lg bg-white/80 px-3 py-2.5 space-y-1.5">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-charcoal/60">
+          <Users size={12} />
+          <span>人數名額</span>
+        </div>
+        <div className="flex gap-3 text-sm font-semibold">
+          <span className="text-charcoal/50">共 <span className="text-charcoal font-bold">{cap}</span> 人</span>
+          <span className="text-charcoal/30">·</span>
+          <span className="text-charcoal/50">已到 <span className="text-green-600 font-bold">{done}</span> 人</span>
+          <span className="text-charcoal/30">·</span>
+          {mode === "result"
+            ? <span className="text-charcoal/50">本次 <span className="text-orange font-bold">+{lastCount}</span></span>
+            : <span className="text-charcoal/50">可報到 <span className="text-orange font-bold">{remaining}</span> 人</span>
+          }
+        </div>
+      </div>
     );
   }
 
@@ -281,14 +296,17 @@ export default function StaffScanPage() {
         {/* 預覽卡 + 人數選擇（lookup 階段） */}
         {preview && preview.attendee && (
           <div className="rounded-xl border-2 border-mint/40 bg-mint/10 p-5 space-y-4">
+            {/* 姓名 */}
             <div>
               <p className="text-xs font-semibold text-charcoal/50 mb-1">找到報名者</p>
-              <p className="text-xl font-extrabold">{preview.attendee.name}</p>
-              <p className="text-sm text-charcoal/60">…{preview.attendee.phoneLastThree}</p>
-              <div className="mt-1">{renderCountBadge(preview.attendee)}</div>
+              <p className="text-2xl font-extrabold">{preview.attendee.name}</p>
+              <p className="text-sm text-charcoal/60 mt-0.5">尾碼 …{preview.attendee.phoneLastThree}</p>
             </div>
 
-            {/* 攜伴 */}
+            {/* 人數名額條 */}
+            {renderCapacityBar(preview.attendee, "preview")}
+
+            {/* 額外欄位 */}
             {preview.attendee.customFields && Object.keys(preview.attendee.customFields).length > 0 && (
               <div className="rounded-lg bg-white/70 px-3 py-2 space-y-1">
                 {Object.entries(preview.attendee.customFields).map(([k, v]) => (
@@ -304,14 +322,14 @@ export default function StaffScanPage() {
               const remaining = cap - done;
               if (remaining <= 0) return null;
               return (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold">本次報到幾人？</p>
+                <div className="rounded-lg bg-white/80 px-3 py-3 space-y-3">
+                  <p className="text-sm font-bold">本次報到幾人？</p>
                   <div className="flex flex-wrap gap-2">
                     {Array.from({ length: remaining }, (_, i) => i + 1).map((n) => (
                       <button key={n} type="button"
                         onClick={() => setPendingCount(n)}
-                        className={`h-10 w-10 rounded-lg text-sm font-bold border-2 transition-colors ${pendingCount === n ? "border-mint bg-mint text-white" : "border-charcoal/15 bg-white text-charcoal"}`}>
-                        {n}
+                        className={`h-11 min-w-[2.75rem] px-3 rounded-xl text-sm font-bold border-2 transition-colors ${pendingCount === n ? "border-orange bg-orange text-white shadow-sm" : "border-charcoal/15 bg-white text-charcoal hover:border-orange/40"}`}>
+                        {n} 人
                       </button>
                     ))}
                   </div>
@@ -366,12 +384,13 @@ export default function StaffScanPage() {
                   <p className="text-lg font-extrabold tracking-tight">{cfg.label}</p>
                   {result.attendee && (
                     <p className="text-sm font-semibold text-charcoal/70">
-                      {result.attendee.name}・…{result.attendee.phoneLastThree}
+                      {result.attendee.name}・尾碼 …{result.attendee.phoneLastThree}
                     </p>
                   )}
-                  {result.attendee && renderCountBadge(result.attendee)}
                 </div>
               </div>
+
+              {result.attendee && renderCapacityBar(result.attendee, "result")}
 
               {result.attendee?.customFields && Object.keys(result.attendee.customFields).length > 0 && (
                 <div className="rounded-lg bg-white/60 px-3 py-2 space-y-1">
