@@ -69,6 +69,9 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
   }
 
   const isSuccess = result?.status === "SUCCESS";
+  const isCapacityExceeded =
+    result?.status === "ALREADY_CHECKED_IN" &&
+    (result.attendee?.checkInCapacity ?? 1) > 1;
   const ResultIcon = result ? statusCopy[result.status].icon : null;
 
   return (
@@ -188,7 +191,9 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
                   </span>
                 ) : null}
                 <div>
-                  <p className="text-lg font-bold">{statusCopy[result.status].title}</p>
+                  <p className="text-lg font-bold">
+                    {isCapacityExceeded ? "超過報到人數" : statusCopy[result.status].title}
+                  </p>
                   {result.attendee ? (
                     <p className="text-sm text-charcoal/70">{result.attendee.name}</p>
                   ) : null}
