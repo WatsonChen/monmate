@@ -13,6 +13,7 @@ import {
 import { type CSSProperties, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
+import { DotsLoading } from "./DotsLoading";
 
 type Method = "qr" | "manual";
 
@@ -243,7 +244,7 @@ export function CheckInClient({
               className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-orange text-base font-bold text-white shadow-soft disabled:cursor-not-allowed disabled:bg-charcoal/25"
             >
               <QrCode size={20} />
-              {isSubmitting ? "處理中..." : "開始掃描報到"}
+              {isSubmitting ? <>處理中<DotsLoading /></> : "開始掃描報到"}
             </button>
           </section>
 

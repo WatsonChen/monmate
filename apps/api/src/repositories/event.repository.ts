@@ -35,6 +35,7 @@ export const eventRepository = {
         description: true,
         content: true,
         registrationRequired: true,
+        openRegistration: true,
         startAt: true,
         endAt: true,
         location: true

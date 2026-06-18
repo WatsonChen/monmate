@@ -13,6 +13,7 @@ type PublicEvent = {
   endAt?: string | null;
   location?: string | null;
   registrationRequired: boolean;
+  openRegistration: boolean;
 };
 
 type TicketData = {

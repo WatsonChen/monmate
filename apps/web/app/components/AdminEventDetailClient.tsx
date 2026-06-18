@@ -7,7 +7,10 @@ import {
   ArrowUpDown,
   Check,
   ClipboardList,
+  Copy,
+  ExternalLink,
   FileSpreadsheet,
+  Info,
   Pencil,
   Plus,
   Search,
@@ -21,7 +24,9 @@ import {
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { DateTimePicker } from "./DateTimePicker";
+import { DotsLoading } from "./DotsLoading";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
+import { RichEditor } from "./RichEditor";
 import { VenueQrButton } from "./VenueQrModal";
 
 type Props = { eventId: string; created?: boolean };
@@ -68,9 +73,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editEndAt, setEditEndAt] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editContent, setEditContent] = useState("");
   const [editRegistrationRequired, setEditRegistrationRequired] = useState(false);
+  const [editOpenRegistration, setEditOpenRegistration] = useState(false);
   const [editRegFields, setEditRegFields] = useState<RegistrationField[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Staff form
   const [showStaffForm, setShowStaffForm] = useState(false);
@@ -93,9 +101,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [addMsg, setAddMsg] = useState("");
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
+  const [sendingInviteId, setSendingInviteId] = useState<string | null>(null);
   const [editingAttendee, setEditingAttendee] = useState<AttendeeDTO | null>(null);
   const [editAttendeeName, setEditAttendeeName] = useState("");
   const [editAttendeePhone, setEditAttendeePhone] = useState("");
+  const [editAttendeeEmail, setEditAttendeeEmail] = useState("");
   const [editAttendeeCapacity, setEditAttendeeCapacity] = useState<string>("1");
   const [editAttendeeCount, setEditAttendeeCount] = useState(0);
   const [editAttendeeNote, setEditAttendeeNote] = useState("");
@@ -126,7 +136,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       setEditEndAt(ev.endAt ? toDatetimeLocal(ev.endAt) : "");
       setEditLocation(ev.location ?? "");
       setEditDescription(ev.description ?? "");
+      setEditContent(ev.content ?? "");
       setEditRegistrationRequired(ev.registrationRequired ?? false);
+      setEditOpenRegistration(ev.openRegistration ?? false);
       setEditRegFields((ev.registrationFields as RegistrationField[]) ?? []);
       if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
       if (staffRes.success && staffRes.data) setStaffList(staffRes.data);
@@ -154,7 +166,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         endAt: editEndAt ? new Date(editEndAt).toISOString() : null,
         location: editLocation.trim() || null,
         description: editDescription.trim() || null,
+        content: editContent || null,
         registrationRequired: editRegistrationRequired,
+        openRegistration: editOpenRegistration,
         registrationFields: editRegistrationRequired ? editRegFields : []
       })
     });
@@ -218,6 +232,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setEditingAttendee(attendee);
     setEditAttendeeName(attendee.name);
     setEditAttendeePhone(attendee.phone);
+    setEditAttendeeEmail(attendee.email ?? "");
     setEditAttendeeCapacity(String(attendee.checkInCapacity ?? 1));
     setEditAttendeeCount(attendee.checkInCount ?? 0);
     setEditAttendeeNote(attendee.note ?? "");
@@ -244,6 +259,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       body: JSON.stringify({
         name: editAttendeeName.trim(),
         phone: editAttendeePhone.trim(),
+        email: editAttendeeEmail.trim() || null,
         checkInCapacity: capacity,
         checkInCount: count,
         checkInStatus: count > 0 ? "CHECKED_IN" : "NOT_CHECKED_IN",
@@ -285,6 +301,20 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setInviteMsg(`已寄送 ${res.data.sent} 封 Email，失敗 ${res.data.failed} 封`);
   }
 
+  async function sendSingleInvite(attendeeId: string) {
+    setSendingInviteId(attendeeId);
+    const res = await apiFetch<{ success: boolean; message?: string }>(
+      `/events/${eventId}/attendees/${attendeeId}/invite`,
+      { method: "POST", token, body: JSON.stringify({ template: "without-registration" }) }
+    );
+    setSendingInviteId(null);
+    if (!res.success || res.data?.success === false) {
+      setMessage(res.data?.message ?? res.error?.message ?? "寄送失敗");
+    } else {
+      setMessage("邀請信已寄出！");
+    }
+  }
+
   const checkedIn = attendees.filter((a) => {
     const capacity = a.checkInCapacity ?? 1;
     const count = a.checkInCount ?? (a.checkInStatus === "CHECKED_IN" ? capacity : 0);
@@ -322,7 +352,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         </Link>
         <div className="min-w-0">
           <p className="text-sm font-bold text-orange">活動詳情</p>
-          <h1 className="break-words text-2xl font-bold leading-tight">{event?.name ?? "載入中…"}</h1>
+          <h1 className="break-words text-2xl font-bold leading-tight">{event?.name ?? <span className="text-charcoal/40">載入中<DotsLoading /></span>}</h1>
         </div>
       </div>
 
@@ -344,9 +374,35 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <span className="text-charcoal/50">活動名稱</span>
                   <p className="break-words font-semibold">{event.name}</p>
                 </div>
-                <div>
-                  <span className="text-charcoal/50">Slug</span>
-                  <p className="break-all font-semibold">{event.slug || "—"}</p>
+                <div className="sm:col-span-2">
+                  <span className="text-charcoal/50">活動頁面</span>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <a
+                      href={`/event/${event.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="break-all font-semibold text-orange underline-offset-2 hover:underline"
+                    >
+                      {typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
+                    </a>
+                    <a href={`/event/${event.slug}`} target="_blank" rel="noreferrer" className="shrink-0 text-charcoal/40 hover:text-orange">
+                      <ExternalLink size={14} />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = `${window.location.origin}/event/${event.slug}`;
+                        void navigator.clipboard.writeText(url).then(() => {
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        });
+                      }}
+                      className="shrink-0 text-charcoal/40 hover:text-orange"
+                      title="複製連結"
+                    >
+                      {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <span className="text-charcoal/50">開始時間</span>
@@ -370,6 +426,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     <p className="font-semibold">{event.attendeeLimit} 人</p>
                   </div>
                 )}
+                <div>
+                  <span className="text-charcoal/50">公開報名</span>
+                  <p className={`font-semibold ${event.openRegistration ? "text-green-600" : "text-charcoal/40"}`}>
+                    {event.openRegistration ? "開放中" : "未開放"}
+                  </p>
+                </div>
                 {event.description && (
                   <div className="sm:col-span-2">
                     <span className="text-charcoal/50">簡短說明</span>
@@ -550,9 +612,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <div className="py-8 text-center text-sm text-charcoal/50">沒有符合的搜尋結果</div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[800px] overflow-hidden rounded-lg border border-charcoal/10">
-                  <div className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
-                    <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span>
+                <div className="min-w-[960px] overflow-hidden rounded-lg border border-charcoal/10">
+                  <div className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
+                    <span>姓名</span><span>電話</span><span>Email</span><span>報到碼</span><span>預期人數</span>
                     <button type="button" onClick={() => setStatusSort((s) => s === "" ? "checked" : s === "checked" ? "unchecked" : "")}
                       className={`flex items-center gap-1 transition-colors ${statusSort ? "text-orange" : "hover:text-charcoal/60"}`}>
                       狀態<ArrowUpDown size={12} />
@@ -564,9 +626,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                       const attendance = getAttendanceState(attendee);
                       return (
                         <div key={attendee.id}
-                          className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
+                          className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
                           <span className="font-semibold">{attendee.name}</span>
                           <span className="text-charcoal/70">{attendee.phone}</span>
+                          <span className="truncate text-xs text-charcoal/60" title={attendee.email ?? ""}>
+                            {attendee.email ?? <span className="text-charcoal/30">—</span>}
+                          </span>
                           <span className="font-mono text-xs text-charcoal/60">{attendee.checkInCode}</span>
                           <span className="text-xs text-charcoal/70">
                             {(attendee.checkInCapacity ?? 1) > 1
@@ -580,11 +645,20 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                           <span className="truncate text-xs text-charcoal/60" title={attendee.note ?? ""}>
                             {attendee.note ?? <span className="text-charcoal/30">—</span>}
                           </span>
-                          <button type="button" onClick={() => openEditAttendee(attendee)}
-                            title="編輯報名資料"
-                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-mint/60 hover:text-charcoal transition-colors">
-                            <Pencil size={13} />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button type="button"
+                              onClick={() => void sendSingleInvite(attendee.id)}
+                              disabled={!attendee.email || sendingInviteId === attendee.id}
+                              title={attendee.email ? "發送邀請信" : "無 Email，無法寄送"}
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-orange/60 hover:text-orange transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                              <Send size={12} className={sendingInviteId === attendee.id ? "animate-pulse" : ""} />
+                            </button>
+                            <button type="button" onClick={() => openEditAttendee(attendee)}
+                              title="編輯報名資料"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-mint/60 hover:text-charcoal transition-colors">
+                              <Pencil size={13} />
+                            </button>
+                          </div>
                         </div>
                       );
                     })()
@@ -623,6 +697,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <label className="text-sm font-semibold">
                 電話
                 <input value={editAttendeePhone} onChange={(e) => setEditAttendeePhone(e.target.value)}
+                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+              </label>
+              <label className="sm:col-span-2 text-sm font-semibold">
+                Email
+                <input type="email" value={editAttendeeEmail} onChange={(e) => setEditAttendeeEmail(e.target.value)}
+                  placeholder="example@email.com"
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
               </label>
               <label className="text-sm font-semibold">
@@ -679,9 +759,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
               </label>
               <label className="text-sm font-semibold">
-                Slug
+                活動頁面網址
                 <input value={editSlug} onChange={(e) => setEditSlug(e.target.value)}
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                <span className="mt-1 block text-xs font-normal text-charcoal/45">修改後原連結將失效</span>
               </label>
               <label className="text-sm font-semibold">
                 開始時間
@@ -702,6 +783,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   className="mt-2 w-full rounded-lg border border-charcoal/15 bg-paper p-3 text-sm outline-none focus:border-mint" />
               </label>
             </div>
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-semibold">活動內容（一頁式網站）</p>
+              <RichEditor value={editContent} onChange={setEditContent} placeholder="活動詳細說明、注意事項…" />
+            </div>
             {/* 報名設定 */}
             <div className="mt-4 rounded-lg bg-paper p-4">
               <p className="mb-3 text-sm font-bold">報名設定</p>
@@ -719,6 +804,26 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <RegistrationFieldsEditor fields={editRegFields} onChange={setEditRegFields} />
                 </div>
               )}
+              <label className="mt-4 flex cursor-pointer items-start gap-2">
+                <input type="checkbox" checked={editOpenRegistration}
+                  onChange={(e) => setEditOpenRegistration(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded accent-orange" />
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold">開放公開報名</p>
+                    <div className="group relative inline-flex">
+                      <Info size={13} className="text-charcoal/40 cursor-help" />
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                        <p className="font-semibold mb-1">開啟：公開報名</p>
+                        <p className="text-white/80 mb-2">活動頁面會顯示「我要報名」按鈕，任何收到連結的人都能直接報名。</p>
+                        <p className="font-semibold mb-1">關閉：純展示頁面</p>
+                        <p className="text-white/80">頁面僅供受邀者查看活動資訊，無法自行報名。</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-0.5 text-xs text-charcoal/55">開啟後，收到連結的人可直接在活動頁面報名</p>
+                </div>
+              </label>
             </div>
             <div className="mt-5 flex gap-3">
               <button type="button" onClick={() => setShowEditModal(false)}

@@ -1,7 +1,7 @@
 "use client";
 
 import type { BillingStatusDTO, EventDTO, RegistrationField } from "@monmate/types";
-import { CalendarPlus, CreditCard } from "lucide-react";
+import { CalendarPlus, CreditCard, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
@@ -28,6 +28,7 @@ export function AdminNewEventClient() {
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [registrationRequired, setRegistrationRequired] = useState(false);
+  const [openRegistration, setOpenRegistration] = useState(false);
   const [regFields, setRegFields] = useState<RegistrationField[]>([]);
   const [selectedLimit, setSelectedLimit] = useState<number>(50);
   const [customLimit, setCustomLimit] = useState("");
@@ -73,6 +74,7 @@ export function AdminNewEventClient() {
         content: content || undefined,
         attendeeLimit,
         registrationRequired,
+        openRegistration,
         registrationFields: registrationRequired ? regFields : []
       })
     });
@@ -277,6 +279,33 @@ export function AdminNewEventClient() {
               <RegistrationFieldsEditor fields={regFields} onChange={setRegFields} />
             </div>
           )}
+        </div>
+
+        {/* 公開報名開關 */}
+        <div className="mt-4">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={openRegistration}
+              onChange={(e) => setOpenRegistration(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded accent-orange"
+            />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold">開放公開報名</p>
+                <div className="group relative inline-flex">
+                  <Info size={13} className="text-charcoal/40 cursor-help" />
+                  <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    <p className="font-semibold mb-1">開啟：公開報名</p>
+                    <p className="text-white/80 mb-2">活動頁面會顯示「我要報名」按鈕，任何收到連結的人都能直接報名。</p>
+                    <p className="font-semibold mb-1">關閉：純展示頁面</p>
+                    <p className="text-white/80">頁面僅供受邀者查看活動資訊，無法自行報名。</p>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-0.5 text-xs text-charcoal/55">開啟後，收到連結的人可直接在活動頁面報名</p>
+            </div>
+          </label>
         </div>
 
         <button

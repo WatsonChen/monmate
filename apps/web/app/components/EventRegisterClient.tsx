@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import type { RegistrationField } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
+import { DotsLoading } from "./DotsLoading";
 
 const PRESET_KEYS = ["email", "age", "gender"] as const;
 
@@ -282,7 +283,7 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
             onClick={() => void submit()}
             className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-orange text-base font-bold text-white shadow-soft disabled:opacity-50"
           >
-            {isSubmitting ? "送出中…" : "完成報名，取得入場票券"}
+            {isSubmitting ? <>送出中<DotsLoading /></> : "完成報名，取得入場票券"}
           </button>
         </div>
       </div>

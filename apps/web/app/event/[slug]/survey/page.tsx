@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { apiFetch } from "../../../lib/api";
+import { LogoLoading } from "../../../components/LogoLoading";
 
 type Question = { id: string; question: string; type: string; options: string[]; order: number };
 type Survey = { id: string; title: string; questions: Question[] };
@@ -39,7 +40,7 @@ export default function SurveyPage() {
     setSubmitted(true);
   }
 
-  if (loading) return <main className="grid min-h-dvh place-items-center"><p>載入中…</p></main>;
+  if (loading) return <LogoLoading />;
   if (submitted) return (
     <main className="grid min-h-dvh place-items-center p-6 text-center">
       <div>

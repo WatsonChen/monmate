@@ -8,6 +8,7 @@ import type {
 import { CreditCard, RefreshCcw, Receipt } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { DotsLoading } from "./DotsLoading";
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString("zh-TW", {
@@ -221,7 +222,7 @@ export function AdminBillingClient() {
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-orange text-sm font-bold text-white disabled:opacity-40"
           >
             <CreditCard size={16} />
-            {isCheckingOut ? "前往付款…" : "立即購買"}
+            {isCheckingOut ? <>前往付款<DotsLoading /></> : "立即購買"}
           </button>
         </section>
       </div>

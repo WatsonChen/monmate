@@ -4,6 +4,7 @@ import type { EventDTO } from "@monmate/types";
 import { FileSpreadsheet, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { DotsLoading } from "./DotsLoading";
 
 export function AdminImportClient() {
   const [token, setToken] = useState("");
@@ -124,7 +125,7 @@ export function AdminImportClient() {
             className="flex h-11 items-center justify-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-charcoal/25"
           >
             <Upload size={18} />
-            {isUploading ? "匯入中..." : "匯入"}
+            {isUploading ? <>匯入中<DotsLoading /></> : "匯入"}
           </button>
         </div>
 

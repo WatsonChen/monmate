@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { QrCode, X, Download } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import { LogoSpinner } from "./LogoSpinner";
 
 type VenueQrData = {
   venueCode: string;
@@ -65,7 +66,7 @@ export function VenueQrButton({ eventId, eventName, token }: Props) {
             <p className="mt-1 text-sm text-charcoal/60">{eventName}</p>
 
             <div className="mt-5 flex flex-col items-center">
-              {loading && <p className="py-16 text-sm text-charcoal/50">載入中…</p>}
+              {loading && <div className="flex justify-center py-10"><LogoSpinner size={72} /></div>}
               {qrImageUrl && (
                 <>
                   <img src={qrImageUrl} alt="Venue QR Code" className="h-56 w-56 rounded-lg border border-charcoal/10" />

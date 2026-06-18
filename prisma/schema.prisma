@@ -64,6 +64,7 @@ model Event {
   description          String?
   content              String?
   registrationRequired Boolean      @default(false)
+  openRegistration     Boolean      @default(false)
   startAt              DateTime
   endAt                DateTime?
   location             String?

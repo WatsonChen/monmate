@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { LogoSpinner } from "./LogoSpinner";
 
 type Analytics = {
   eventId: string;
@@ -64,7 +65,11 @@ export function AdminAnalyticsClient() {
         </label>
       </section>
 
-      {loading && <p className="mt-5 text-sm text-charcoal/50">載入中…</p>}
+      {loading && (
+        <div className="mt-5 flex justify-center py-10">
+          <LogoSpinner size={80} />
+        </div>
+      )}
 
       {analytics && !loading && (
         <div className="mt-5 space-y-5">

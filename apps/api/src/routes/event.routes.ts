@@ -14,6 +14,7 @@ const createEventSchema = z.object({
   description: z.string().optional(),
   content: z.string().optional(),
   registrationRequired: z.boolean().optional(),
+  openRegistration: z.boolean().optional(),
   startAt: z.string().min(1),
   endAt: z.string().optional(),
   location: z.string().optional()
@@ -31,6 +32,53 @@ eventRouter.get(
   asyncHandler(async (req, res) => {
     const event = await eventService.getPublicBySlug(req.params.slug);
     return ok(res, event);
+  })
+);
+
+eventRouter.get(
+  "/ticket/:slug",
+  asyncHandler(async (req, res) => {
+    const { token } = z.object({ token: z.string() }).parse(req.query);
+    const event = await eventService.getPublicBySlug(req.params.slug);
+    const attendee = await prisma.attendee.findFirst({
+      where: { eventId: event.id, qrToken: token },
+      select: { id: true, name: true, checkInCode: true, qrToken: true, checkInStatus: true }
+    });
+    return ok(res, { event, attendee });
+  })
+);
+
+const publicRegisterSchema = z.object({
+  name: z.string().min(1, "請填寫姓名"),
+  phone: z.string().min(6, "請填寫電話")
+});
+
+eventRouter.post(
+  "/public/:slug/register",
+  asyncHandler(async (req, res) => {
+    const { name, phone } = publicRegisterSchema.parse(req.body);
+    const event = await eventService.getPublicBySlug(req.params.slug);
+
+    if (!event.openRegistration) {
+      const { AppError } = await import("../lib/http");
+      throw new AppError(403, "REGISTRATION_CLOSED", "此活動未開放公開報名");
+    }
+
+    const existing = await prisma.attendee.findFirst({
+      where: { eventId: event.id, phone: phone.trim() },
+      select: { qrToken: true }
+    });
+    if (existing) return ok(res, { qrToken: existing.qrToken });
+
+    const { randomBytes } = await import("node:crypto");
+    const checkInCode = `MM${String(Date.now()).slice(-4)}0001`;
+    const qrToken = randomBytes(18).toString("base64url");
+
+    const attendee = await prisma.attendee.create({
+      data: { eventId: event.id, name: name.trim(), phone: phone.trim(), checkInCode, qrToken },
+      select: { qrToken: true }
+    });
+    return ok(res, { qrToken: attendee.qrToken }, 201);
   })
 );
 

@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { apiFetch } from "../../../lib/api";
 import type { EventDTO } from "@monmate/types";
 import { QrCode } from "lucide-react";
+import { LogoLoading } from "../../../components/LogoLoading";
 
 type AttendeeTicket = {
   id: string;
@@ -35,7 +36,7 @@ export default function TicketPage() {
       .finally(() => setLoading(false));
   }, [params.slug, token]);
 
-  if (loading) return <main className="grid min-h-dvh place-items-center"><p className="text-charcoal/50">載入中…</p></main>;
+  if (loading) return <LogoLoading />;
   if (!data?.attendee) return (
     <main className="grid min-h-dvh place-items-center p-6 text-center">
       <div>

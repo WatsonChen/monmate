@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "../../lib/api";
 import type { CheckInResultDTO, EventDTO, UserDTO } from "@monmate/types";
 import { Info, Camera, CameraOff, Check, RotateCcw, Search, XCircle, StickyNote, Users } from "lucide-react";
+import { DotsLoading } from "../../components/DotsLoading";
 
 function fireConfetti() {
   void import("canvas-confetti").then(({ default: confetti }) => {
@@ -291,7 +292,7 @@ export default function StaffScanPage() {
                   {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
               ) : (
-                <p className="text-sm font-medium text-charcoal">{eventName || "載入中…"}</p>
+                <p className="text-sm font-medium text-charcoal">{eventName || <span className="text-charcoal/40">載入中<DotsLoading /></span>}</p>
               )}
               <div className="flex items-start gap-2 rounded-lg bg-mint/10 px-3 py-2 text-xs text-charcoal/70">
                 <Info size={13} className="mt-0.5 shrink-0 text-mint" />
@@ -339,7 +340,7 @@ export default function StaffScanPage() {
               disabled={!manualCode.trim() || !eventId || isChecking}
               onClick={() => void lookup(manualCode)}
               className="h-12 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40">
-              {isChecking ? "…" : "查詢"}
+              {isChecking ? <DotsLoading /> : "查詢"}
             </button>
           </div>
           <p className="text-xs text-charcoal/50">掃碼槍掃描後會自動觸發</p>
@@ -401,7 +402,7 @@ export default function StaffScanPage() {
               <button type="button" onClick={() => void saveNote(preview.attendee!.id)}
                 disabled={noteSaving}
                 className="rounded-lg bg-mint px-3 py-1.5 text-xs font-bold text-charcoal shadow-sm hover:bg-mint/90 disabled:opacity-40">
-                {noteSaving ? "儲存中…" : noteSaved ? "✓ 已儲存" : "儲存備註"}
+                {noteSaving ? <>儲存中<DotsLoading /></> : noteSaved ? "✓ 已儲存" : "儲存備註"}
               </button>
               {noteMessage && <p className="text-xs font-semibold text-red-600">{noteMessage}</p>}
             </div>
@@ -417,7 +418,7 @@ export default function StaffScanPage() {
                 disabled={isChecking || (preview.attendee.checkInCapacity ?? 1) <= (preview.attendee.checkInCount ?? 0)}
                 onClick={() => void confirmCheckIn()}
                 className="h-12 flex-[2] rounded-lg bg-orange text-sm font-bold text-white disabled:opacity-40">
-                {isChecking ? "處理中…" : `確認報到 ${pendingCount} 人`}
+                {isChecking ? <>處理中<DotsLoading /></> : `確認報到 ${pendingCount} 人`}
               </button>
             </div>
           </div>
@@ -466,7 +467,7 @@ export default function StaffScanPage() {
                     onClick={() => void saveNote(result.attendee!.id)}
                     disabled={noteSaving}
                     className="rounded-lg bg-mint px-3 py-1.5 text-xs font-bold text-charcoal shadow-sm hover:bg-mint/90 disabled:opacity-40">
-                    {noteSaving ? "儲存中…" : noteSaved ? "✓ 已儲存" : "儲存備註"}
+                    {noteSaving ? <>儲存中<DotsLoading /></> : noteSaved ? "✓ 已儲存" : "儲存備註"}
                   </button>
                   {noteMessage && <p className="text-xs font-semibold text-red-600">{noteMessage}</p>}
                 </div>

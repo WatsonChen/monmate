@@ -5,6 +5,7 @@ import { Check, Phone, RotateCcw, Search, XCircle } from "lucide-react";
 import type { CheckInResultDTO } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
+import { DotsLoading } from "./DotsLoading";
 
 const statusCopy = {
   SUCCESS: {
@@ -172,7 +173,7 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
               className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-orange text-base font-bold text-white shadow-soft disabled:cursor-not-allowed disabled:bg-charcoal/25"
             >
               <Phone size={20} />
-              {isSubmitting ? "處理中…" : "確認報到"}
+              {isSubmitting ? <>處理中<DotsLoading /></> : "確認報到"}
             </button>
           </section>
 

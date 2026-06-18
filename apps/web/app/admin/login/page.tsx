@@ -2,11 +2,12 @@
 
 import type { UserDTO } from "@monmate/types";
 import { GoogleLogin } from "@react-oauth/google";
-import { Loader2, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
 import { apiFetch } from "../../lib/api";
+import { DotsLoading } from "../../components/DotsLoading";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -78,8 +79,8 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-orange font-bold text-white disabled:opacity-70"
           >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <LogIn size={18} />}
-            {loading ? "登入中…" : "登入"}
+            {!loading && <LogIn size={18} />}
+            {loading ? <>登入中<DotsLoading /></> : "登入"}
           </button>
         </div>
 

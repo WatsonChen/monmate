@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { Send, Plus, Trash2, ClipboardList } from "lucide-react";
+import { DotsLoading } from "./DotsLoading";
+import { LogoSpinner } from "./LogoSpinner";
 
 type Question = { id?: string; question: string; type: string; options: string[]; order: number };
 type Survey = { id: string; title: string; sentAt: string | null; questions: Question[] };
@@ -117,8 +119,8 @@ export function AdminSurveyClient({ initialEventId }: { initialEventId?: string 
       )}
 
       {selectedId && loading && (
-        <section className="mt-4 rounded-lg border border-charcoal/10 bg-white p-8 text-center">
-          <p className="text-sm text-charcoal/50">載入中…</p>
+        <section className="mt-4 flex items-center justify-center rounded-lg border border-charcoal/10 bg-white py-14">
+          <LogoSpinner size={80} />
         </section>
       )}
 
@@ -183,7 +185,7 @@ export function AdminSurveyClient({ initialEventId }: { initialEventId?: string 
               onClick={() => void save()}
               className="flex h-10 items-center gap-2 rounded-lg bg-mint/30 px-4 text-sm font-bold text-charcoal disabled:opacity-40"
             >
-              {saving ? "儲存中…" : "儲存問卷"}
+              {saving ? <>儲存中<DotsLoading /></> : "儲存問卷"}
             </button>
             <button
               type="button"
@@ -219,7 +221,7 @@ export function AdminSurveyClient({ initialEventId }: { initialEventId?: string 
                 className="flex-1 rounded-lg border border-charcoal/15 py-2.5 text-sm font-semibold">取消</button>
               <button type="button" disabled={sending} onClick={() => void sendSurvey()}
                 className="flex-1 rounded-lg bg-orange py-2.5 text-sm font-bold text-white disabled:opacity-40">
-                {sending ? "發送中…" : "確認發送"}
+                {sending ? <>發送中<DotsLoading /></> : "確認發送"}
               </button>
             </div>
           </div>

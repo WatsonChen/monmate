@@ -37,6 +37,7 @@ export const eventService = {
     description?: string;
     content?: string;
     registrationRequired?: boolean;
+    openRegistration?: boolean;
     startAt: string;
     endAt?: string;
     location?: string;
@@ -50,6 +51,7 @@ export const eventService = {
       description: input.description,
       content: input.content,
       registrationRequired: input.registrationRequired ?? false,
+      openRegistration: input.openRegistration ?? false,
       startAt: new Date(input.startAt),
       endAt: input.endAt ? new Date(input.endAt) : undefined,
       location: input.location,
@@ -65,6 +67,7 @@ export const eventService = {
       description: string | null;
       content: string | null;
       registrationRequired: boolean;
+      openRegistration: boolean;
       startAt: string;
       endAt: string | null;
       location: string | null;

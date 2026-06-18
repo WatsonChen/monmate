@@ -56,11 +56,13 @@ export type EventDTO = {
   name: string;
   slug: string;
   description?: string | null;
+  content?: string | null;
   startAt: string;
   endAt?: string | null;
   location?: string | null;
   attendeeLimit?: number | null;
   registrationRequired?: boolean;
+  openRegistration?: boolean;
   registrationFields?: RegistrationField[];
   attendeeCount?: number;
   checkInLogCount?: number;
@@ -73,6 +75,7 @@ export type AttendeeDTO = {
   eventId: string;
   name: string;
   phone: string;
+  email?: string | null;
   checkInCode: string;
   qrToken: string;
   checkInStatus: CheckInStatus;
