@@ -1,6 +1,6 @@
 "use client";
 
-import type { AttendeeDTO, EventDTO, RegistrationField, SmsResultDTO, StaffDTO } from "@monmate/types";
+import type { AttendeeDTO, EventDTO, RegistrationField, StaffDTO } from "@monmate/types";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -8,12 +8,10 @@ import {
   Check,
   ClipboardList,
   FileSpreadsheet,
-  MessageSquare,
   Pencil,
   Plus,
   Search,
   Send,
-  Settings2,
   Trash2,
   Upload,
   Users,
@@ -62,7 +60,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   // Modal visibility
   const [showEditModal, setShowEditModal] = useState(false);
   const [showStaffModal, setShowStaffModal] = useState(false);
-  const [showSmsModal, setShowSmsModal] = useState(false);
 
   // Edit form
   const [editName, setEditName] = useState("");
@@ -83,10 +80,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [staffMsg, setStaffMsg] = useState("");
   const [isAddingStaff, setIsAddingStaff] = useState(false);
 
-  // SMS settings (modal)
-  const [smsTemplate, setSmsTemplate] = useState<"with-registration" | "without-registration">("without-registration");
-  const [smsSenderName, setSmsSenderName] = useState("");
-
   // Attendee list actions
   const [showImportForm, setShowImportForm] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -98,8 +91,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [addCapacity, setAddCapacity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [addMsg, setAddMsg] = useState("");
-  const [smsLoadingId, setSmsLoadingId] = useState<string | null>(null);
-  const [smsResendTemplate, setSmsResendTemplate] = useState<"with-registration" | "without-registration">("without-registration");
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
   const [editingAttendee, setEditingAttendee] = useState<AttendeeDTO | null>(null);
@@ -287,21 +278,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setIsSendingInvite(true); setInviteMsg("");
     const res = await apiFetch<{ sent: number; failed: number }>(`/events/${eventId}/invite`, {
       method: "POST", token,
-      body: JSON.stringify({ template: smsTemplate, senderName: smsSenderName.trim() || undefined })
+      body: JSON.stringify({ template: "without-registration" })
     });
     setIsSendingInvite(false);
-    if (!res.success || !res.data) { setInviteMsg(res.error?.message ?? "發送失敗"); return; }
-    setInviteMsg(`已發送 ${res.data.sent} 則，失敗 ${res.data.failed} 則`);
-  }
-
-  async function resendSms(attendeeId: string) {
-    setSmsLoadingId(attendeeId);
-    const res = await apiFetch<SmsResultDTO>(`/events/${eventId}/attendees/${attendeeId}/invite`, {
-      method: "POST", token,
-      body: JSON.stringify({ template: smsResendTemplate, senderName: smsSenderName.trim() || undefined })
-    });
-    setSmsLoadingId(null);
-    setMessage(res.success && res.data ? res.data.message : res.error?.message ?? "簡訊發送失敗");
+    if (!res.success || !res.data) { setInviteMsg(res.error?.message ?? "寄送失敗"); return; }
+    setInviteMsg(`已寄送 ${res.data.sent} 封 Email，失敗 ${res.data.failed} 封`);
   }
 
   const checkedIn = attendees.filter((a) => {
@@ -413,14 +394,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <UserCog size={14} />
                   工作人員
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSmsModal(true)}
-                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
-                >
-                  <Settings2 size={14} />
-                  簡訊設定
-                </button>
                 <Link
                   href={`/admin/survey?eventId=${event.id}`}
                   className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
@@ -464,20 +437,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 </span>
                 {partiallyCheckedIn > 0 && (
                   <span className="font-semibold text-orange">部分 {partiallyCheckedIn}</span>
-                )}
-                {attendees.length > 0 && (
-                  <div className="flex items-center gap-2 rounded-lg border border-charcoal/15 px-2 py-1">
-                    <MessageSquare size={13} className="text-charcoal/50" />
-                    <span className="text-xs font-semibold text-charcoal/60">補發：</span>
-                    <select
-                      value={smsResendTemplate}
-                      onChange={(e) => setSmsResendTemplate(e.target.value as typeof smsResendTemplate)}
-                      className="bg-transparent text-xs font-semibold outline-none"
-                    >
-                      <option value="without-registration">附票券連結</option>
-                      <option value="with-registration">附報名連結</option>
-                    </select>
-                  </div>
                 )}
                 <button
                   type="button"
@@ -591,21 +550,21 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <div className="py-8 text-center text-sm text-charcoal/50">沒有符合的搜尋結果</div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[920px] overflow-hidden rounded-lg border border-charcoal/10">
-                  <div className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto_auto] bg-cloud px-4 py-3 text-sm font-bold">
+                <div className="min-w-[800px] overflow-hidden rounded-lg border border-charcoal/10">
+                  <div className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
                     <span>姓名</span><span>電話</span><span>報到碼</span><span>預期人數</span>
                     <button type="button" onClick={() => setStatusSort((s) => s === "" ? "checked" : s === "checked" ? "unchecked" : "")}
                       className={`flex items-center gap-1 transition-colors ${statusSort ? "text-orange" : "hover:text-charcoal/60"}`}>
                       狀態<ArrowUpDown size={12} />
                     </button>
-                    <span>備註</span><span>操作</span><span>簡訊</span>
+                    <span>備註</span><span>操作</span>
                   </div>
                   {displayedAttendees.map((attendee) => (
                     (() => {
                       const attendance = getAttendanceState(attendee);
                       return (
                         <div key={attendee.id}
-                          className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
+                          className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr_0.8fr_1.4fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
                           <span className="font-semibold">{attendee.name}</span>
                           <span className="text-charcoal/70">{attendee.phone}</span>
                           <span className="font-mono text-xs text-charcoal/60">{attendee.checkInCode}</span>
@@ -623,15 +582,8 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                           </span>
                           <button type="button" onClick={() => openEditAttendee(attendee)}
                             title="編輯報名資料"
-                            className="mr-2 flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-mint/60 hover:text-charcoal transition-colors">
+                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-mint/60 hover:text-charcoal transition-colors">
                             <Pencil size={13} />
-                          </button>
-                          <button type="button" disabled={smsLoadingId === attendee.id} onClick={() => void resendSms(attendee.id)}
-                            title="補發簡訊"
-                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-orange/30 hover:text-orange disabled:opacity-40 transition-colors">
-                            {smsLoadingId === attendee.id
-                              ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-orange border-t-transparent" />
-                              : <MessageSquare size={13} />}
                           </button>
                         </div>
                       );
@@ -873,67 +825,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         </div>
       )}
 
-      {/* ── 簡訊設定 Modal ── */}
-      {showSmsModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-16"
-          onClick={() => setShowSmsModal(false)}>
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Settings2 size={18} />
-                <h2 className="text-lg font-bold">簡訊設定</h2>
-              </div>
-              <button type="button" onClick={() => setShowSmsModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-charcoal/15 hover:bg-paper">
-                <X size={15} />
-              </button>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <p className="mb-2 text-sm font-semibold">發件單位名稱</p>
-                <input value={smsSenderName} onChange={(e) => setSmsSenderName(e.target.value)}
-                  maxLength={20} placeholder="MonMate"
-                  className="h-10 w-full rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint" />
-                <p className="mt-1.5 text-xs text-charcoal/50">
-                  預覽：【{smsSenderName.trim() || "MonMate"}】姓名 您好，…
-                </p>
-              </div>
-
-              <div>
-                <p className="mb-2 text-sm font-semibold">簡訊模板</p>
-                <div className="flex flex-col gap-2">
-                  {([
-                    { id: "without-registration", label: "直接附票券連結", desc: "直接發送 QR Code 連結" },
-                    { id: "with-registration",    label: "需填寫報名資料", desc: "受邀者先填資料再取得票券" }
-                  ] as const).map((t) => (
-                    <label key={t.id}
-                      className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${smsTemplate === t.id ? "border-orange bg-orange/5" : "border-charcoal/15 hover:bg-paper"}`}>
-                      <input type="radio" name="smsTemplate" value={t.id}
-                        checked={smsTemplate === t.id} onChange={() => setSmsTemplate(t.id)}
-                        className="mt-0.5 accent-orange" />
-                      <div>
-                        <p className={`text-sm font-semibold ${smsTemplate === t.id ? "text-orange" : ""}`}>{t.label}</p>
-                        <p className="text-xs text-charcoal/50">{t.desc}</p>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-                {smsTemplate === "with-registration" && !event?.registrationRequired && (
-                  <p className="mt-2 text-xs text-amber-600">活動尚未啟用報名欄位，請先至「編輯」中開啟。</p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button type="button" onClick={() => setShowSmsModal(false)}
-                className="h-10 rounded-lg bg-orange px-5 text-sm font-bold text-white hover:bg-orange/90">
-                完成
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

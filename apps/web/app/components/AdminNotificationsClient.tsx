@@ -83,7 +83,7 @@ export function AdminNotificationsClient() {
           </span>
           <div>
             <h2 className="text-lg font-bold">通知任務</h2>
-            <p className="text-sm text-charcoal/60">MVP 先保留 email / SMS / LINE 擴充介面</p>
+            <p className="text-sm text-charcoal/60">寄送行前說明至所有有 Email 的報名者</p>
           </div>
         </div>
 
