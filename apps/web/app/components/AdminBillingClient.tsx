@@ -166,7 +166,12 @@ export function AdminBillingClient() {
                   </span>
                 </span>
                 <span className="flex items-center gap-2 font-bold">
-                  NT$ {tier.amount.toLocaleString()}
+                  <span className="flex flex-col items-end">
+                    <span className="text-xs font-normal text-charcoal/40 line-through">
+                      NT$ {(tier.amount * 5).toLocaleString()}
+                    </span>
+                    NT$ {tier.amount.toLocaleString()}
+                  </span>
                   <input
                     type="radio"
                     name="pricingTier"
@@ -188,14 +193,22 @@ export function AdminBillingClient() {
               </div>
               <div className="mt-1 flex justify-between">
                 <span className="text-charcoal/60">單價</span>
-                <span className="font-semibold">
+                <span className="flex flex-col items-end font-semibold">
+                  <span className="text-xs font-normal text-charcoal/40 line-through">
+                    NT$ {(selectedTier.amount * 5 / selectedTier.attendeeCredits).toFixed(1)} / 人次
+                  </span>
                   NT$ {(selectedTier.amount / selectedTier.attendeeCredits).toFixed(1)} / 人次
                 </span>
               </div>
               <div className="mt-2 flex justify-between border-t border-charcoal/10 pt-2">
                 <span className="font-semibold">總計</span>
-                <span className="text-lg font-bold text-orange">
-                  NT$ {selectedTier.amount.toLocaleString()}
+                <span className="flex flex-col items-end">
+                  <span className="text-xs font-normal text-charcoal/40 line-through">
+                    NT$ {(selectedTier.amount * 5).toLocaleString()}
+                  </span>
+                  <span className="text-lg font-bold text-orange">
+                    NT$ {selectedTier.amount.toLocaleString()}
+                  </span>
                 </span>
               </div>
             </div>
