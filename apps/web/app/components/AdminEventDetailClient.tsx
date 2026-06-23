@@ -294,7 +294,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setIsSendingInvite(true); setInviteMsg("");
     const res = await apiFetch<{ sent: number; failed: number }>(`/events/${eventId}/invite`, {
       method: "POST", token,
-      body: JSON.stringify({ template: "without-registration" })
+      body: JSON.stringify({ template: event?.registrationRequired ? "with-registration" : "without-registration" })
     });
     setIsSendingInvite(false);
     if (!res.success || !res.data) { setInviteMsg(res.error?.message ?? "寄送失敗"); return; }
@@ -305,7 +305,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setSendingInviteId(attendeeId);
     const res = await apiFetch<{ success: boolean; message?: string }>(
       `/events/${eventId}/attendees/${attendeeId}/invite`,
-      { method: "POST", token, body: JSON.stringify({ template: "without-registration" }) }
+      { method: "POST", token, body: JSON.stringify({ template: event?.registrationRequired ? "with-registration" : "without-registration" }) }
     );
     setSendingInviteId(null);
     if (!res.success || res.data?.success === false) {
