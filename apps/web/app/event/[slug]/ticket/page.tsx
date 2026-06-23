@@ -101,7 +101,14 @@ export default function TicketPage() {
           </div>
         )}
 
-        <p className="text-center text-xs text-charcoal/40">Powered by MonMate</p>
+        <a
+          href="https://monmate.tw"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+        >
+          Powered by MonMate
+        </a>
       </div>
     </main>
   );

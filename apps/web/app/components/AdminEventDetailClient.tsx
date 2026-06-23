@@ -629,20 +629,20 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                           className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
                           <span className="font-semibold">{attendee.name}</span>
                           <span className="text-charcoal/70">{attendee.phone}</span>
-                          <span className="truncate text-xs text-charcoal/60" title={attendee.email ?? ""}>
+                          <span className="truncate text-sm text-charcoal/60" title={attendee.email ?? ""}>
                             {attendee.email ?? <span className="text-charcoal/30">—</span>}
                           </span>
-                          <span className="font-mono text-xs text-charcoal/60">{attendee.checkInCode}</span>
-                          <span className="text-xs text-charcoal/70">
+                          <span className="font-mono text-sm text-charcoal/60">{attendee.checkInCode}</span>
+                          <span className="text-sm text-charcoal/70">
                             {(attendee.checkInCapacity ?? 1) > 1
                               ? `${attendee.checkInCount ?? 0}／${attendee.checkInCapacity} 人`
                               : "1 人"}
                           </span>
-                          <span className={`inline-flex items-center gap-1 text-xs font-bold ${attendance.tone}`}>
+                          <span className={`inline-flex items-center gap-1 text-sm font-bold ${attendance.tone}`}>
                             {attendance.showCheck && <Check size={12} />}
                             {attendance.label}
                           </span>
-                          <span className="truncate text-xs text-charcoal/60" title={attendee.note ?? ""}>
+                          <span className="truncate text-sm text-charcoal/60" title={attendee.note ?? ""}>
                             {attendee.note ?? <span className="text-charcoal/30">—</span>}
                           </span>
                           <div className="flex items-center gap-1">
