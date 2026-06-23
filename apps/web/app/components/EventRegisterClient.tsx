@@ -170,16 +170,6 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
               />
             </label>
 
-            {/* 手機（唯讀，從後端帶入） */}
-            <label className="block text-sm font-semibold">
-              手機號碼
-              <input
-                value={attendee?.phone ?? ""}
-                disabled
-                className="mt-2 h-11 w-full cursor-not-allowed rounded-lg border border-charcoal/10 bg-cloud px-3 text-charcoal/50"
-              />
-            </label>
-
             {/* Email */}
             {presetMap.email && (
               <label className="block text-sm font-semibold">
