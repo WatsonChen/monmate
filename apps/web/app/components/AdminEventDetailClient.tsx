@@ -43,6 +43,12 @@ function toDatetimeLocal(value: string) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
+const PRESET_KEYS = ["email", "age", "gender", "capacity"];
+
+function genderLabel(gender?: string | null) {
+  return gender === "M" ? "男" : gender === "F" ? "女" : gender === "OTHER" ? "其他" : "";
+}
+
 function getAttendanceState(attendee: AttendeeDTO) {
   const capacity = attendee.checkInCapacity ?? 1;
   const count = attendee.checkInCount ?? (attendee.checkInStatus === "CHECKED_IN" ? capacity : 0);
@@ -106,6 +112,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editAttendeeName, setEditAttendeeName] = useState("");
   const [editAttendeePhone, setEditAttendeePhone] = useState("");
   const [editAttendeeEmail, setEditAttendeeEmail] = useState("");
+  const [editAttendeeAge, setEditAttendeeAge] = useState("");
+  const [editAttendeeGender, setEditAttendeeGender] = useState("");
+  const [editAttendeeCustomFields, setEditAttendeeCustomFields] = useState<Record<string, string>>({});
   const [editAttendeeCapacity, setEditAttendeeCapacity] = useState<string>("1");
   const [editAttendeeCount, setEditAttendeeCount] = useState(0);
   const [editAttendeeNote, setEditAttendeeNote] = useState("");
@@ -113,6 +122,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [isSavingAttendee, setIsSavingAttendee] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusSort, setStatusSort] = useState<"" | "checked" | "unchecked">("");
+
+  const regFields = event?.registrationFields ?? [];
+  const showAgeCol = regFields.some((f) => f.key === "age");
+  const showGenderCol = regFields.some((f) => f.key === "gender");
+  const customCols = regFields.filter((f) => !PRESET_KEYS.includes(f.key));
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
@@ -233,6 +247,15 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setEditAttendeeName(attendee.name);
     setEditAttendeePhone(attendee.phone);
     setEditAttendeeEmail(attendee.email ?? "");
+    setEditAttendeeAge(attendee.age != null ? String(attendee.age) : "");
+    setEditAttendeeGender(attendee.gender ?? "");
+    const existingCustom = (attendee.customFields ?? {}) as Record<string, string | number | null>;
+    const initCustom: Record<string, string> = {};
+    for (const f of customCols) {
+      const v = existingCustom[f.key] ?? (f.label ? existingCustom[f.label] : undefined);
+      initCustom[f.key] = v != null ? String(v) : "";
+    }
+    setEditAttendeeCustomFields(initCustom);
     setEditAttendeeCapacity(String(attendee.checkInCapacity ?? 1));
     setEditAttendeeCount(attendee.checkInCount ?? 0);
     setEditAttendeeNote(attendee.note ?? "");
@@ -613,7 +636,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             ) : (
               <div className="overflow-x-auto">
                 <div className="min-w-[960px] overflow-hidden rounded-lg border border-charcoal/10">
-                  <div className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
+                  <div className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_64px] bg-cloud px-4 py-3 text-sm font-bold">
                     <span>姓名</span><span>電話</span><span>Email</span><span>報到碼</span><span>報名人數</span>
                     <button type="button" onClick={() => setStatusSort((s) => s === "" ? "checked" : s === "checked" ? "unchecked" : "")}
                       className={`flex items-center gap-1 transition-colors ${statusSort ? "text-orange" : "hover:text-charcoal/60"}`}>
@@ -626,7 +649,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                       const attendance = getAttendanceState(attendee);
                       return (
                         <div key={attendee.id}
-                          className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_auto] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
+                          className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_64px] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
                           <span className="font-semibold">{attendee.name}</span>
                           <span className="text-charcoal/70">{attendee.phone}</span>
                           <span className="truncate text-sm text-charcoal/60" title={attendee.email ?? ""}>
