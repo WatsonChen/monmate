@@ -74,6 +74,9 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
     result?.status === "ALREADY_CHECKED_IN" &&
     (result.attendee?.checkInCapacity ?? 1) > 1;
   const ResultIcon = result ? statusCopy[result.status].icon : null;
+  const checkInCapacity = result?.attendee?.checkInCapacity ?? 1;
+  const checkInCount = result?.attendee?.checkInCount ?? 1;
+  const canContinueCheckIn = isSuccess && checkInCount < checkInCapacity;
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 py-6">
@@ -116,22 +119,45 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
 
             <h2 className="mt-8 text-3xl font-bold">報到成功！</h2>
             {result.attendee ? (
-              <p className="mt-3 text-sm font-semibold text-charcoal/60">
-                {result.attendee.name}，歡迎入場 🎉
-              </p>
+              <>
+                <p className="mt-3 text-sm font-semibold text-charcoal/60">
+                  {result.attendee.name}，歡迎入場 🎉
+                </p>
+                <p className="mt-1 text-sm font-bold text-mint">
+                  已完成第 {checkInCount} 次報到
+                </p>
+              </>
             ) : null}
 
-            <button
-              type="button"
-              onClick={() => {
-                setResult(null);
-                setError("");
-                setPhone("");
-              }}
-              className="mt-9 flex h-14 w-full items-center justify-center rounded-lg bg-orange text-base font-bold text-white shadow-soft"
-            >
-              返回
-            </button>
+            <div className="mt-9 flex flex-col gap-3">
+              {canContinueCheckIn ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResult(null);
+                    setError("");
+                  }}
+                  className="flex h-14 w-full items-center justify-center rounded-lg bg-orange text-base font-bold text-white shadow-soft"
+                >
+                  繼續報到
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  setResult(null);
+                  setError("");
+                  setPhone("");
+                }}
+                className={
+                  canContinueCheckIn
+                    ? "flex h-14 w-full items-center justify-center rounded-lg border border-charcoal/15 bg-white text-base font-bold text-charcoal shadow-soft"
+                    : "flex h-14 w-full items-center justify-center rounded-lg bg-orange text-base font-bold text-white shadow-soft"
+                }
+              >
+                返回
+              </button>
+            </div>
           </div>
         </section>
       ) : (
