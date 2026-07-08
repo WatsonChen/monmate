@@ -127,6 +127,16 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const showAgeCol = regFields.some((f) => f.key === "age");
   const showGenderCol = regFields.some((f) => f.key === "gender");
   const customCols = regFields.filter((f) => !PRESET_KEYS.includes(f.key));
+  const attendeeTableColumns = [
+    "1.2fr", "0.9fr", "1.1fr",
+    ...(showAgeCol ? ["0.5fr"] : []),
+    ...(showGenderCol ? ["0.5fr"] : []),
+    "0.9fr", "0.65fr",
+    ...customCols.map(() => "0.9fr"),
+    "0.65fr", "1fr", "64px"
+  ];
+  const attendeeTableGridStyle = { gridTemplateColumns: attendeeTableColumns.join(" ") };
+  const attendeeTableMinWidth = 960 + (showAgeCol ? 70 : 0) + (showGenderCol ? 70 : 0) + customCols.length * 110;
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
@@ -276,6 +286,18 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     }
     setIsSavingAttendee(true);
     setEditAttendeeMsg("");
+
+    const mergedCustomFields: Record<string, string | number> = {};
+    const existingCustom = (editingAttendee.customFields ?? {}) as Record<string, string | number | null>;
+    for (const [k, v] of Object.entries(existingCustom)) {
+      if (v !== null && v !== undefined) mergedCustomFields[k] = v;
+    }
+    for (const f of customCols) {
+      const raw = editAttendeeCustomFields[f.key]?.trim();
+      if (raw) mergedCustomFields[f.key] = f.type === "number" ? Number(raw) : raw;
+      else delete mergedCustomFields[f.key];
+    }
+
     const res = await apiFetch<AttendeeDTO>(`/events/${eventId}/attendees/${editingAttendee.id}`, {
       method: "PATCH",
       token,
@@ -283,6 +305,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         name: editAttendeeName.trim(),
         phone: editAttendeePhone.trim(),
         email: editAttendeeEmail.trim() || null,
+        age: editAttendeeAge ? Number(editAttendeeAge) : null,
+        gender: editAttendeeGender || null,
+        customFields: Object.keys(mergedCustomFields).length > 0 ? mergedCustomFields : null,
         checkInCapacity: capacity,
         checkInCount: count,
         checkInStatus: count > 0 ? "CHECKED_IN" : "NOT_CHECKED_IN",
@@ -635,9 +660,13 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <div className="py-8 text-center text-sm text-charcoal/50">沒有符合的搜尋結果</div>
             ) : (
               <div className="overflow-x-auto">
-                <div className="min-w-[960px] overflow-hidden rounded-lg border border-charcoal/10">
-                  <div className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_64px] bg-cloud px-4 py-3 text-sm font-bold">
-                    <span>姓名</span><span>電話</span><span>Email</span><span>報到碼</span><span>報名人數</span>
+                <div className="overflow-hidden rounded-lg border border-charcoal/10" style={{ minWidth: attendeeTableMinWidth }}>
+                  <div className="grid bg-cloud px-4 py-3 text-sm font-bold" style={attendeeTableGridStyle}>
+                    <span>姓名</span><span>電話</span><span>Email</span>
+                    {showAgeCol && <span>年齡</span>}
+                    {showGenderCol && <span>性別</span>}
+                    <span>報到碼</span><span>報名人數</span>
+                    {customCols.map((f) => <span key={f.key} className="truncate">{f.label || f.key}</span>)}
                     <button type="button" onClick={() => setStatusSort((s) => s === "" ? "checked" : s === "checked" ? "unchecked" : "")}
                       className={`flex items-center gap-1 transition-colors ${statusSort ? "text-orange" : "hover:text-charcoal/60"}`}>
                       狀態<ArrowUpDown size={12} />
@@ -647,20 +676,39 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   {displayedAttendees.map((attendee) => (
                     (() => {
                       const attendance = getAttendanceState(attendee);
+                      const attendeeCustomFields = (attendee.customFields ?? {}) as Record<string, string | number | null>;
                       return (
                         <div key={attendee.id}
-                          className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_64px] items-center border-t border-charcoal/10 px-4 py-3 text-sm">
+                          className="grid items-center border-t border-charcoal/10 px-4 py-3 text-sm" style={attendeeTableGridStyle}>
                           <span className="font-semibold">{attendee.name}</span>
                           <span className="text-charcoal/70">{attendee.phone}</span>
                           <span className="truncate text-sm text-charcoal/60" title={attendee.email ?? ""}>
                             {attendee.email ?? <span className="text-charcoal/30">—</span>}
                           </span>
+                          {showAgeCol && (
+                            <span className="text-sm text-charcoal/70">
+                              {attendee.age ?? <span className="text-charcoal/30">—</span>}
+                            </span>
+                          )}
+                          {showGenderCol && (
+                            <span className="text-sm text-charcoal/70">
+                              {genderLabel(attendee.gender) || <span className="text-charcoal/30">—</span>}
+                            </span>
+                          )}
                           <span className="font-mono text-sm text-charcoal/60">{attendee.checkInCode}</span>
                           <span className="text-sm text-charcoal/70">
                             {(attendee.checkInCapacity ?? 1) > 1
                               ? `${attendee.checkInCount ?? 0}／${attendee.checkInCapacity} 人`
                               : "1 人"}
                           </span>
+                          {customCols.map((f) => {
+                            const v = attendeeCustomFields[f.key] ?? (f.label ? attendeeCustomFields[f.label] : undefined);
+                            return (
+                              <span key={f.key} className="truncate text-sm text-charcoal/60" title={v != null ? String(v) : ""}>
+                                {v != null && v !== "" ? String(v) : <span className="text-charcoal/30">—</span>}
+                              </span>
+                            );
+                          })}
                           <span className={`inline-flex items-center gap-1 text-sm font-bold ${attendance.tone}`}>
                             {attendance.showCheck && <Check size={12} />}
                             {attendance.label}
@@ -728,6 +776,51 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   placeholder="example@email.com"
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
               </label>
+              {showAgeCol && (
+                <label className="text-sm font-semibold">
+                  年齡
+                  <input type="number" min={1} max={120} value={editAttendeeAge}
+                    onChange={(e) => setEditAttendeeAge(e.target.value)}
+                    className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                </label>
+              )}
+              {showGenderCol && (
+                <label className="text-sm font-semibold">
+                  性別
+                  <select value={editAttendeeGender} onChange={(e) => setEditAttendeeGender(e.target.value)}
+                    className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint">
+                    <option value="">未填寫</option>
+                    <option value="M">男</option>
+                    <option value="F">女</option>
+                    <option value="OTHER">其他</option>
+                  </select>
+                </label>
+              )}
+              {customCols.map((f) => {
+                const label = f.label || f.key;
+                const val = editAttendeeCustomFields[f.key] ?? "";
+                const setVal = (v: string) => setEditAttendeeCustomFields((prev) => ({ ...prev, [f.key]: v }));
+                if (f.type === "select" && f.options && f.options.length > 0) {
+                  return (
+                    <label key={f.key} className="text-sm font-semibold">
+                      {label}
+                      <select value={val} onChange={(e) => setVal(e.target.value)}
+                        className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint">
+                        <option value="">未填寫</option>
+                        {f.options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    </label>
+                  );
+                }
+                return (
+                  <label key={f.key} className="text-sm font-semibold">
+                    {label}
+                    <input type={f.type === "number" ? "number" : "text"} value={val}
+                      onChange={(e) => setVal(e.target.value)}
+                      className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
+                  </label>
+                );
+              })}
               <label className="text-sm font-semibold">
                 報名人數
                 <input type="number" min={1} max={999} value={editAttendeeCapacity}

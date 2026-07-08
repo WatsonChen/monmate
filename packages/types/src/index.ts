@@ -76,6 +76,8 @@ export type AttendeeDTO = {
   name: string;
   phone: string;
   email?: string | null;
+  age?: number | null;
+  gender?: "M" | "F" | "OTHER" | null;
   checkInCode: string;
   qrToken: string;
   checkInStatus: CheckInStatus;
