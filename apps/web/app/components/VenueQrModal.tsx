@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QrCode, X, Download } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { LogoSpinner } from "./LogoSpinner";
@@ -16,10 +16,101 @@ type Props = {
   token: string;
 };
 
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function buildBrandedQrCanvas(qrImageUrl: string, eventName: string): Promise<HTMLCanvasElement> {
+  const [qrImg, markImg] = await Promise.all([loadImage(qrImageUrl), loadImage("/brand/logo-mark.png")]);
+
+  const width = 480;
+  const padding = 40;
+  const qrSize = width - padding * 2;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported");
+
+  ctx.font = "700 22px system-ui, sans-serif";
+  const eventNameLines = wrapText(ctx, eventName, width - padding * 2);
+  const eventNameLineHeight = 30;
+
+  const headerHeight = padding + eventNameLines.length * eventNameLineHeight + 16;
+  const footerHeight = 60;
+  const height = headerHeight + qrSize + footerHeight;
+  canvas.height = height;
+
+  ctx.fillStyle = "#FBFAF7";
+  ctx.fillRect(0, 0, width, height);
+
+  let y = padding;
+  ctx.fillStyle = "#1A2421";
+  ctx.font = "700 22px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  for (const line of eventNameLines) {
+    y += eventNameLineHeight;
+    ctx.fillText(line, width / 2, y - eventNameLineHeight / 2 + 8);
+  }
+  y = headerHeight;
+
+  ctx.drawImage(qrImg, padding, y, qrSize, qrSize);
+
+  // Center mark sized to stay within the QR's ecc=H error-correction budget (~30%).
+  const markBadge = qrSize * 0.2;
+  const markPadding = markBadge * 0.15;
+  const badgeX = padding + (qrSize - markBadge) / 2;
+  const badgeY = y + (qrSize - markBadge) / 2;
+  const badgeRadius = 10;
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.beginPath();
+  ctx.roundRect(badgeX, badgeY, markBadge, markBadge, badgeRadius);
+  ctx.fill();
+  ctx.drawImage(
+    markImg,
+    badgeX + markPadding,
+    badgeY + markPadding,
+    markBadge - markPadding * 2,
+    markBadge - markPadding * 2,
+  );
+
+  y += qrSize + 32;
+
+  ctx.fillStyle = "#1A242199";
+  ctx.font = "400 13px system-ui, sans-serif";
+  ctx.fillText("將此 QR Code 列印後張貼於活動現場，掃描即可自助報到", width / 2, y);
+
+  return canvas;
+}
+
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const lines: string[] = [];
+  let current = "";
+  for (const char of text) {
+    const next = current + char;
+    if (ctx.measureText(next).width > maxWidth && current) {
+      lines.push(current);
+      current = char;
+    } else {
+      current = next;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.slice(0, 3);
+}
+
 export function VenueQrButton({ eventId, eventName, token }: Props) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<VenueQrData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   async function openModal() {
     setOpen(true);
@@ -34,8 +125,19 @@ export function VenueQrButton({ eventId, eventName, token }: Props) {
   }
 
   const qrImageUrl = data
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.venueUrl)}`
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(data.venueUrl)}`
     : null;
+
+  useEffect(() => {
+    if (!qrImageUrl) return;
+    let cancelled = false;
+    void buildBrandedQrCanvas(qrImageUrl, eventName).then((canvas) => {
+      if (!cancelled) setDownloadUrl(canvas.toDataURL("image/png"));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [qrImageUrl, eventName]);
 
   return (
     <>
@@ -63,18 +165,16 @@ export function VenueQrButton({ eventId, eventName, token }: Props) {
                 <X size={20} />
               </button>
             </div>
-            <p className="mt-1 text-sm text-charcoal/60">{eventName}</p>
 
             <div className="mt-5 flex flex-col items-center">
-              {loading && <div className="flex justify-center py-10"><LogoSpinner size={72} /></div>}
-              {qrImageUrl && (
+              {(loading || (qrImageUrl && !downloadUrl)) && (
+                <div className="flex justify-center py-10"><LogoSpinner size={72} /></div>
+              )}
+              {qrImageUrl && downloadUrl && (
                 <>
-                  <img src={qrImageUrl} alt="Venue QR Code" className="h-56 w-56 rounded-lg border border-charcoal/10" />
-                  <p className="mt-3 text-center text-xs text-charcoal/50">
-                    將此 QR Code 列印後張貼於活動現場，受邀者掃描後即可自助報到
-                  </p>
+                  <img src={downloadUrl} alt="Venue QR Code" className="w-full max-w-[280px] rounded-lg border border-charcoal/10" />
                   <a
-                    href={qrImageUrl}
+                    href={downloadUrl}
                     download={`venue-qr-${eventId}.png`}
                     target="_blank"
                     rel="noreferrer"
