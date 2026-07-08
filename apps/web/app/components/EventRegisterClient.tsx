@@ -8,7 +8,7 @@ import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
 import { DotsLoading } from "./DotsLoading";
 
-const PRESET_KEYS = ["email", "age", "gender"] as const;
+const PRESET_KEYS = ["email", "age", "gender", "capacity"] as const;
 
 type Props = {
   event: {
@@ -43,6 +43,7 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
   const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
+  const [capacity, setCapacity] = useState("1");
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -59,6 +60,8 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
     if (presetMap.email?.required && !email.trim()) { setError("請填寫電子郵件"); return; }
     if (presetMap.age?.required && !age) { setError("請填寫年齡"); return; }
     if (presetMap.gender?.required && !gender) { setError("請選擇性別"); return; }
+    if (presetMap.capacity?.required && !capacity) { setError("請填寫報名人數"); return; }
+    if (presetMap.capacity && capacity && Number(capacity) < 1) { setError("報名人數至少為 1 人"); return; }
     for (const f of customFields) {
       if (f.required && !customValues[f.key]?.trim()) {
         setError(`請填寫「${f.label ?? f.key}」`);
@@ -86,6 +89,7 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
             email: email.trim() || undefined,
             age: age ? Number(age) : undefined,
             gender: gender || undefined,
+            capacity: presetMap.capacity && capacity ? Number(capacity) : undefined,
             customFields: Object.keys(customPayload).length > 0 ? customPayload : undefined
           })
         }
@@ -222,6 +226,22 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* 報名人數 */}
+            {presetMap.capacity && (
+              <label className="block text-sm font-semibold">
+                報名人數 {presetMap.capacity.required && <span className="text-orange">*</span>}
+                <input
+                  type="number"
+                  min={1}
+                  max={999}
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
+                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
+                  placeholder="請輸入報名人數"
+                />
+              </label>
             )}
 
             {/* 自訂欄位 */}

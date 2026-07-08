@@ -11,7 +11,8 @@ type Props = {
 const PRESET_FIELDS: { key: string; label: string }[] = [
   { key: "email", label: "電子郵件" },
   { key: "age", label: "年齡" },
-  { key: "gender", label: "性別" }
+  { key: "gender", label: "性別" },
+  { key: "capacity", label: "報名人數" }
 ];
 
 function isPreset(key: string) {

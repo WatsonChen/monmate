@@ -248,7 +248,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       return;
     }
     if (count > capacity) {
-      setEditAttendeeMsg("實際報到人數不能超過預期人數");
+      setEditAttendeeMsg("實際報到人數不能超過報名人數");
       return;
     }
     setIsSavingAttendee(true);
@@ -614,7 +614,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <div className="overflow-x-auto">
                 <div className="min-w-[960px] overflow-hidden rounded-lg border border-charcoal/10">
                   <div className="grid grid-cols-[1.2fr_0.9fr_1.1fr_0.9fr_0.65fr_0.65fr_1fr_auto] bg-cloud px-4 py-3 text-sm font-bold">
-                    <span>姓名</span><span>電話</span><span>Email</span><span>報到碼</span><span>預期人數</span>
+                    <span>姓名</span><span>電話</span><span>Email</span><span>報到碼</span><span>報名人數</span>
                     <button type="button" onClick={() => setStatusSort((s) => s === "" ? "checked" : s === "checked" ? "unchecked" : "")}
                       className={`flex items-center gap-1 transition-colors ${statusSort ? "text-orange" : "hover:text-charcoal/60"}`}>
                       狀態<ArrowUpDown size={12} />
@@ -706,7 +706,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
               </label>
               <label className="text-sm font-semibold">
-                預期人數
+                報名人數
                 <input type="number" min={1} max={999} value={editAttendeeCapacity}
                   onChange={(e) => setEditAttendeeCapacity(e.target.value)}
                   onBlur={(e) => {
