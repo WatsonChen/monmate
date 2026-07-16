@@ -42,7 +42,8 @@ const statusColor: Record<string, string> = {
 const reasonLabel: Record<CreditTransactionReason, string> = {
   PAYMENT_TOPUP: "購買加值",
   ATTENDEE_CREATE: "新增報名者",
-  ATTENDEE_IMPORT: "匯入報名者"
+  ATTENDEE_IMPORT: "匯入報名者",
+  MANUAL_ADJUSTMENT: "人工調整"
 };
 
 export function AdminBillingClient() {
@@ -289,7 +290,10 @@ export function AdminBillingClient() {
                   key={t.id}
                   className="grid grid-cols-[1fr_1fr_1fr_1fr] items-center border-t border-charcoal/10 px-4 py-3 text-sm"
                 >
-                  <span className="font-semibold">{reasonLabel[t.reason] ?? t.reason}</span>
+                  <span className="font-semibold">
+                    {reasonLabel[t.reason] ?? t.reason}
+                    {t.note && <span className="block text-xs font-normal text-charcoal/50">{t.note}</span>}
+                  </span>
                   <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-500"}`}>
                     {t.amount > 0 ? `+${t.amount}` : t.amount}
                   </span>

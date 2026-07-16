@@ -25,7 +25,7 @@ export type PaymentStatus =
   | "FAILED"
   | "REFUNDED";
 export type PaymentProduct = "EVENT_CREDIT";
-export type CreditTransactionReason = "PAYMENT_TOPUP" | "ATTENDEE_CREATE" | "ATTENDEE_IMPORT";
+export type CreditTransactionReason = "PAYMENT_TOPUP" | "ATTENDEE_CREATE" | "ATTENDEE_IMPORT" | "MANUAL_ADJUSTMENT";
 
 export type UserDTO = {
   id: string;
@@ -132,6 +132,7 @@ export type CreditTransactionDTO = {
   eventId?: string | null;
   attendeeId?: string | null;
   paymentId?: string | null;
+  note?: string | null;
   createdAt: string;
 };
 
