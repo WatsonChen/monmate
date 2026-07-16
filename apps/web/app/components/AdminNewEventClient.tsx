@@ -1,7 +1,7 @@
 "use client";
 
 import type { BillingStatusDTO, EventDTO, RegistrationField } from "@monmate/types";
-import { CalendarPlus, CreditCard, Info } from "lucide-react";
+import { CalendarPlus, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
@@ -35,7 +35,6 @@ export function AdminNewEventClient() {
   const [isCustom, setIsCustom] = useState(false);
   const [message, setMessage] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [showCreditModal, setShowCreditModal] = useState(false);
 
   const attendeeLimit = isCustom
     ? (parseInt(customLimit, 10) || 0)
@@ -53,11 +52,6 @@ export function AdminNewEventClient() {
   async function createEvent() {
     if (!name.trim()) { setMessage("請輸入活動名稱"); return; }
     if (attendeeLimit <= 0) { setMessage("請設定有效的人數上限"); return; }
-
-    if (attendeeLimit > credits) {
-      setShowCreditModal(true);
-      return;
-    }
 
     setIsCreating(true);
     setMessage("");
@@ -84,7 +78,6 @@ export function AdminNewEventClient() {
       return;
     }
     const ev = response.data;
-    setCredits((prev) => prev - attendeeLimit);
     router.push(`/admin/events/${ev.id}?created=1`);
   }
 
@@ -108,38 +101,6 @@ export function AdminNewEventClient() {
         }`}>
           {message}
         </section>
-      )}
-
-      {/* Credits 不足 modal */}
-      {showCreditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange/15 text-orange">
-              <CreditCard size={22} />
-            </div>
-            <h3 className="mt-4 text-lg font-bold">人次額度不足</h3>
-            <p className="mt-2 text-sm text-charcoal/70">
-              設定 <strong>{attendeeLimit}</strong> 人次，但目前只有 <strong>{credits}</strong> 個可用額度。
-              需要前往儲值頁面購買更多人次。
-            </p>
-            <div className="mt-5 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowCreditModal(false)}
-                className="flex-1 rounded-lg border border-charcoal/15 py-2.5 text-sm font-semibold hover:bg-paper"
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/admin/billing")}
-                className="flex-1 rounded-lg bg-orange py-2.5 text-sm font-bold text-white"
-              >
-                前往儲值
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       <div className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
@@ -210,7 +171,7 @@ export function AdminNewEventClient() {
         <div className="mt-5">
           <p className="mb-2 text-sm font-semibold">
             人數上限
-            <span className="ml-2 text-xs font-normal text-charcoal/55">（建立活動時從額度扣除）</span>
+            <span className="ml-2 text-xs font-normal text-charcoal/55">（僅作為報名容量上限，實際扣點依新增/匯入的報名人數計算）</span>
           </p>
           <div className="flex flex-wrap gap-2">
             {CREDIT_PRESETS.map((preset) => (
@@ -248,14 +209,6 @@ export function AdminNewEventClient() {
               min={1}
               className="mt-2 h-11 w-48 rounded-lg border border-charcoal/15 bg-paper px-3 text-sm outline-none focus:border-mint"
             />
-          )}
-          {credits > 0 && attendeeLimit > 0 && (
-            <p className={`mt-2 text-xs font-semibold ${attendeeLimit > credits ? "text-red-500" : "text-charcoal/55"}`}>
-              {attendeeLimit > credits
-                ? `⚠ 額度不足（需要 ${attendeeLimit}，剩餘 ${credits}）`
-                : `扣除後剩餘 ${credits - attendeeLimit} 人次`
-              }
-            </p>
           )}
         </div>
 

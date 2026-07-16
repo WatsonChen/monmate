@@ -3,9 +3,10 @@
 import type {
   BillingStatusDTO,
   CheckoutSessionDTO,
+  CreditTransactionReason,
   PricingTierDTO
 } from "@monmate/types";
-import { CreditCard, RefreshCcw, Receipt } from "lucide-react";
+import { CreditCard, RefreshCcw, Receipt, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { DotsLoading } from "./DotsLoading";
@@ -36,6 +37,12 @@ const statusColor: Record<string, string> = {
   EXPIRED: "text-charcoal/40",
   CANCELED: "text-charcoal/40",
   REFUNDED: "text-blue-500"
+};
+
+const reasonLabel: Record<CreditTransactionReason, string> = {
+  PAYMENT_TOPUP: "購買加值",
+  ATTENDEE_CREATE: "新增報名者",
+  ATTENDEE_IMPORT: "匯入報名者"
 };
 
 export function AdminBillingClient() {
@@ -141,7 +148,7 @@ export function AdminBillingClient() {
             <span className="mb-1 text-lg font-semibold text-charcoal/60">人次</span>
           </div>
           <p className="mt-2 text-xs text-charcoal/50">
-            創建活動時依設定的人數上限扣除，活動建立後不退回
+            新增或匯入報名者時依實際人數扣除，活動的人數上限僅作為容量設定
           </p>
         </section>
 
@@ -255,6 +262,39 @@ export function AdminBillingClient() {
                     {statusLabel[p.status] ?? p.status}
                   </span>
                   <span className="text-charcoal/60">{p.paidAt ? formatDate(p.paidAt) : formatDate(p.createdAt)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 額度異動明細 */}
+      {billing && billing.recentTransactions.length > 0 && (
+        <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
+          <div className="flex items-center gap-2">
+            <History size={18} />
+            <h2 className="text-lg font-bold">額度異動明細</h2>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <div className="min-w-[560px] overflow-hidden rounded-lg border border-charcoal/10">
+              <div className="grid grid-cols-[1fr_1fr_1fr_1fr] bg-cloud px-4 py-3 text-sm font-bold">
+                <span>項目</span>
+                <span>異動</span>
+                <span>異動後餘額</span>
+                <span>日期</span>
+              </div>
+              {billing.recentTransactions.map((t) => (
+                <div
+                  key={t.id}
+                  className="grid grid-cols-[1fr_1fr_1fr_1fr] items-center border-t border-charcoal/10 px-4 py-3 text-sm"
+                >
+                  <span className="font-semibold">{reasonLabel[t.reason] ?? t.reason}</span>
+                  <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-500"}`}>
+                    {t.amount > 0 ? `+${t.amount}` : t.amount}
+                  </span>
+                  <span>{t.balanceAfter}</span>
+                  <span className="text-charcoal/60">{formatDate(t.createdAt)}</span>
                 </div>
               ))}
             </div>
