@@ -6,12 +6,14 @@ import Link from "next/link";
 import { CalendarPlus, ClipboardCheck, CreditCard, QrCode } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { LogoSpinner } from "./LogoSpinner";
 
 export function AdminHomeClient() {
   const [token, setToken] = useState("");
   const [events, setEvents] = useState<EventDTO[]>([]);
   const [billing, setBilling] = useState<BillingStatusDTO | null>(null);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setToken(window.localStorage.getItem("monmate.token") ?? "");
@@ -19,29 +21,37 @@ export function AdminHomeClient() {
 
   useEffect(() => {
     if (!token) {
+      setIsLoading(false);
       return;
     }
 
     async function load() {
-      const [eventsResponse, billingResponse] = await Promise.all([
-        apiFetch<EventDTO[]>("/events", { token }),
-        apiFetch<BillingStatusDTO>("/billing/status", { token })
-      ]);
+      setIsLoading(true);
+      try {
+        const [eventsResponse, billingResponse] = await Promise.all([
+          apiFetch<EventDTO[]>("/events", { token }),
+          apiFetch<BillingStatusDTO>("/billing/status", { token })
+        ]);
 
-      if (eventsResponse.success && eventsResponse.data) {
-        setEvents(eventsResponse.data);
-      }
+        if (eventsResponse.success && eventsResponse.data) {
+          setEvents(eventsResponse.data);
+        }
 
-      if (billingResponse.success && billingResponse.data) {
-        setBilling(billingResponse.data);
-      }
+        if (billingResponse.success && billingResponse.data) {
+          setBilling(billingResponse.data);
+        }
 
-      if (!eventsResponse.success || !billingResponse.success) {
-        setMessage(
-          eventsResponse.error?.message ??
-            billingResponse.error?.message ??
-            "讀取後台資料失敗"
-        );
+        if (!eventsResponse.success || !billingResponse.success) {
+          setMessage(
+            eventsResponse.error?.message ??
+              billingResponse.error?.message ??
+              "讀取後台資料失敗"
+          );
+        }
+      } catch {
+        setMessage("無法連線到伺服器，請稍後再試");
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -101,67 +111,75 @@ export function AdminHomeClient() {
         </section>
       ) : null}
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-4">
-        {[
-          ["活動數", String(events.length), ClipboardCheck],
-          ["總報名", String(totals.attendees), QrCode],
-          ["報到紀錄", String(totals.checkIns), ClipboardCheck],
-          ["可建立場次", String(billing?.attendeeCredits ?? 0), CreditCard]
-        ].map(([label, value, Icon]) => (
-          <div key={label as string} className="rounded-lg border border-charcoal/10 bg-white p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-charcoal/60">{label as string}</p>
-              <Icon className="text-orange" size={18} />
-            </div>
-            <p className="mt-2 text-3xl font-bold">{value as string}</p>
-          </div>
-        ))}
-      </div>
-
-      <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
-        <div className="grid gap-6 lg:grid-cols-[1fr_220px] lg:items-center">
-          <div>
-            <h2 className="text-xl font-bold">
-              {events[0] ? "最近活動" : "尚未建立活動"}
-            </h2>
-            {events[0] ? (
-              <div className="mt-4 rounded-lg border border-charcoal/10 bg-paper p-4">
-                <p className="text-lg font-bold">{events[0].name}</p>
-                <p className="mt-1 text-sm font-semibold text-charcoal/60">
-                  {events[0].slug} · 報名 {events[0].attendeeCount ?? 0}
-                </p>
-              </div>
-            ) : (
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-charcoal/65">
-                建立活動後即可匯入名單、產生報到序號與 QR Token，並在這裡查看報到狀態。
-              </p>
-            )}
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link
-                href="/admin/events/new"
-                className="flex h-11 items-center gap-2 rounded-lg bg-mint px-4 text-sm font-bold"
-              >
-                <CalendarPlus size={18} />
-                建立活動
-              </Link>
-              <Link
-                href="/admin/events"
-                className="flex h-11 items-center gap-2 rounded-lg border border-charcoal/15 px-4 text-sm font-bold"
-              >
-                <ClipboardCheck size={18} />
-                查看活動
-              </Link>
-            </div>
-          </div>
-          <Image
-            src="/brand/mascot.png"
-            alt="MonMate mascot"
-            width={320}
-            height={320}
-            className="mx-auto aspect-square w-44 object-contain"
-          />
+      {token && isLoading ? (
+        <div className="mt-5 flex justify-center rounded-lg border border-charcoal/10 bg-white py-16">
+          <LogoSpinner size={80} />
         </div>
-      </section>
+      ) : (
+        <>
+          <div className="mt-5 grid gap-3 sm:grid-cols-4">
+            {[
+              ["活動數", String(events.length), ClipboardCheck],
+              ["總報名", String(totals.attendees), QrCode],
+              ["報到紀錄", String(totals.checkIns), ClipboardCheck],
+              ["可建立場次", String(billing?.attendeeCredits ?? 0), CreditCard]
+            ].map(([label, value, Icon]) => (
+              <div key={label as string} className="rounded-lg border border-charcoal/10 bg-white p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-charcoal/60">{label as string}</p>
+                  <Icon className="text-orange" size={18} />
+                </div>
+                <p className="mt-2 text-3xl font-bold">{value as string}</p>
+              </div>
+            ))}
+          </div>
+
+          <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
+            <div className="grid gap-6 lg:grid-cols-[1fr_220px] lg:items-center">
+              <div>
+                <h2 className="text-xl font-bold">
+                  {events[0] ? "最近活動" : "尚未建立活動"}
+                </h2>
+                {events[0] ? (
+                  <div className="mt-4 rounded-lg border border-charcoal/10 bg-paper p-4">
+                    <p className="text-lg font-bold">{events[0].name}</p>
+                    <p className="mt-1 text-sm font-semibold text-charcoal/60">
+                      {events[0].slug} · 報名 {events[0].attendeeCount ?? 0}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-charcoal/65">
+                    建立活動後即可匯入名單、產生報到序號與 QR Token，並在這裡查看報到狀態。
+                  </p>
+                )}
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link
+                    href="/admin/events/new"
+                    className="flex h-11 items-center gap-2 rounded-lg bg-mint px-4 text-sm font-bold"
+                  >
+                    <CalendarPlus size={18} />
+                    建立活動
+                  </Link>
+                  <Link
+                    href="/admin/events"
+                    className="flex h-11 items-center gap-2 rounded-lg border border-charcoal/15 px-4 text-sm font-bold"
+                  >
+                    <ClipboardCheck size={18} />
+                    查看活動
+                  </Link>
+                </div>
+              </div>
+              <Image
+                src="/brand/mascot.png"
+                alt="MonMate mascot"
+                width={320}
+                height={320}
+                className="mx-auto aspect-square w-44 object-contain"
+              />
+            </div>
+          </section>
+        </>
+      )}
     </>
   );
 }
