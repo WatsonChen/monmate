@@ -37,6 +37,12 @@ const statusCopy = {
     title: "QR Code / 序號無效",
     tone: "bg-red-50 border-red-200 text-red-900",
     icon: XCircle
+  },
+  // 工作人員現場報到不受開放時間限制，此狀態實際上不會出現，僅為型別完整性保留
+  NOT_STARTED: {
+    title: "活動尚未開放報到",
+    tone: "bg-orange/10 border-orange/30 text-charcoal",
+    icon: XCircle
   }
 } as const;
 

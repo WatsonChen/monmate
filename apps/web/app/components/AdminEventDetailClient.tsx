@@ -82,6 +82,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editContent, setEditContent] = useState("");
   const [editRegistrationRequired, setEditRegistrationRequired] = useState(false);
   const [editOpenRegistration, setEditOpenRegistration] = useState(false);
+  const [editSelfCheckInBufferMinutes, setEditSelfCheckInBufferMinutes] = useState("");
   const [editRegFields, setEditRegFields] = useState<RegistrationField[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -163,6 +164,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       setEditContent(ev.content ?? "");
       setEditRegistrationRequired(ev.registrationRequired ?? false);
       setEditOpenRegistration(ev.openRegistration ?? false);
+      setEditSelfCheckInBufferMinutes(
+        ev.selfCheckInBufferMinutes === null || ev.selfCheckInBufferMinutes === undefined
+          ? ""
+          : String(ev.selfCheckInBufferMinutes)
+      );
       setEditRegFields((ev.registrationFields as RegistrationField[]) ?? []);
       if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
       if (staffRes.success && staffRes.data) setStaffList(staffRes.data);
@@ -193,6 +199,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         content: editContent || null,
         registrationRequired: editRegistrationRequired,
         openRegistration: editOpenRegistration,
+        selfCheckInBufferMinutes: editSelfCheckInBufferMinutes.trim() === "" ? null : parseInt(editSelfCheckInBufferMinutes, 10),
         registrationFields: editRegistrationRequired ? editRegFields : []
       })
     });
@@ -478,6 +485,16 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <span className="text-charcoal/50">公開報名</span>
                   <p className={`font-semibold ${event.openRegistration ? "text-green-600" : "text-charcoal/40"}`}>
                     {event.openRegistration ? "開放中" : "未開放"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-charcoal/50">自助報到開放時間</span>
+                  <p className="font-semibold">
+                    {event.selfCheckInBufferMinutes == null
+                      ? "不限制"
+                      : event.selfCheckInBufferMinutes === 0
+                      ? "活動開始才能報到"
+                      : `開始前 ${event.selfCheckInBufferMinutes} 分鐘`}
                   </p>
                 </div>
                 {event.description && (
@@ -940,6 +957,30 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <p className="mt-0.5 text-xs text-charcoal/55">開啟後，收到連結的人可直接在活動頁面報名</p>
                 </div>
               </label>
+              <div className="mt-4">
+                <label className="text-sm font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    自助報到開放時間
+                    <div className="group relative inline-flex">
+                      <Info size={13} className="text-charcoal/40 cursor-help" />
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-72 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                        <p className="text-white/80">留空：不限制，來賓隨時可自助報到（預設）</p>
+                        <p className="mt-1 text-white/80">設定 0：活動開始時間到才能報到</p>
+                        <p className="mt-1 text-white/80">設定 30：開始前 30 分鐘開放報到</p>
+                      </div>
+                    </div>
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editSelfCheckInBufferMinutes}
+                    onChange={(e) => setEditSelfCheckInBufferMinutes(e.target.value)}
+                    placeholder="留空 = 不限制；0 = 開始才能報到"
+                    className="mt-2 h-11 w-full max-w-xs rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
+                  />
+                </label>
+                <p className="mt-1 text-xs text-charcoal/55">僅影響來賓自助報到，工作人員現場報到不受限制</p>
+              </div>
             </div>
             <div className="mt-5 flex gap-3">
               <button type="button" onClick={() => setShowEditModal(false)}

@@ -16,7 +16,8 @@ export type CheckInLogStatus =
   | "SUCCESS"
   | "ALREADY_CHECKED_IN"
   | "NOT_FOUND"
-  | "INVALID";
+  | "INVALID"
+  | "NOT_STARTED";
 export type PaymentStatus =
   | "PENDING"
   | "PAID"
@@ -64,6 +65,7 @@ export type EventDTO = {
   attendeeLimit?: number | null;
   registrationRequired?: boolean;
   openRegistration?: boolean;
+  selfCheckInBufferMinutes?: number | null;
   registrationFields?: RegistrationField[];
   attendeeCount?: number;
   checkInLogCount?: number;
@@ -105,6 +107,7 @@ export type CheckInResultDTO = {
     phoneLastThree: string;
   };
   checkedInAt?: string;
+  checkInOpensAt?: string;
 };
 
 export type PaymentDTO = {

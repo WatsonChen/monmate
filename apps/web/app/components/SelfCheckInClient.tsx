@@ -1,7 +1,7 @@
 "use client";
 
 import { type CSSProperties, useState } from "react";
-import { Check, Phone, RotateCcw, Search, XCircle } from "lucide-react";
+import { Check, Clock, Phone, RotateCcw, Search, XCircle } from "lucide-react";
 import type { CheckInResultDTO } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
@@ -27,8 +27,19 @@ const statusCopy = {
     title: "號碼無效",
     tone: "bg-red-50 border-red-200 text-red-900",
     icon: XCircle
+  },
+  NOT_STARTED: {
+    title: "活動尚未開放報到",
+    tone: "bg-orange/10 border-orange/30 text-charcoal",
+    icon: Clock
   }
 } as const;
+
+function formatTime(value: string) {
+  return new Date(value).toLocaleString("zh-TW", {
+    month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+  });
+}
 
 type Props = {
   eventId: string;
@@ -223,6 +234,11 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
                   </p>
                   {result.attendee ? (
                     <p className="text-sm text-charcoal/70">{result.attendee.name}</p>
+                  ) : null}
+                  {result.status === "NOT_STARTED" && result.checkInOpensAt ? (
+                    <p className="text-sm text-charcoal/70">
+                      報到將於 {formatTime(result.checkInOpensAt)} 開放，請屆時再試
+                    </p>
                   ) : null}
                 </div>
               </div>

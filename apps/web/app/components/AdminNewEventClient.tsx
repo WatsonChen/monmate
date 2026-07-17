@@ -29,6 +29,7 @@ export function AdminNewEventClient() {
   const [content, setContent] = useState("");
   const [registrationRequired, setRegistrationRequired] = useState(false);
   const [openRegistration, setOpenRegistration] = useState(false);
+  const [selfCheckInBufferMinutes, setSelfCheckInBufferMinutes] = useState("");
   const [regFields, setRegFields] = useState<RegistrationField[]>([]);
   const [selectedLimit, setSelectedLimit] = useState<number>(50);
   const [customLimit, setCustomLimit] = useState("");
@@ -69,6 +70,7 @@ export function AdminNewEventClient() {
         attendeeLimit,
         registrationRequired,
         openRegistration,
+        selfCheckInBufferMinutes: selfCheckInBufferMinutes.trim() === "" ? undefined : parseInt(selfCheckInBufferMinutes, 10),
         registrationFields: registrationRequired ? regFields : []
       })
     });
@@ -259,6 +261,38 @@ export function AdminNewEventClient() {
               <p className="mt-0.5 text-xs text-charcoal/55">開啟後，收到連結的人可直接在活動頁面報名</p>
             </div>
           </label>
+        </div>
+
+        {/* 自助報到開放時間 */}
+        <div className="mt-4">
+          <label className="text-sm font-semibold">
+            <span className="flex items-center gap-1.5">
+              自助報到開放時間
+              <div className="group relative inline-flex">
+                <Info size={13} className="text-charcoal/40 cursor-help" />
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-72 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                  <p className="text-white/80">
+                    留空：不限制，來賓隨時可自助報到（預設）
+                  </p>
+                  <p className="mt-1 text-white/80">
+                    設定 0：活動開始時間到才能報到
+                  </p>
+                  <p className="mt-1 text-white/80">
+                    設定 30：開始前 30 分鐘開放報到
+                  </p>
+                </div>
+              </div>
+            </span>
+            <input
+              type="number"
+              min={0}
+              value={selfCheckInBufferMinutes}
+              onChange={(e) => setSelfCheckInBufferMinutes(e.target.value)}
+              placeholder="留空 = 不限制；0 = 開始才能報到"
+              className="mt-2 h-11 w-full max-w-xs rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint sm:w-48"
+            />
+          </label>
+          <p className="mt-1 text-xs text-charcoal/55">僅影響來賓自助報到，工作人員現場報到不受限制</p>
         </div>
 
         <button
