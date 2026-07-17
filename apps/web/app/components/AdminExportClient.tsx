@@ -4,6 +4,7 @@ import type { EventDTO } from "@monmate/types";
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch, getApiBaseUrl } from "../lib/api";
+import { LogoSpinner } from "./LogoSpinner";
 
 export function AdminExportClient() {
   const [token, setToken] = useState("");
@@ -11,6 +12,7 @@ export function AdminExportClient() {
   const [eventId, setEventId] = useState("");
   const [message, setMessage] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setToken(window.localStorage.getItem("monmate.token") ?? "");
@@ -18,19 +20,27 @@ export function AdminExportClient() {
 
   useEffect(() => {
     if (!token) {
+      setIsLoading(false);
       return;
     }
 
     async function loadEvents() {
-      const response = await apiFetch<EventDTO[]>("/events", { token });
+      setIsLoading(true);
+      try {
+        const response = await apiFetch<EventDTO[]>("/events", { token });
 
-      if (!response.success || !response.data) {
-        setMessage(response.error?.message ?? "讀取活動失敗");
-        return;
+        if (!response.success || !response.data) {
+          setMessage(response.error?.message ?? "讀取活動失敗");
+          return;
+        }
+
+        setEvents(response.data);
+        setEventId(response.data[0]?.id ?? "");
+      } catch {
+        setMessage("無法連線到伺服器，請稍後再試");
+      } finally {
+        setIsLoading(false);
       }
-
-      setEvents(response.data);
-      setEventId(response.data[0]?.id ?? "");
     }
 
     void loadEvents();
@@ -93,6 +103,11 @@ export function AdminExportClient() {
           </div>
         </div>
 
+        {token && isLoading ? (
+          <div className="mt-5 flex justify-center py-6">
+            <LogoSpinner size={56} />
+          </div>
+        ) : (
         <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end">
           <label className="min-w-0 flex-1 text-sm font-semibold">
             活動
@@ -118,6 +133,7 @@ export function AdminExportClient() {
             {isExporting ? "匯出中..." : "匯出報表"}
           </button>
         </div>
+        )}
       </section>
     </>
   );

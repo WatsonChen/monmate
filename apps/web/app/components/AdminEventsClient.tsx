@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { LogoSpinner } from "./LogoSpinner";
 import { VenueQrButton } from "./VenueQrModal";
 
 function formatDate(value: string) {
@@ -26,6 +27,7 @@ export function AdminEventsClient() {
   const [search, setSearch] = useState("");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setToken(window.localStorage.getItem("monmate.token") ?? "");
@@ -33,19 +35,27 @@ export function AdminEventsClient() {
 
   useEffect(() => {
     if (!token) {
+      setIsLoading(false);
       return;
     }
 
     async function loadEvents() {
-      const response = await apiFetch<EventDTO[]>("/events", { token });
+      setIsLoading(true);
+      try {
+        const response = await apiFetch<EventDTO[]>("/events", { token });
 
-      if (!response.success || !response.data) {
-        setMessage(response.error?.message ?? "讀取活動失敗");
-        return;
+        if (!response.success || !response.data) {
+          setMessage(response.error?.message ?? "讀取活動失敗");
+          return;
+        }
+
+        setEvents(response.data);
+        setSelectedEventId((prev) => prev ?? response.data![0]?.id ?? null);
+      } catch {
+        setMessage("無法連線到伺服器，請稍後再試");
+      } finally {
+        setIsLoading(false);
       }
-
-      setEvents(response.data);
-      setSelectedEventId((prev) => prev ?? response.data![0]?.id ?? null);
     }
 
     void loadEvents();
@@ -138,7 +148,11 @@ export function AdminEventsClient() {
               <span>報到紀錄</span>
               <span>狀態</span>
             </div>
-            {filteredEvents.length > 0 ? (
+            {token && isLoading ? (
+              <div className="flex justify-center py-10">
+                <LogoSpinner size={64} />
+              </div>
+            ) : filteredEvents.length > 0 ? (
               filteredEvents.map((event) => (
                 <div
                   key={event.id}

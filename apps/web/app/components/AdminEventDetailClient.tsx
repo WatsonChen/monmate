@@ -147,31 +147,35 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   useEffect(() => {
     if (!token) return;
     async function load() {
-      const [eventRes, attendeesRes, staffRes] = await Promise.all([
-        apiFetch<EventDTO>(`/events/${eventId}`, { token }),
-        apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token }),
-        apiFetch<StaffDTO[]>(`/events/${eventId}/staff`, { token })
-      ]);
-      if (!eventRes.success || !eventRes.data) { setMessage(eventRes.error?.message ?? "讀取活動失敗"); return; }
-      const ev = eventRes.data;
-      setEvent(ev);
-      setEditName(ev.name);
-      setEditSlug(ev.slug);
-      setEditStartAt(toDatetimeLocal(ev.startAt));
-      setEditEndAt(ev.endAt ? toDatetimeLocal(ev.endAt) : "");
-      setEditLocation(ev.location ?? "");
-      setEditDescription(ev.description ?? "");
-      setEditContent(ev.content ?? "");
-      setEditRegistrationRequired(ev.registrationRequired ?? false);
-      setEditOpenRegistration(ev.openRegistration ?? false);
-      setEditSelfCheckInBufferMinutes(
-        ev.selfCheckInBufferMinutes === null || ev.selfCheckInBufferMinutes === undefined
-          ? ""
-          : String(ev.selfCheckInBufferMinutes)
-      );
-      setEditRegFields((ev.registrationFields as RegistrationField[]) ?? []);
-      if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
-      if (staffRes.success && staffRes.data) setStaffList(staffRes.data);
+      try {
+        const [eventRes, attendeesRes, staffRes] = await Promise.all([
+          apiFetch<EventDTO>(`/events/${eventId}`, { token }),
+          apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token }),
+          apiFetch<StaffDTO[]>(`/events/${eventId}/staff`, { token })
+        ]);
+        if (!eventRes.success || !eventRes.data) { setMessage(eventRes.error?.message ?? "讀取活動失敗"); return; }
+        const ev = eventRes.data;
+        setEvent(ev);
+        setEditName(ev.name);
+        setEditSlug(ev.slug);
+        setEditStartAt(toDatetimeLocal(ev.startAt));
+        setEditEndAt(ev.endAt ? toDatetimeLocal(ev.endAt) : "");
+        setEditLocation(ev.location ?? "");
+        setEditDescription(ev.description ?? "");
+        setEditContent(ev.content ?? "");
+        setEditRegistrationRequired(ev.registrationRequired ?? false);
+        setEditOpenRegistration(ev.openRegistration ?? false);
+        setEditSelfCheckInBufferMinutes(
+          ev.selfCheckInBufferMinutes === null || ev.selfCheckInBufferMinutes === undefined
+            ? ""
+            : String(ev.selfCheckInBufferMinutes)
+        );
+        setEditRegFields((ev.registrationFields as RegistrationField[]) ?? []);
+        if (attendeesRes.success && attendeesRes.data) setAttendees(attendeesRes.data);
+        if (staffRes.success && staffRes.data) setStaffList(staffRes.data);
+      } catch {
+        setMessage("無法連線到伺服器，請稍後再試");
+      }
     }
     void load();
 
