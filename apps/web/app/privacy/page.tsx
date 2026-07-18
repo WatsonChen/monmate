@@ -126,7 +126,7 @@ export default function PrivacyPage() {
               如您對本隱私權政策有任何疑問，請聯絡我們：
             </p>
             <p className="mt-2">
-              電子郵件：<a href="mailto:hi@monmate.app" className="text-orange hover:underline">hi@monmate.app</a>
+              電子郵件：<a href="mailto:contact@weihui.io" className="text-orange hover:underline">contact@weihui.io</a>
             </p>
           </section>
         </div>
