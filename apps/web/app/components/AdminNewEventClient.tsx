@@ -29,6 +29,7 @@ export function AdminNewEventClient() {
   const [content, setContent] = useState("");
   const [registrationRequired, setRegistrationRequired] = useState(false);
   const [openRegistration, setOpenRegistration] = useState(false);
+  const [allowOverCapacity, setAllowOverCapacity] = useState(false);
   const [selfCheckInBufferMinutes, setSelfCheckInBufferMinutes] = useState("");
   const [regFields, setRegFields] = useState<RegistrationField[]>([]);
   const [selectedLimit, setSelectedLimit] = useState<number>(50);
@@ -68,6 +69,7 @@ export function AdminNewEventClient() {
         description: description.trim() || undefined,
         content: content || undefined,
         attendeeLimit,
+        allowOverCapacity,
         registrationRequired,
         openRegistration,
         selfCheckInBufferMinutes: selfCheckInBufferMinutes.trim() === "" ? undefined : parseInt(selfCheckInBufferMinutes, 10),
@@ -259,6 +261,33 @@ export function AdminNewEventClient() {
                 </div>
               </div>
               <p className="mt-0.5 text-xs text-charcoal/55">開啟後，收到連結的人可直接在活動頁面報名</p>
+            </div>
+          </label>
+        </div>
+
+        {/* 允許超額報名開關 */}
+        <div className="mt-4">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allowOverCapacity}
+              onChange={(e) => setAllowOverCapacity(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded accent-orange"
+            />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold">允許超額報名</p>
+                <div className="group relative inline-flex">
+                  <Info size={13} className="text-charcoal/40 cursor-help" />
+                  <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    <p className="font-semibold mb-1">開啟：允許超過人數上限</p>
+                    <p className="text-white/80 mb-2">超過上限仍可繼續報名，超出的人頭費用照常計入額度（可先超支、之後補繳）。</p>
+                    <p className="font-semibold mb-1">關閉：達上限即停止</p>
+                    <p className="text-white/80">報名人頭達到人數上限後，新增／匯入／公開報名都會被擋下。</p>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-0.5 text-xs text-charcoal/55">關閉時達人數上限即停止收單；開啟則允許超額（費用候補）</p>
             </div>
           </label>
         </div>

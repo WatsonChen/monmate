@@ -10,6 +10,8 @@ type Analytics = {
   total: number;
   checkedIn: number;
   notCheckedIn: number;
+  totalRegistered: number;
+  totalCheckedInCount: number;
   checkInRate: number;
   ageGroups: Record<string, number>;
   genderCounts: Record<string, number>;
@@ -73,10 +75,11 @@ export function AdminAnalyticsClient() {
 
       {analytics && !loading && (
         <div className="mt-5 space-y-5">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
-              { label: "總報名", value: analytics.total },
-              { label: "已報到", value: analytics.checkedIn },
+              { label: "報名（組）", value: analytics.total },
+              { label: "報名總人數", value: analytics.totalRegistered },
+              { label: "實際報到人數", value: analytics.totalCheckedInCount },
               { label: "報到率", value: `${analytics.checkInRate}%` }
             ].map((item) => (
               <div key={item.label} className="rounded-lg border border-charcoal/10 bg-white p-4 text-center">

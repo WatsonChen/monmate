@@ -7,6 +7,7 @@ import {
   ArrowUpDown,
   Check,
   ClipboardList,
+  AlertTriangle,
   Copy,
   ExternalLink,
   FileSpreadsheet,
@@ -82,6 +83,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editContent, setEditContent] = useState("");
   const [editRegistrationRequired, setEditRegistrationRequired] = useState(false);
   const [editOpenRegistration, setEditOpenRegistration] = useState(false);
+  const [editAllowOverCapacity, setEditAllowOverCapacity] = useState(false);
   const [editSelfCheckInBufferMinutes, setEditSelfCheckInBufferMinutes] = useState("");
   const [editRegFields, setEditRegFields] = useState<RegistrationField[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -165,6 +167,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         setEditContent(ev.content ?? "");
         setEditRegistrationRequired(ev.registrationRequired ?? false);
         setEditOpenRegistration(ev.openRegistration ?? false);
+        setEditAllowOverCapacity(ev.allowOverCapacity ?? false);
         setEditSelfCheckInBufferMinutes(
           ev.selfCheckInBufferMinutes === null || ev.selfCheckInBufferMinutes === undefined
             ? ""
@@ -203,6 +206,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         content: editContent || null,
         registrationRequired: editRegistrationRequired,
         openRegistration: editOpenRegistration,
+        allowOverCapacity: editAllowOverCapacity,
         selfCheckInBufferMinutes: editSelfCheckInBufferMinutes.trim() === "" ? null : parseInt(editSelfCheckInBufferMinutes, 10),
         registrationFields: editRegistrationRequired ? editRegFields : []
       })
@@ -385,6 +389,15 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     return count > 0 && count < capacity;
   }).length;
 
+  // attendees.length 是「報名代表」筆數；一筆報名可攜伴，故另計實際人頭：
+  // totalRegistered = 報名總人數（各筆 checkInCapacity 加總）
+  // totalCheckedInCount = 實際報到人數（整場，各筆 checkInCount 加總）
+  const totalRegistered = attendees.reduce((sum, a) => sum + (a.checkInCapacity ?? 1), 0);
+  const totalCheckedInCount = attendees.reduce(
+    (sum, a) => sum + (a.checkInCount ?? (a.checkInStatus === "CHECKED_IN" ? (a.checkInCapacity ?? 1) : 0)),
+    0
+  );
+
   const q = searchQuery.trim().toLowerCase();
 
   function statusRank(a: AttendeeDTO) {
@@ -537,6 +550,24 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             </div>
           </section>
 
+          {/* 超額報名警示 */}
+          {event.attendeeLimit != null && totalRegistered > event.attendeeLimit && (
+            <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-orange/30 bg-orange/10 p-4">
+              <AlertTriangle size={18} className="mt-0.5 shrink-0 text-orange" />
+              <div className="text-sm">
+                <p className="font-bold text-orange">
+                  報名人數已超過上限 {totalRegistered - event.attendeeLimit} 人
+                </p>
+                <p className="mt-0.5 text-charcoal/70">
+                  目前報名 {totalRegistered} 人、上限 {event.attendeeLimit} 人。
+                  {event.allowOverCapacity
+                    ? "已開啟允許超額，超出的人頭費用照常計入額度（費用候補）。"
+                    : "已關閉超額報名，新報名將被擋下；如需繼續收單請於「編輯」開啟允許超額報名。"}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* 報名名單 */}
           <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -561,13 +592,16 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   </div>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-charcoal/60">共 <strong>{attendees.length}</strong> 人</span>
-                <span className="flex items-center gap-1 font-semibold text-green-600">
-                  <Check size={14} />已報到 {checkedIn}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <span className="text-charcoal/60">
+                  報名 <strong>{attendees.length}</strong> 組 / <strong>{totalRegistered}</strong> 人
                 </span>
+                <span className="flex items-center gap-1 font-semibold text-green-600">
+                  <Check size={14} />實際報到 <strong>{totalCheckedInCount}</strong> 人
+                </span>
+                <span className="text-charcoal/50">已報到 {checkedIn} 組</span>
                 {partiallyCheckedIn > 0 && (
-                  <span className="font-semibold text-orange">部分 {partiallyCheckedIn}</span>
+                  <span className="font-semibold text-orange">部分 {partiallyCheckedIn} 組</span>
                 )}
                 <button
                   type="button"
@@ -646,7 +680,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     <Plus size={14} />{isAdding ? "新增中…" : "新增"}
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-charcoal/50">每新增一位消耗 1 個報到額度</p>
+                <p className="mt-2 text-xs text-charcoal/50">此筆將消耗 <strong>{addCapacity}</strong> 個報到額度（依參加人數計算）</p>
               </div>
             )}
 
@@ -959,6 +993,26 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     </div>
                   </div>
                   <p className="mt-0.5 text-xs text-charcoal/55">開啟後，收到連結的人可直接在活動頁面報名</p>
+                </div>
+              </label>
+              <label className="mt-4 flex cursor-pointer items-start gap-2">
+                <input type="checkbox" checked={editAllowOverCapacity}
+                  onChange={(e) => setEditAllowOverCapacity(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded accent-orange" />
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold">允許超額報名</p>
+                    <div className="group relative inline-flex">
+                      <Info size={13} className="text-charcoal/40 cursor-help" />
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                        <p className="font-semibold mb-1">開啟：允許超過人數上限</p>
+                        <p className="text-white/80 mb-2">超過上限仍可繼續報名，超出的人頭費用照常計入額度（可先超支、之後補繳）。</p>
+                        <p className="font-semibold mb-1">關閉：達上限即停止</p>
+                        <p className="text-white/80">報名人頭達到人數上限後，新增／匯入／公開報名都會被擋下。</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-0.5 text-xs text-charcoal/55">關閉時達人數上限即停止收單；開啟則允許超額（費用候補）</p>
                 </div>
               </label>
               <div className="mt-4">

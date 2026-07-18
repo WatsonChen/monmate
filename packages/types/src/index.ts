@@ -63,6 +63,7 @@ export type EventDTO = {
   endAt?: string | null;
   location?: string | null;
   attendeeLimit?: number | null;
+  allowOverCapacity?: boolean;
   registrationRequired?: boolean;
   openRegistration?: boolean;
   selfCheckInBufferMinutes?: number | null;
