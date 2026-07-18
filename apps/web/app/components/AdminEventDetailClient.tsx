@@ -105,6 +105,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [addName, setAddName] = useState("");
   const [addPhone, setAddPhone] = useState("");
+  const [addEmail, setAddEmail] = useState("");
   const [addCapacity, setAddCapacity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [addMsg, setAddMsg] = useState("");
@@ -258,12 +259,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     setIsAdding(true); setAddMsg("");
     const res = await apiFetch<AttendeeDTO>(`/events/${eventId}/attendees`, {
       method: "POST", token,
-      body: JSON.stringify({ name: addName.trim(), phone: addPhone.trim(), capacity: addCapacity })
+      body: JSON.stringify({ name: addName.trim(), phone: addPhone.trim(), email: addEmail.trim() || undefined, capacity: addCapacity })
     });
     setIsAdding(false);
     if (!res.success || !res.data) { setAddMsg(res.error?.message ?? "新增失敗"); return; }
     setAttendees((prev) => [...prev, res.data!]);
-    setAddName(""); setAddPhone(""); setAddCapacity(1); setShowAddForm(false); setAddMsg("");
+    setAddName(""); setAddPhone(""); setAddEmail(""); setAddCapacity(1); setShowAddForm(false); setAddMsg("");
     window.dispatchEvent(new CustomEvent("credits-changed"));
   }
 
@@ -663,6 +664,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <label className="text-xs font-semibold">
                     電話
                     <input value={addPhone} onChange={(e) => setAddPhone(e.target.value)} placeholder="0912345678"
+                      className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
+                  </label>
+                  <label className="text-xs font-semibold">
+                    Email<span className="ml-1 font-normal text-charcoal/40">（選填）</span>
+                    <input type="email" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} placeholder="name@example.com"
                       className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
                   </label>
                   <label className="text-xs font-semibold">
