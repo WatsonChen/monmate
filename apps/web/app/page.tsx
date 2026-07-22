@@ -22,16 +22,12 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "./components/BrandLogo";
 import { FaqAccordion } from "./components/FaqAccordion";
-import { BlobAccent, RingAccent, SquareAccent } from "./components/FloatingShapes";
-import { FlowTimeline } from "./components/FlowTimeline";
 import {
-  MiniCapacityPreview,
-  MiniChartPreview,
-  MiniEmailPreview,
-  MiniQrPreview,
-  MiniSurveyPreview,
-  MiniWebpagePreview,
-} from "./components/MiniPreviews";
+  BlobAccent,
+  RingAccent,
+  SquareAccent,
+} from "./components/FloatingShapes";
+import { FlowTimeline } from "./components/FlowTimeline";
 import { Reveal } from "./components/Reveal";
 import { StageStack } from "./components/StageStack";
 
@@ -98,13 +94,31 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
         title: "活動報名頁 + 名單管理",
         text: "活動資訊、報名表單一次搞定，也能直接匯入 Excel 名單。",
         icon: LayoutTemplate,
-        preview: <MiniWebpagePreview />,
+        preview: (
+          <Image
+            src="/brand/feature-registration.png"
+            alt="報名表單自動整理成名單"
+            width={724}
+            height={543}
+            className="h-auto w-full rounded-lg"
+            unoptimized
+          />
+        ),
       },
       {
         title: "Email 報到通知",
         text: "自動寄送含 QR Code 的報到信，不用另外找工具。",
         icon: Mail,
-        preview: <MiniEmailPreview />,
+        preview: (
+          <Image
+            src="/brand/feature-email.png"
+            alt="自動寄送含 QR Code 的報到信"
+            width={724}
+            height={543}
+            className="h-auto w-full rounded-lg"
+            unoptimized
+          />
+        ),
       },
     ],
   },
@@ -115,13 +129,31 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
         title: "QR／序號／電話，三種報到方式",
         text: "現場沒訊號、掃不到碼都有備案，手機直接操作。",
         icon: QrCode,
-        preview: <MiniQrPreview />,
+        preview: (
+          <Image
+            src="/brand/feature-checkin.png"
+            alt="QR、序號、電話三種報到方式"
+            width={724}
+            height={543}
+            className="h-auto w-full rounded-lg"
+            unoptimized
+          />
+        ),
       },
       {
         title: "人數彈性控制",
         text: "設定報名上限，也能一組分次報到、超額不卡關。",
         icon: Users,
-        preview: <MiniCapacityPreview />,
+        preview: (
+          <Image
+            src="/brand/feature-capacity.png"
+            alt="報名容量彈性控制"
+            width={724}
+            height={543}
+            className="h-auto w-full rounded-lg"
+            unoptimized
+          />
+        ),
       },
     ],
   },
@@ -132,13 +164,31 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
         title: "即時數據 + 一鍵匯出",
         text: "報到率、時段熱圖即時看，匯出 Excel 對帳超方便。",
         icon: BarChart3,
-        preview: <MiniChartPreview />,
+        preview: (
+          <Image
+            src="/brand/feature-dashboard.png"
+            alt="即時數據儀表板與一鍵匯出"
+            width={724}
+            height={543}
+            className="h-auto w-full rounded-lg"
+            unoptimized
+          />
+        ),
       },
       {
         title: "活動後問卷",
         text: "報到後自動發送問卷，蒐集回饋不用另找工具。",
         icon: MessageSquareText,
-        preview: <MiniSurveyPreview />,
+        preview: (
+          <Image
+            src="/brand/feature-survey.png"
+            alt="活動後問卷回饋"
+            width={724}
+            height={543}
+            className="h-auto w-full rounded-lg"
+            unoptimized
+          />
+        ),
       },
     ],
   },
@@ -222,7 +272,10 @@ const pricingTiers = [
 const faqItems: [string, string][] = [
   ["與會者需要登入嗎？", "不需要，開啟報到連結即可操作。"],
   ["適合哪些活動？", "講座、課程、品牌活動、展會都適合。"],
-  ["人次額度怎麼算？可以跨活動用嗎？", "儲值到帳號，用多少扣多少，可跨活動使用。"],
+  [
+    "人次額度怎麼算？可以跨活動用嗎？",
+    "儲值到帳號，用多少扣多少，可跨活動使用。",
+  ],
   ["同事可以一起顧報到桌嗎？", "可以，支援多帳號、多裝置同時上線。"],
   ["活動結束後可以整理資料嗎？", "可以查看報到狀態，並匯出報表對帳。"],
   ["活動後可以做問卷調查嗎？", "可以，後台建立題目，報到後自動發送。"],
@@ -272,13 +325,15 @@ export default function HomePage() {
       <section className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 overflow-hidden px-5 py-8 md:min-h-[calc(100svh-4rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-10">
         <div className="relative max-w-2xl overflow-hidden pb-2 md:overflow-visible md:pb-0">
           <div className="relative z-10 max-w-[68%] sm:max-w-[60%] md:max-w-none">
-            <p className="text-sm font-bold text-orange">MonMate・活動報到系統</p>
+            <p className="text-sm font-bold text-orange">
+              MonMate・活動報到系統
+            </p>
             <h1 className="mt-3 text-5xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
               活動報到，從報名到現場一次搞定
             </h1>
             <p className="mt-5 text-base leading-7 text-charcoal/70 md:max-w-xl">
-              建立活動、開放報名或匯入名單，產生報到連結；現場用手機掃
-              QR Code、輸入序號或查電話完成報到，事後還有數據與問卷追蹤成效。
+              建立活動、開放報名或匯入名單，產生報到連結；現場用手機掃 QR
+              Code、輸入序號或查電話完成報到，事後還有數據與問卷追蹤成效。
             </p>
           </div>
 
@@ -343,7 +398,9 @@ export default function HomePage() {
               />
               <span
                 className="success-firework right-4 top-24 h-3 w-1"
-                style={{ "--delay": "0.45s", "--rotate": "40deg" } as CSSProperties}
+                style={
+                  { "--delay": "0.45s", "--rotate": "40deg" } as CSSProperties
+                }
               />
               <span
                 className="success-spark right-4 top-36 h-2 w-2"
@@ -433,7 +490,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="features" className="relative border-y border-charcoal/10 bg-white">
+      <section
+        id="features"
+        className="relative border-y border-charcoal/10 bg-white"
+      >
         <BlobAccent
           color="orange"
           className="pointer-events-none absolute top-6 right-[4%] hidden h-16 w-16 opacity-20 sm:block"
@@ -458,7 +518,7 @@ export default function HomePage() {
                 items: group.items.map((item) => ({
                   title: item.title,
                   text: item.text,
-                  icon: <item.icon className="text-orange" size={22} />,
+                  icon: <item.icon className="text-mint" size={22} />,
                   preview: item.preview,
                 })),
               }))}
@@ -467,7 +527,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative bg-paper lg:z-10 lg:mt-[clamp(-386px,calc(560px-100svh),0px)]">
+      <section className="relative bg-paper lg:z-10 lg:mt-[clamp(-250px,calc(650px-80svh),-30px)]">
         <div className="mx-auto grid max-w-6xl gap-6 px-5 py-12 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <div>
             <p className="text-sm font-bold text-orange">團隊</p>
@@ -500,7 +560,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-5 py-12">
           <div className="text-center">
             <p className="text-sm font-bold text-orange">適用場景</p>
-            <h2 className="mt-2 text-2xl font-bold">這些場合都適合用 MonMate</h2>
+            <h2 className="mt-2 text-2xl font-bold">
+              這些場合都適合用 MonMate
+            </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {scenarioItems.map((item, index) => (
@@ -542,7 +604,9 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-6xl gap-6 px-5 py-12 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <div>
             <p className="text-sm font-bold text-orange">價格</p>
-            <h2 className="mt-2 text-2xl font-bold">儲值人次額度，用多少扣多少</h2>
+            <h2 className="mt-2 text-2xl font-bold">
+              儲值人次額度，用多少扣多少
+            </h2>
             <p className="mt-3 text-sm leading-6 text-charcoal/65">
               先依需求購買人次額度，之後新增或匯入報名者才會從額度扣抵；額度可以跨活動使用，不用每辦一場活動就重新開通，建立活動本身不額外收費。
             </p>
@@ -593,36 +657,36 @@ export default function HomePage() {
             />
             <Reveal>
               <div className="relative z-10 overflow-hidden rounded-3xl bg-mint/15 px-6 py-10 sm:px-10 md:flex md:items-center md:justify-between md:gap-8">
-              <div className="max-w-xl">
-                <h2 className="text-2xl font-bold sm:text-3xl">
-                  準備好讓下一場活動報到更輕鬆了嗎？
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-charcoal/70 sm:text-base">
-                  3 分鐘建立活動，開放報名或匯入名單，現場用手機就能完成報到。
-                </p>
-                <div className="mt-6 flex flex-wrap items-center gap-4">
-                  <Link
-                    href="/admin/login"
-                    className="flex h-12 items-center gap-2 rounded-full bg-orange px-6 text-sm font-semibold text-white shadow-soft"
-                  >
-                    <CalendarPlus size={18} />
-                    登入建立活動
-                  </Link>
-                  <p className="text-xs font-semibold text-charcoal/55">
-                    建立活動免費，人次額度用多少扣多少
+                <div className="max-w-xl">
+                  <h2 className="text-2xl font-bold sm:text-3xl">
+                    準備好讓下一場活動報到更輕鬆了嗎？
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-charcoal/70 sm:text-base">
+                    3 分鐘建立活動，開放報名或匯入名單，現場用手機就能完成報到。
                   </p>
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <Link
+                      href="/admin/login"
+                      className="flex h-12 items-center gap-2 rounded-full bg-orange px-6 text-sm font-semibold text-white shadow-soft"
+                    >
+                      <CalendarPlus size={18} />
+                      登入建立活動
+                    </Link>
+                    <p className="text-xs font-semibold text-charcoal/55">
+                      建立活動免費，人次額度用多少扣多少
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-8 flex justify-center md:mt-0 md:shrink-0">
-                <Image
-                  src="/brand/mascot.png"
-                  alt="MonMate mascot"
-                  width={200}
-                  height={200}
-                  className="mascot-float w-40 object-contain sm:w-48"
-                  unoptimized
-                />
-              </div>
+                <div className="mt-8 flex justify-center md:mt-0 md:shrink-0">
+                  <Image
+                    src="/brand/mascot.png"
+                    alt="MonMate mascot"
+                    width={200}
+                    height={200}
+                    className="mascot-float w-40 object-contain sm:w-48"
+                    unoptimized
+                  />
+                </div>
               </div>
             </Reveal>
           </div>
@@ -688,8 +752,12 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-6xl flex-col gap-2 text-xs font-semibold text-charcoal/50 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 MonMate. All rights reserved.</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <Link href="/privacy" className="hover:text-charcoal">隱私權條款</Link>
-              <Link href="/refund" className="hover:text-charcoal">退款條款</Link>
+              <Link href="/privacy" className="hover:text-charcoal">
+                隱私權條款
+              </Link>
+              <Link href="/refund" className="hover:text-charcoal">
+                退款條款
+              </Link>
               <a
                 href="https://www.weihui.io/"
                 target="_blank"

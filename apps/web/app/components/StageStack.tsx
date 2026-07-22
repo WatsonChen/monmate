@@ -96,10 +96,10 @@ export function StageStack({ stages }: { stages: Stage[] }) {
               ref={(el) => {
                 panelRefs.current[index] = el;
               }}
-              className="sticky top-24 min-h-[100vh] pt-6"
+              className="sticky top-24 min-h-[clamp(680px,80svh,900px)] pt-6"
               style={{ zIndex: index + 1 }}
             >
-              <div className="relative isolate overflow-hidden rounded-2xl border border-charcoal/10 bg-white p-10 shadow-soft">
+              <div className="relative isolate overflow-hidden rounded-2xl border border-charcoal/10 bg-paper p-10 shadow-soft">
                 <span
                   aria-hidden="true"
                   className="pointer-events-none absolute right-6 top-4 text-8xl font-black text-charcoal/[0.04]"
@@ -133,7 +133,7 @@ export function StageStack({ stages }: { stages: Stage[] }) {
               </span>
               <span className="text-sm font-bold">{s.stage}</span>
             </div>
-            <div className="bg-white py-6">
+            <div className="bg-paper py-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 {s.items.map((item) => (
                   <FeatureCard key={item.title} item={item} />
@@ -149,8 +149,8 @@ export function StageStack({ stages }: { stages: Stage[] }) {
 
 function FeatureCard({ item }: { item: StageFeature }) {
   return (
-    <div className="h-full rounded-lg border border-charcoal/10 bg-paper p-5">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-orange/12">
+    <div className="h-full rounded-lg border border-charcoal/10 bg-white p-5">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-mint/20">
         {item.icon}
       </span>
       <h3 className="mt-4 text-base font-bold">{item.title}</h3>
