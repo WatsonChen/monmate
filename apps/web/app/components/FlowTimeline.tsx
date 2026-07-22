@@ -71,7 +71,9 @@ export function FlowTimeline({ steps }: { steps: FlowStep[] }) {
             style={{ transitionDelay: visible ? `${index * STEP_DELAY_MS}ms` : "0ms" }}
           >
             <div className="flex items-center justify-between">
-              {step.icon}
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-mint/15">
+                {step.icon}
+              </span>
               <span className="text-xs font-bold text-charcoal/35">
                 {String(index + 1).padStart(2, "0")}
               </span>

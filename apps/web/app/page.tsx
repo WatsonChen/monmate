@@ -5,38 +5,35 @@ import {
   BarChart3,
   CalendarPlus,
   CheckCircle2,
-  ClipboardCheck,
   CreditCard,
   FileSpreadsheet,
-  GraduationCap,
+  FileWarning,
+  Files,
+  Hourglass,
   LayoutTemplate,
   LogIn,
   Mail,
   MessageSquareText,
-  PartyPopper,
-  Presentation,
   QrCode,
-  Search,
   Send,
   Smartphone,
-  Store,
   UserCog,
   Users,
 } from "lucide-react";
 import { BrandLogo } from "./components/BrandLogo";
+import { FaqAccordion } from "./components/FaqAccordion";
+import { BlobAccent, RingAccent, SquareAccent } from "./components/FloatingShapes";
 import { FlowTimeline } from "./components/FlowTimeline";
 import {
   MiniCapacityPreview,
   MiniChartPreview,
-  MiniCompanionPreview,
   MiniEmailPreview,
-  MiniExportPreview,
-  MiniListPreview,
   MiniQrPreview,
   MiniSurveyPreview,
   MiniWebpagePreview,
 } from "./components/MiniPreviews";
 import { Reveal } from "./components/Reveal";
+import { StageStack } from "./components/StageStack";
 
 type FeatureItem = {
   title: string;
@@ -72,25 +69,40 @@ const heroHighlights = [
   },
 ];
 
+const painPoints = [
+  {
+    painIcon: Files,
+    pain: "名單散落在 Excel、LINE、報名表，到處對",
+    fixIcon: FileSpreadsheet,
+    fix: "統一到一個名單，開放報名或直接匯入",
+  },
+  {
+    painIcon: Hourglass,
+    pain: "報到現場大排長龍、掃不到 QR Code",
+    fixIcon: QrCode,
+    fix: "QR／序號／電話三種方式備援，秒完成報到",
+  },
+  {
+    painIcon: FileWarning,
+    pain: "活動後對帳、整理報表花一堆時間",
+    fixIcon: BarChart3,
+    fix: "報到數據即時看，一鍵匯出核對",
+  },
+];
+
 const featureGroups: { stage: string; items: FeatureItem[] }[] = [
   {
     stage: "報名前",
     items: [
       {
-        title: "一頁式活動網站",
-        text: "活動名稱、時間、地點、簡介一次呈現，還能設定要收集哪些報名資訊。",
+        title: "活動報名頁 + 名單管理",
+        text: "活動資訊、報名表單一次搞定，也能直接匯入 Excel 名單。",
         icon: LayoutTemplate,
         preview: <MiniWebpagePreview />,
       },
       {
-        title: "開放報名或匯入名單",
-        text: "開放讓來賓自己填表報名，也能直接匯入 Excel／CSV 名單，支援攜伴人數。",
-        icon: FileSpreadsheet,
-        preview: <MiniListPreview />,
-      },
-      {
         title: "Email 報到通知",
-        text: "系統寄送含 QR Code 的報到信給每位來賓，不用另外找工具寄信。",
+        text: "自動寄送含 QR Code 的報到信，不用另外找工具。",
         icon: Mail,
         preview: <MiniEmailPreview />,
       },
@@ -101,21 +113,15 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
     items: [
       {
         title: "QR／序號／電話，三種報到方式",
-        text: "現場沒訊號、掃不到碼都有備案，工作人員用手機就能操作。",
+        text: "現場沒訊號、掃不到碼都有備案，手機直接操作。",
         icon: QrCode,
         preview: <MiniQrPreview />,
       },
       {
-        title: "人數上限彈性控制",
-        text: "可以設定報名容量上限，也能開放超額報名不卡關。",
+        title: "人數彈性控制",
+        text: "設定報名上限，也能一組分次報到、超額不卡關。",
         icon: Users,
         preview: <MiniCapacityPreview />,
-      },
-      {
-        title: "攜伴一次報到",
-        text: "一組報名可以分次報到，系統自動算出剩餘可報到人數。",
-        icon: CheckCircle2,
-        preview: <MiniCompanionPreview />,
       },
     ],
   },
@@ -123,20 +129,14 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
     stage: "報到後",
     items: [
       {
-        title: "即時數據儀表板",
-        text: "報到率、性別年齡分布、報到時段熱圖，活動當下就看得到。",
+        title: "即時數據 + 一鍵匯出",
+        text: "報到率、時段熱圖即時看，匯出 Excel 對帳超方便。",
         icon: BarChart3,
         preview: <MiniChartPreview />,
       },
       {
-        title: "報到紀錄匯出",
-        text: "CSV／XLSX 匯出報到紀錄，方便核對與後續存檔。",
-        icon: ClipboardCheck,
-        preview: <MiniExportPreview />,
-      },
-      {
         title: "活動後問卷",
-        text: "自建問卷題目，報到後發送給來賓，蒐集活動回饋意見。",
+        text: "報到後自動發送問卷，蒐集回饋不用另找工具。",
         icon: MessageSquareText,
         preview: <MiniSurveyPreview />,
       },
@@ -147,17 +147,17 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
 const teamItems: FeatureItem[] = [
   {
     title: "角色權限分工",
-    text: "OWNER／ADMIN／STAFF，工作人員只看得到被指派的活動。",
+    text: "OWNER／ADMIN／STAFF，各自只看指派的活動。",
     icon: UserCog,
   },
   {
     title: "多裝置同時上線",
-    text: "報到桌可以擺好幾支手機，同時掃碼不衝突。",
+    text: "報到桌擺幾支手機都行，掃碼不衝突。",
     icon: Smartphone,
   },
   {
     title: "Google 帳號登入",
-    text: "不用額外記密碼，一鍵登入後台。",
+    text: "免記密碼，一鍵登入後台。",
     icon: LogIn,
   },
 ];
@@ -165,23 +165,23 @@ const teamItems: FeatureItem[] = [
 const scenarioItems = [
   {
     title: "講座／發表會",
-    text: "現場人數多，快速核對名單、加快報到速度。",
-    icon: Presentation,
+    text: "人數多，報到要快、名單要準。",
+    image: "/brand/scenario-seminar.png",
   },
   {
     title: "課程／內部訓練",
-    text: "多場次、多梯次課程，出席資料好整理。",
-    icon: GraduationCap,
+    text: "多場次課程，出席資料好整理。",
+    image: "/brand/scenario-training.png",
   },
   {
     title: "品牌活動／展會",
-    text: "來賓資訊需要準確核對，維持現場品牌形象。",
-    icon: Store,
+    text: "來賓資訊準確核對，維持品牌形象。",
+    image: "/brand/scenario-expo.png",
   },
   {
     title: "社群聚會",
-    text: "不需要對外正式報名，也能簡單管理報到。",
-    icon: PartyPopper,
+    text: "不用正式報名，也能簡單管理。",
+    image: "/brand/scenario-community.png",
   },
 ];
 
@@ -214,36 +214,18 @@ const flowItems = [
 ];
 
 const pricingTiers = [
-  { credits: "199", price: "590", perUnit: "2.97", fit: "適合小型講座、內部聚會" },
-  { credits: "599", price: "790", perUnit: "1.32", fit: "適合品牌活動、發表會" },
-  { credits: "999", price: "990", perUnit: "0.99", fit: "適合大型研討會、展覽" },
+  { credits: "199", price: "590", perUnit: "2.97", fit: "小型講座首選" },
+  { credits: "599", price: "790", perUnit: "1.32", fit: "品牌活動熱門" },
+  { credits: "999", price: "990", perUnit: "0.99", fit: "大型展覽適用" },
 ];
 
-const faqItems = [
-  [
-    "與會者需要登入嗎？",
-    "不需要。與會者或現場工作人員只要開啟活動專屬報到連結即可操作。",
-  ],
-  [
-    "適合哪些活動？",
-    "講座、課程、品牌活動、發表會、內部訓練與需要快速核對名單的現場活動都適合。",
-  ],
-  [
-    "人次額度要怎麼算？可以跨活動使用嗎？",
-    "額度是儲值到帳號，不限定單一活動；新增或匯入報名者時依實際人數扣除，用多少扣多少，可以分次用在不同活動。",
-  ],
-  [
-    "同事可以一起顧報到桌嗎？",
-    "可以。主辦方能新增工作人員帳號並指定負責的活動，支援多裝置同時登入，各自只看得到被指派的活動。",
-  ],
-  [
-    "活動結束後可以整理資料嗎？",
-    "可以查看報到狀態、時間與方式，並匯出報表提供後續統計或對帳使用。",
-  ],
-  [
-    "活動後可以做問卷調查嗎？",
-    "可以，後台能自建問卷題目，報到後由主辦方發送給來賓填寫，蒐集活動回饋。",
-  ],
+const faqItems: [string, string][] = [
+  ["與會者需要登入嗎？", "不需要，開啟報到連結即可操作。"],
+  ["適合哪些活動？", "講座、課程、品牌活動、展會都適合。"],
+  ["人次額度怎麼算？可以跨活動用嗎？", "儲值到帳號，用多少扣多少，可跨活動使用。"],
+  ["同事可以一起顧報到桌嗎？", "可以，支援多帳號、多裝置同時上線。"],
+  ["活動結束後可以整理資料嗎？", "可以查看報到狀態，並匯出報表對帳。"],
+  ["活動後可以做問卷調查嗎？", "可以，後台建立題目，報到後自動發送。"],
 ];
 
 export default function HomePage() {
@@ -287,7 +269,7 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-5 py-8 md:min-h-[calc(100svh-4rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-10">
+      <section className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 overflow-hidden px-5 py-8 md:min-h-[calc(100svh-4rem)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-10">
         <div className="relative max-w-2xl overflow-hidden pb-2 md:overflow-visible md:pb-0">
           <div className="relative z-10 max-w-[68%] sm:max-w-[60%] md:max-w-none">
             <p className="text-sm font-bold text-orange">MonMate・活動報到系統</p>
@@ -414,7 +396,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="features" className="border-y border-charcoal/10 bg-white">
+      <section className="relative overflow-hidden bg-white">
+        <RingAccent className="pointer-events-none absolute -top-6 right-[8%] hidden h-20 w-20 sm:block" />
+        <SquareAccent
+          color="mint"
+          className="pointer-events-none absolute bottom-4 left-[6%] hidden h-6 w-6 rotate-12 opacity-60 sm:block"
+        />
+        <div className="mx-auto max-w-6xl px-5 py-12">
+          <div className="text-center">
+            <p className="text-sm font-bold text-orange">痛點</p>
+            <h2 className="mt-2 text-2xl font-bold">
+              主辦方最頭痛的 3 件事，MonMate 幫你解決
+            </h2>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {painPoints.map((point, index) => (
+              <Reveal key={point.pain} delay={index * 100} className="h-full">
+                <div className="h-full rounded-lg border border-charcoal/10 bg-paper p-5">
+                  <div className="flex items-center gap-2 text-charcoal/45">
+                    <point.painIcon size={18} />
+                    <p className="text-sm font-semibold leading-5 line-through decoration-2 decoration-charcoal/30">
+                      {point.pain}
+                    </p>
+                  </div>
+                  <div className="my-4 h-px bg-charcoal/10" />
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mint/20">
+                      <point.fixIcon size={14} className="text-mint" />
+                    </span>
+                    <p className="text-sm font-bold leading-6">{point.fix}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="relative border-y border-charcoal/10 bg-white">
+        <BlobAccent
+          color="orange"
+          className="pointer-events-none absolute top-6 right-[4%] hidden h-16 w-16 opacity-20 sm:block"
+        />
         <div className="mx-auto max-w-6xl px-5 py-12">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -424,35 +447,27 @@ export default function HomePage() {
               </h2>
             </div>
             <p className="text-sm leading-6 text-charcoal/65 sm:whitespace-nowrap">
-              專注在主辦方最常遇到的現場問題：名單太散、報到排隊、報到後難整理。
+              從報名到報到，每個階段都幫你省時間。
             </p>
           </div>
 
-          <div className="mt-10 space-y-10">
-            {featureGroups.map((group) => (
-              <div key={group.stage}>
-                <p className="text-sm font-bold text-orange">{group.stage}</p>
-                <div className="mt-4 grid gap-4 md:grid-cols-3">
-                  {group.items.map((item, index) => (
-                    <Reveal key={item.title} delay={index * 100} className="h-full">
-                      <div className="h-full rounded-lg border border-charcoal/10 bg-paper p-5">
-                        <item.icon className="text-orange" size={24} />
-                        <h3 className="mt-4 text-base font-bold">{item.title}</h3>
-                        <p className="mt-2 text-sm leading-6 text-charcoal/65">
-                          {item.text}
-                        </p>
-                        {item.preview && <div className="mt-4">{item.preview}</div>}
-                      </div>
-                    </Reveal>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <div className="mt-10">
+            <StageStack
+              stages={featureGroups.map((group) => ({
+                stage: group.stage,
+                items: group.items.map((item) => ({
+                  title: item.title,
+                  text: item.text,
+                  icon: <item.icon className="text-orange" size={22} />,
+                  preview: item.preview,
+                })),
+              }))}
+            />
           </div>
         </div>
       </section>
 
-      <section className="bg-paper">
+      <section className="relative bg-paper lg:z-10 lg:mt-[clamp(-386px,calc(560px-100svh),0px)]">
         <div className="mx-auto grid max-w-6xl gap-6 px-5 py-12 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <div>
             <p className="text-sm font-bold text-orange">團隊</p>
@@ -464,13 +479,16 @@ export default function HomePage() {
           <div className="grid gap-3 sm:grid-cols-3">
             {teamItems.map((item, index) => (
               <Reveal key={item.title} delay={index * 100} className="h-full">
-                <div className="h-full rounded-lg border border-charcoal/10 bg-white p-5">
-                  <item.icon className="text-orange" size={22} />
-                  <h3 className="mt-4 text-base font-bold">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-charcoal/65">
+                <div className="h-full rounded-lg border border-charcoal/10 bg-white p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange/12">
+                      <item.icon className="text-orange" size={18} />
+                    </span>
+                    <h3 className="text-sm font-bold">{item.title}</h3>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-charcoal/65">
                     {item.text}
                   </p>
-                  {item.preview && <div className="mt-4">{item.preview}</div>}
                 </div>
               </Reveal>
             ))}
@@ -478,7 +496,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white">
+      <section className="bg-white lg:relative lg:z-10">
         <div className="mx-auto max-w-6xl px-5 py-12">
           <div className="text-center">
             <p className="text-sm font-bold text-orange">適用場景</p>
@@ -488,9 +506,14 @@ export default function HomePage() {
             {scenarioItems.map((item, index) => (
               <Reveal key={item.title} delay={index * 100} className="h-full">
                 <div className="h-full rounded-lg border border-charcoal/10 bg-paper p-5 text-center">
-                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint/15">
-                    <item.icon className="text-mint" size={22} />
-                  </span>
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={72}
+                    height={72}
+                    className="mx-auto h-[72px] w-[72px] object-contain"
+                    unoptimized
+                  />
                   <h3 className="mt-4 text-base font-bold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-charcoal/65">
                     {item.text}
@@ -502,7 +525,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="flow" className="bg-paper">
+      <section id="flow" className="relative overflow-hidden bg-paper">
+        <RingAccent className="pointer-events-none absolute -bottom-8 left-[3%] hidden h-24 w-24 sm:block" />
         <div className="mx-auto max-w-6xl px-5 py-12">
           <p className="text-sm font-bold text-orange">流程</p>
           <h2 className="mt-2 text-2xl font-bold">
@@ -543,21 +567,64 @@ export default function HomePage() {
       </section>
 
       <section id="faq" className="bg-paper">
-        <div className="mx-auto max-w-6xl px-5 py-12">
+        <div className="mx-auto max-w-3xl px-5 py-12">
           <p className="text-sm font-bold text-orange">FAQ</p>
           <h2 className="mt-2 text-2xl font-bold">常見問題</h2>
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            {faqItems.map(([question, answer], index) => (
-              <Reveal key={question} delay={(index % 3) * 100} className="h-full">
-                <div className="h-full rounded-lg border border-charcoal/10 bg-white p-5">
-                  <Search className="text-mint" size={22} />
-                  <h3 className="mt-4 text-base font-bold">{question}</h3>
-                  <p className="mt-2 text-sm leading-6 text-charcoal/65">
-                    {answer}
+          <div className="mt-6">
+            <FaqAccordion items={faqItems} />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-paper">
+        <div className="mx-auto max-w-6xl px-5 py-12">
+          <div className="relative">
+            <SquareAccent
+              color="charcoal"
+              className="pointer-events-none absolute -left-2 -top-2 z-0 h-10 w-10 rotate-12 opacity-90"
+            />
+            <SquareAccent
+              color="orange"
+              className="pointer-events-none absolute -bottom-3 right-[18%] z-0 hidden h-9 w-9 -rotate-6 sm:block"
+            />
+            <BlobAccent
+              color="mint"
+              className="pointer-events-none absolute -right-4 top-1/2 z-0 hidden h-24 w-24 -translate-y-1/2 opacity-40 md:block"
+            />
+            <Reveal>
+              <div className="relative z-10 overflow-hidden rounded-3xl bg-mint/15 px-6 py-10 sm:px-10 md:flex md:items-center md:justify-between md:gap-8">
+              <div className="max-w-xl">
+                <h2 className="text-2xl font-bold sm:text-3xl">
+                  準備好讓下一場活動報到更輕鬆了嗎？
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-charcoal/70 sm:text-base">
+                  3 分鐘建立活動，開放報名或匯入名單，現場用手機就能完成報到。
+                </p>
+                <div className="mt-6 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/admin/login"
+                    className="flex h-12 items-center gap-2 rounded-full bg-orange px-6 text-sm font-semibold text-white shadow-soft"
+                  >
+                    <CalendarPlus size={18} />
+                    登入建立活動
+                  </Link>
+                  <p className="text-xs font-semibold text-charcoal/55">
+                    建立活動免費，人次額度用多少扣多少
                   </p>
                 </div>
-              </Reveal>
-            ))}
+              </div>
+              <div className="mt-8 flex justify-center md:mt-0 md:shrink-0">
+                <Image
+                  src="/brand/mascot.png"
+                  alt="MonMate mascot"
+                  width={200}
+                  height={200}
+                  className="mascot-float w-40 object-contain sm:w-48"
+                  unoptimized
+                />
+              </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
