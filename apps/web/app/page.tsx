@@ -687,9 +687,17 @@ export default function HomePage() {
         <div className="border-t border-charcoal/10 px-5 py-4">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 text-xs font-semibold text-charcoal/50 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 MonMate. All rights reserved.</p>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <Link href="/privacy" className="hover:text-charcoal">隱私權條款</Link>
               <Link href="/refund" className="hover:text-charcoal">退款條款</Link>
+              <a
+                href="https://www.weihui.io/"
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-orange"
+              >
+                Powered by 瑋慧數位
+              </a>
             </div>
           </div>
         </div>
