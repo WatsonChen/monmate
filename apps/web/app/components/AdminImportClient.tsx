@@ -2,7 +2,7 @@
 
 import type { EventDTO } from "@monmate/types";
 import { FileSpreadsheet, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { DotsLoading } from "./DotsLoading";
 
@@ -13,6 +13,8 @@ export function AdminImportClient() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setToken(window.localStorage.getItem("monmate.token") ?? "");
@@ -112,6 +114,7 @@ export function AdminImportClient() {
           <label className="text-sm font-semibold">
             Excel 檔案
             <input
+              ref={fileInputRef}
               type="file"
               accept=".xlsx,.xls"
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
@@ -129,8 +132,29 @@ export function AdminImportClient() {
           </button>
         </div>
 
-        <div className="mt-5 rounded-lg border border-dashed border-charcoal/20 bg-paper p-8 text-center text-sm font-semibold text-charcoal/65">
-          {file ? file.name : "Excel 上傳區"}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") fileInputRef.current?.click();
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setIsDraggingOver(true);
+          }}
+          onDragLeave={() => setIsDraggingOver(false)}
+          onDrop={(event) => {
+            event.preventDefault();
+            setIsDraggingOver(false);
+            const dropped = event.dataTransfer.files?.[0];
+            if (dropped) setFile(dropped);
+          }}
+          className={`mt-5 cursor-pointer rounded-lg border border-dashed p-8 text-center text-sm font-semibold transition-colors ${
+            isDraggingOver ? "border-mint bg-mint/10 text-charcoal" : "border-charcoal/20 bg-paper text-charcoal/65 hover:border-mint/50"
+          }`}
+        >
+          {file ? file.name : "點擊選擇，或將 Excel 檔案拖曳到這裡"}
         </div>
       </section>
     </>

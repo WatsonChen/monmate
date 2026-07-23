@@ -14,6 +14,7 @@ export function AdminInviteClient() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ sent: number; failed: number } | null>(null);
   const [message, setMessage] = useState("");
+  const [confirmSend, setConfirmSend] = useState(false);
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
@@ -35,9 +36,12 @@ export function AdminInviteClient() {
       body: JSON.stringify({ template })
     });
     setSending(false);
+    setConfirmSend(false);
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "發送失敗"); return; }
     setResult(res.data);
   }
+
+  const selectedEvent = events.find((e) => e.id === selectedId);
 
   const TEMPLATES = [
     {
@@ -119,12 +123,31 @@ export function AdminInviteClient() {
       <button
         type="button"
         disabled={!selectedId || sending}
-        onClick={() => void sendInvites()}
+        onClick={() => setConfirmSend(true)}
         className="mt-4 flex h-11 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40"
       >
         <Send size={16} />
         {sending ? "發送中…" : "發送簡訊邀請"}
       </button>
+
+      {confirmSend && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-charcoal/30 p-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-bold">確認發送簡訊邀請？</h2>
+            <p className="mt-2 text-sm text-charcoal/70">
+              將發送給「{selectedEvent?.name ?? "此活動"}」的所有報名者，簡訊需要額外費用，此操作無法撤銷。
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button type="button" onClick={() => setConfirmSend(false)}
+                className="flex-1 rounded-lg border border-charcoal/15 py-2.5 text-sm font-semibold">取消</button>
+              <button type="button" disabled={sending} onClick={() => void sendInvites()}
+                className="flex-1 rounded-lg bg-orange py-2.5 text-sm font-bold text-white disabled:opacity-40">
+                {sending ? "發送中…" : "確認發送"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

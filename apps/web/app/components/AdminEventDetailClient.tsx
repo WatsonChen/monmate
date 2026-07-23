@@ -111,6 +111,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [addMsg, setAddMsg] = useState("");
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
+  const [confirmSendAll, setConfirmSendAll] = useState(false);
   const [sendingInviteId, setSendingInviteId] = useState<string | null>(null);
   const [editingAttendee, setEditingAttendee] = useState<AttendeeDTO | null>(null);
   const [editAttendeeName, setEditAttendeeName] = useState("");
@@ -361,6 +362,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       body: JSON.stringify({ template: event?.registrationRequired ? "with-registration" : "without-registration" })
     });
     setIsSendingInvite(false);
+    setConfirmSendAll(false);
     if (!res.success || !res.data) { setInviteMsg(res.error?.message ?? "寄送失敗"); return; }
     setInviteMsg(`已寄送 ${res.data.sent} 封 Email，失敗 ${res.data.failed} 封`);
   }
@@ -607,7 +609,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 <button
                   type="button"
                   disabled={attendees.length === 0 || isSendingInvite}
-                  onClick={() => void sendInvites()}
+                  onClick={() => setConfirmSendAll(true)}
                   className="flex h-8 items-center gap-1.5 rounded-lg bg-orange px-3 text-xs font-bold text-white disabled:opacity-40"
                 >
                   <Send size={13} />
@@ -1054,6 +1056,26 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <button type="button" disabled={isSaving} onClick={() => void saveEdit()}
                 className="flex h-10 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40">
                 {isSaving ? "儲存中…" : "儲存變更"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 確認發送全部邀請 Modal ── */}
+      {confirmSendAll && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-charcoal/30 p-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-bold">確認發送全部邀請？</h2>
+            <p className="mt-2 text-sm text-charcoal/70">
+              將寄送 Email 邀請給「{event?.name ?? "此活動"}」所有報名者，此操作無法撤銷。
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button type="button" onClick={() => setConfirmSendAll(false)}
+                className="flex-1 rounded-lg border border-charcoal/15 py-2.5 text-sm font-semibold">取消</button>
+              <button type="button" disabled={isSendingInvite} onClick={() => void sendInvites()}
+                className="flex-1 rounded-lg bg-orange py-2.5 text-sm font-bold text-white disabled:opacity-40">
+                {isSendingInvite ? "發送中…" : "確認發送"}
               </button>
             </div>
           </div>

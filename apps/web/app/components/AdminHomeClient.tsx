@@ -141,12 +141,15 @@ export function AdminHomeClient() {
                   {events[0] ? "最近活動" : "尚未建立活動"}
                 </h2>
                 {events[0] ? (
-                  <div className="mt-4 rounded-lg border border-charcoal/10 bg-paper p-4">
+                  <Link
+                    href={`/admin/events/${events[0].id}`}
+                    className="mt-4 block rounded-lg border border-charcoal/10 bg-paper p-4 transition-colors hover:border-mint/50 hover:bg-mint/5"
+                  >
                     <p className="text-lg font-bold">{events[0].name}</p>
                     <p className="mt-1 text-sm font-semibold text-charcoal/60">
                       {events[0].slug} · 報名 {events[0].attendeeCount ?? 0}
                     </p>
-                  </div>
+                  </Link>
                 ) : (
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-charcoal/65">
                     建立活動後即可匯入名單、產生報到序號與 QR Token，並在這裡查看報到狀態。

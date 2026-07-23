@@ -21,6 +21,19 @@ function formatDate(value: string) {
   });
 }
 
+function getEventStatus(event: EventDTO): { label: string; className: string } {
+  const now = Date.now();
+  const start = new Date(event.startAt).getTime();
+  // Events without an explicit end time are treated as point-in-time —
+  // once the start passes there's no "in progress" window to show.
+  const end = event.endAt ? new Date(event.endAt).getTime() : start;
+
+  if (now > end) return { label: "已結束", className: "text-charcoal/40" };
+  if (now >= start) return { label: "進行中", className: "text-green-600" };
+  if (event.openRegistration) return { label: "報名中", className: "text-orange" };
+  return { label: "尚未開放", className: "text-charcoal/40" };
+}
+
 export function AdminEventsClient() {
   const [token, setToken] = useState("");
   const [events, setEvents] = useState<EventDTO[]>([]);
@@ -153,33 +166,36 @@ export function AdminEventsClient() {
                 <LogoSpinner size={64} />
               </div>
             ) : filteredEvents.length > 0 ? (
-              filteredEvents.map((event) => (
-                <div
-                  key={event.id}
-                  onClick={() => setSelectedEventId(event.id)}
-                  className={`grid cursor-pointer grid-cols-[1.4fr_1fr_1fr_1fr_1fr] items-center border-t border-charcoal/10 px-4 py-4 text-sm transition-colors ${selectedEvent?.id === event.id ? "bg-mint/10" : "hover:bg-charcoal/5"}`}
-                >
-                  <span>
-                    <Link
-                      href={`/admin/events/${event.id}`}
-                      className="font-bold hover:text-orange"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {event.name}
-                    </Link>
-                    <span className="mt-1 block text-xs font-semibold text-charcoal/50">
-                      {event.slug || "—"}
+              filteredEvents.map((event) => {
+                const status = getEventStatus(event);
+                return (
+                  <div
+                    key={event.id}
+                    onClick={() => setSelectedEventId(event.id)}
+                    className={`grid cursor-pointer grid-cols-[1.4fr_1fr_1fr_1fr_1fr] items-center border-t border-charcoal/10 px-4 py-4 text-sm transition-colors ${selectedEvent?.id === event.id ? "bg-mint/10" : "hover:bg-charcoal/5"}`}
+                  >
+                    <span>
+                      <Link
+                        href={`/admin/events/${event.id}`}
+                        className="font-bold hover:text-orange"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {event.name}
+                      </Link>
+                      <span className="mt-1 block text-xs font-semibold text-charcoal/50">
+                        {event.slug || "—"}
+                      </span>
                     </span>
-                  </span>
-                  <span>{formatDate(event.startAt)}</span>
-                  <span>{event.attendeeCount ?? 0}</span>
-                  <span>{event.checkInLogCount ?? 0}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-orange">可使用</span>
-                    <VenueQrButton eventId={event.id} eventName={event.name} token={token} />
+                    <span>{formatDate(event.startAt)}</span>
+                    <span>{event.attendeeCount ?? 0}</span>
+                    <span>{event.checkInLogCount ?? 0}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-bold ${status.className}`}>{status.label}</span>
+                      <VenueQrButton eventId={event.id} eventName={event.name} token={token} />
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="px-4 py-8 text-sm font-semibold text-charcoal/60">
                 目前沒有活動資料
