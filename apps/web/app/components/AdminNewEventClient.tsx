@@ -130,13 +130,16 @@ export function AdminNewEventClient() {
             />
           </label>
           <label className="text-sm font-semibold">
-            活動 Slug（網址）
+            活動網址代號
             <input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               placeholder="留空自動產生"
               className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
             />
+            <span className="mt-1 block text-xs font-normal text-charcoal/45">
+              會用於報到連結，例如 /event/你的代號/checkin
+            </span>
           </label>
           <label className="text-sm font-semibold">
             開始時間

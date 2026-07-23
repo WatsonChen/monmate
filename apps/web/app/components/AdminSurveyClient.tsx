@@ -28,7 +28,13 @@ export function AdminSurveyClient({ initialEventId }: { initialEventId?: string 
     setToken(t);
     if (!t) return;
     void apiFetch<EventSummary[]>("/events", { token: t }).then((res) => {
-      if (res.success && res.data) setEvents(res.data);
+      if (res.success && res.data) {
+        const fetchedEvents = res.data;
+        setEvents(fetchedEvents);
+        // /events is sorted by start date (latest first) — default to the
+        // most recent event unless one was already requested via URL.
+        setSelectedId((current) => current || fetchedEvents[0]?.id || "");
+      }
     });
   }, []);
 

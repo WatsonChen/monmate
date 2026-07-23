@@ -936,10 +936,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
               </label>
               <label className="text-sm font-semibold">
-                活動頁面網址
+                活動網址代號
                 <input value={editSlug} onChange={(e) => setEditSlug(e.target.value)}
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
-                <span className="mt-1 block text-xs font-normal text-charcoal/45">修改後原連結將失效</span>
+                <span className="mt-1 block text-xs font-normal text-charcoal/45">
+                  會用於報到連結，例如 /event/你的代號/checkin；修改後原連結將失效
+                </span>
               </label>
               <label className="text-sm font-semibold">
                 開始時間

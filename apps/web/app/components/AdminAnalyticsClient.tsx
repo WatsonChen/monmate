@@ -1,26 +1,12 @@
 "use client";
 
+import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { LogoSpinner } from "./LogoSpinner";
-
-type Analytics = {
-  eventId: string;
-  eventName: string;
-  total: number;
-  checkedIn: number;
-  notCheckedIn: number;
-  totalRegistered: number;
-  totalCheckedInCount: number;
-  checkInRate: number;
-  ageGroups: Record<string, number>;
-  genderCounts: Record<string, number>;
-  checkInByHour: Record<number, number>;
-};
+import { AnalyticsReport, type Analytics } from "./AnalyticsReport";
 
 type EventSummary = { id: string; name: string };
-
-const GENDER_LABELS: Record<string, string> = { M: "男", F: "女", OTHER: "其他" };
 
 export function AdminAnalyticsClient() {
   const [token, setToken] = useState("");
@@ -28,32 +14,78 @@ export function AdminAnalyticsClient() {
   const [selectedId, setSelectedId] = useState("");
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
     setToken(t);
     if (!t) return;
     void apiFetch<EventSummary[]>("/events", { token: t }).then((res) => {
-      if (res.success && res.data) setEvents(res.data);
+      if (res.success && res.data) {
+        setEvents(res.data);
+        // /events is sorted by start date (latest first) — default to the
+        // most recent event so users don't have to pick one every time.
+        setSelectedId(res.data[0]?.id ?? "");
+      }
     });
   }, []);
 
+  function loadAnalytics(eventId: string, authToken: string, onCancelled?: () => boolean) {
+    setLoading(true);
+    void apiFetch<Analytics>(`/events/${eventId}/analytics`, { token: authToken })
+      .then((res) => {
+        if (onCancelled?.()) return;
+        if (res.success && res.data) {
+          setAnalytics(res.data);
+          setLastUpdatedAt(new Date());
+        }
+      })
+      .finally(() => {
+        if (!onCancelled?.()) setLoading(false);
+      });
+  }
+
   useEffect(() => {
     if (!selectedId || !token) return;
-    setLoading(true);
-    void apiFetch<Analytics>(`/events/${selectedId}/analytics`, { token })
-      .then((res) => { if (res.success && res.data) setAnalytics(res.data); })
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    loadAnalytics(selectedId, token, () => cancelled);
+    return () => {
+      cancelled = true;
+    };
   }, [selectedId, token]);
-
-  const maxHour = analytics ? Math.max(...Object.values(analytics.checkInByHour), 1) : 1;
 
   return (
     <div>
-      <p className="text-sm font-bold text-orange">報表分析</p>
-      <h1 className="text-2xl font-bold">活動數據</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-sm font-bold text-orange">報表分析</p>
+          <h1 className="text-2xl font-bold">活動數據</h1>
+        </div>
+        {analytics && (
+          <div className="flex items-center gap-2 text-xs text-charcoal/50">
+            {lastUpdatedAt && (
+              <span>
+                更新於{" "}
+                {lastUpdatedAt.toLocaleTimeString("zh-TW", {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => loadAnalytics(selectedId, token)}
+              disabled={loading}
+              className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-2.5 text-xs font-semibold text-charcoal/70 hover:bg-paper disabled:opacity-50"
+            >
+              <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+              重新整理
+            </button>
+          </div>
+        )}
+      </div>
 
-      <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
+      <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5 print:hidden">
         <label className="text-sm font-semibold">
           選擇活動
           <select
@@ -67,82 +99,17 @@ export function AdminAnalyticsClient() {
         </label>
       </section>
 
-      {loading && (
+      {loading && !analytics && (
         <div className="mt-5 flex justify-center py-10">
           <LogoSpinner size={80} />
         </div>
       )}
 
-      {analytics && !loading && (
-        <div className="mt-5 space-y-5">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[
-              { label: "報名（組）", value: analytics.total },
-              { label: "報名總人數", value: analytics.totalRegistered },
-              { label: "實際報到人數", value: analytics.totalCheckedInCount },
-              { label: "報到率", value: `${analytics.checkInRate}%` }
-            ].map((item) => (
-              <div key={item.label} className="rounded-lg border border-charcoal/10 bg-white p-4 text-center">
-                <p className="text-2xl font-bold">{item.value}</p>
-                <p className="text-xs text-charcoal/60">{item.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {Object.keys(analytics.genderCounts).length > 0 && (
-            <div className="rounded-lg border border-charcoal/10 bg-white p-5">
-              <h2 className="mb-3 text-sm font-bold">性別分佈</h2>
-              <div className="flex gap-4">
-                {Object.entries(analytics.genderCounts).map(([g, count]) => (
-                  <div key={g} className="flex-1 text-center">
-                    <div className="text-xl font-bold">{count}</div>
-                    <div className="text-xs text-charcoal/60">{GENDER_LABELS[g] ?? g}</div>
-                    <div className="mt-1 text-xs text-charcoal/40">
-                      {analytics.total > 0 ? Math.round(count / analytics.total * 100) : 0}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {Object.keys(analytics.ageGroups).length > 0 && (
-            <div className="rounded-lg border border-charcoal/10 bg-white p-5">
-              <h2 className="mb-3 text-sm font-bold">年齡分佈</h2>
-              <div className="space-y-2">
-                {Object.entries(analytics.ageGroups).sort().map(([group, count]) => (
-                  <div key={group} className="flex items-center gap-3">
-                    <span className="w-20 text-xs text-charcoal/60">{group}</span>
-                    <div className="flex-1 rounded-full bg-charcoal/10 h-5">
-                      <div
-                        className="h-5 rounded-full bg-orange"
-                        style={{ width: `${analytics.total > 0 ? (count / analytics.total) * 100 : 0}%` }}
-                      />
-                    </div>
-                    <span className="w-6 text-right text-xs font-semibold">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {Object.keys(analytics.checkInByHour).length > 0 && (
-            <div className="rounded-lg border border-charcoal/10 bg-white p-5">
-              <h2 className="mb-3 text-sm font-bold">報到時間分佈</h2>
-              <div className="flex items-end gap-1 h-24">
-                {Array.from({ length: 24 }, (_, h) => {
-                  const count = analytics.checkInByHour[h] ?? 0;
-                  const height = count > 0 ? Math.max((count / maxHour) * 96, 4) : 0;
-                  return (
-                    <div key={h} className="flex flex-1 flex-col items-center gap-1">
-                      <div className="w-full rounded-t bg-mint" style={{ height }} title={`${h}時: ${count}人`} />
-                      {h % 4 === 0 && <span className="text-[9px] text-charcoal/40">{h}</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+      {analytics && (
+        <div
+          className={`mt-5 space-y-5 transition-opacity ${loading ? "pointer-events-none opacity-50" : "opacity-100"}`}
+        >
+          <AnalyticsReport analytics={analytics} />
         </div>
       )}
     </div>

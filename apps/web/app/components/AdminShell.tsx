@@ -63,7 +63,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-dvh bg-paper text-charcoal">
       <div className="md:grid md:min-h-dvh md:grid-cols-[248px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-charcoal/10 bg-white md:sticky md:top-0 md:flex md:h-dvh md:flex-col">
+        <aside className="hidden border-r border-charcoal/10 bg-white md:sticky md:top-0 md:flex md:h-dvh md:flex-col print:hidden">
           <div className="px-5 py-5">
             <BrandLogo
               variant="horizontal"
@@ -138,7 +138,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <section className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-charcoal/10 bg-white/95 backdrop-blur md:hidden">
+          <header className="sticky top-0 z-20 border-b border-charcoal/10 bg-white/95 backdrop-blur md:hidden print:hidden">
             <div className="flex h-16 min-w-0 items-center justify-between gap-2 px-3 sm:px-4">
               <BrandLogo
                 variant="horizontal"
