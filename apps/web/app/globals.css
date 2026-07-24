@@ -40,8 +40,8 @@ textarea {
   border-radius: 999px;
   background: #8ee6c1;
   opacity: 0;
-  transform: translateY(10px) scale(0.8) rotate(var(--rotate, 0deg));
-  animation: success-firework 1.8s ease-in-out infinite;
+  transform: translate(0, 0) scale(0.3) rotate(var(--rotate, 0deg));
+  animation: success-firework 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
   animation-delay: var(--delay, 0s);
 }
 
@@ -62,38 +62,41 @@ textarea {
   border-radius: 2px;
   background: #ff7231;
   opacity: 0;
-  transform: rotate(45deg) scale(0.8);
-  animation: success-spark 1.6s ease-in-out infinite;
+  transform: translate(0, 0) rotate(45deg) scale(0.3);
+  animation: success-spark 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
   animation-delay: var(--delay, 0s);
 }
 
+/* Two-phase motion: a fast outward burst (0 → 20%) to the point set by
+   --dx/--dy per particle, then gravity takes over — drifting further out
+   and falling while fading, instead of just floating straight up. */
 @keyframes success-firework {
   0% {
     opacity: 0;
-    transform: translateY(12px) scale(0.7) rotate(var(--rotate, 0deg));
+    transform: translate(0, 0) scale(0.3) rotate(var(--rotate, 0deg));
   }
-  35% {
+  20% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotate(var(--rotate, 0deg));
+    transform: translate(var(--dx, 0), var(--dy, -22px)) scale(1.15) rotate(var(--rotate, 0deg));
   }
   100% {
     opacity: 0;
-    transform: translateY(-24px) scale(0.9) rotate(var(--rotate, 0deg));
+    transform: translate(calc(var(--dx, 0) * 1.5), calc(var(--dy, -22px) + 34px)) scale(0.75) rotate(var(--rotate, 0deg));
   }
 }
 
 @keyframes success-spark {
   0% {
     opacity: 0;
-    transform: translateY(12px) rotate(45deg) scale(0.6);
+    transform: translate(0, 0) rotate(45deg) scale(0.3);
   }
-  40% {
+  20% {
     opacity: 1;
-    transform: translateY(0) rotate(45deg) scale(1);
+    transform: translate(var(--dx, 0), var(--dy, -18px)) rotate(45deg) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-20px) rotate(45deg) scale(0.85);
+    transform: translate(calc(var(--dx, 0) * 1.5), calc(var(--dy, -18px) + 28px)) rotate(45deg) scale(0.6);
   }
 }
 

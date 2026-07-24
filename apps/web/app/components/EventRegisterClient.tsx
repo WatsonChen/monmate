@@ -82,8 +82,8 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5">
         <div className="relative w-full overflow-hidden rounded-xl border border-charcoal/10 bg-white px-5 py-12 text-center shadow-soft">
-          <span className="success-firework left-7 top-40" style={{ "--rotate": "-44deg" } as CSSProperties} />
-          <span className="success-firework right-9 top-36" style={{ "--delay": "0.45s", "--rotate": "40deg" } as CSSProperties} />
+          <span className="success-firework left-7 top-40" style={{ "--rotate": "-44deg", "--dx": "-28px", "--dy": "-30px" } as CSSProperties} />
+          <span className="success-firework right-9 top-36" style={{ "--delay": "0.45s", "--rotate": "40deg", "--dx": "26px", "--dy": "-26px" } as CSSProperties} />
           <div className="relative z-10">
             <BrandLogo variant="horizontal" className="mx-auto h-16 w-48 object-contain" />
             <div className="mx-auto mt-8 flex h-28 w-28 items-center justify-center rounded-full bg-mint shadow-soft">
