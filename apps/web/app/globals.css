@@ -49,30 +49,34 @@ textarea {
   background: var(--piece-color, #8ee6c1);
   box-shadow: 0 3px 7px rgba(26, 36, 33, 0.13);
   opacity: 0;
-  animation: success-cracker-piece 2100ms cubic-bezier(0.16, 0.8, 0.25, 1) var(--piece-delay, 40ms) both;
+  animation: success-cracker-piece 1900ms linear var(--piece-delay, 40ms) both;
 }
 
-/* Three-phase motion: burst outward from the cannon (0 → 32%), then
-   gravity takes over — the piece keeps drifting outward and falling
-   while tumbling (32% → 82%), only fading out right at the very end.
-   Opacity is deliberately held near 1 through the whole fall — since
-   every segment shares the same ease-out curve, letting opacity fade
-   in step with the fall (as position does) makes it invisible almost
-   immediately, which hides the extra falling distance entirely. */
+/* Two-segment projectile arc, not four separate legs — every earlier
+   version reused the same ease-out curve on every segment, so the piece
+   decelerated to near-zero velocity at each waypoint and had to "kick off"
+   again for the next one, reading as a stutter instead of one motion.
+   Here each keyframe sets its own animation-timing-function: 0%→30% eases
+   out (the cannon burst), 30%→100% eases in (gravity taking over and
+   accelerating the fall). Both curves are slow right at the 30% boundary,
+   so velocity passes smoothly through the peak — like a thrown object
+   arcing over — instead of stopping and restarting. The same ease-in also
+   holds opacity near 1 for most of the fall and only drops it fast at the
+   very end, so the piece stays visible while it's actually falling. */
 @keyframes success-cracker-piece {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.25) rotate(0deg); }
-  10% { opacity: 1; }
-  32% {
-    opacity: 1;
-    transform: translate(calc(-50% + var(--piece-x)), calc(-50% + var(--piece-y))) scale(0.92) rotate(calc(var(--piece-rotate) * 0.6));
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.25) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.12, 0.7, 0.25, 1);
   }
-  82% {
+  30% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--piece-x) * 1.15), calc(-50% + var(--piece-y) + var(--piece-fall, 90px))) scale(0.75) rotate(calc(var(--piece-rotate) * 0.94));
+    transform: translate(calc(-50% + var(--piece-x)), calc(-50% + var(--piece-y))) scale(1) rotate(calc(var(--piece-rotate) * 0.55));
+    animation-timing-function: cubic-bezier(0.55, 0.05, 0.85, 0.45);
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--piece-x) * 1.18), calc(-50% + var(--piece-y) + var(--piece-fall, 90px) * 1.08)) scale(0.7) rotate(var(--piece-rotate));
+    transform: translate(calc(-50% + var(--piece-x) * 1.2), calc(-50% + var(--piece-y) + var(--piece-fall, 90px))) scale(0.72) rotate(var(--piece-rotate));
   }
 }
 
