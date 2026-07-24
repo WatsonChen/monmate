@@ -6,16 +6,7 @@ import { apiFetch } from "../../lib/api";
 import type { CheckInResultDTO, EventDTO, UserDTO } from "@monmate/types";
 import { Info, Camera, CameraOff, Check, RotateCcw, Search, XCircle, StickyNote, Users } from "lucide-react";
 import { DotsLoading } from "../../components/DotsLoading";
-
-function fireConfetti() {
-  void import("canvas-confetti").then(({ default: confetti }) => {
-    const burst = (angle: number, origin: { x: number; y: number }) =>
-      confetti({ particleCount: 60, angle, spread: 55, origin, colors: ["#8ee6c1", "#ff7231", "#ffd166", "#06d6a0", "#118ab2"], scalar: 1.1, zIndex: 9999 });
-    burst(60, { x: 0, y: 0.65 });
-    burst(120, { x: 1, y: 0.65 });
-    setTimeout(() => { burst(75, { x: 0.1, y: 0.5 }); burst(105, { x: 0.9, y: 0.5 }); }, 180);
-  });
-}
+import { SuccessCracker } from "../../components/SuccessCracker";
 
 const resultConfig = {
   SUCCESS: { color: "bg-mint/20 border-mint/50", icon: Check, iconBg: "bg-mint", label: "報到成功！" },
@@ -171,7 +162,6 @@ export default function StaffScanPage() {
     setPendingCredential(null);
 
     if (!res.success || !res.data) { setMessage(res.error?.message ?? "報到失敗"); return; }
-    if (res.data.status === "SUCCESS") fireConfetti();
     setLastCount(countToCheckIn);
     setResult(res.data);
     setNote(res.data.attendee?.note ?? "");
@@ -431,7 +421,8 @@ export default function StaffScanPage() {
           const cfg = resultConfig[result.status];
           const Icon = cfg.icon;
           return (
-            <div className={`rounded-xl border-2 p-5 space-y-4 ${cfg.color}`}>
+            <div className={`relative overflow-hidden rounded-xl border-2 p-5 space-y-4 ${cfg.color}`}>
+              {result.status === "SUCCESS" ? <SuccessCracker /> : null}
               <div className="flex items-center gap-3">
                 <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${cfg.iconBg}`}>
                   <Icon size={22} className="text-white" strokeWidth={2.5} />

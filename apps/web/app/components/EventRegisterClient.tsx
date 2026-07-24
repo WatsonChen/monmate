@@ -1,13 +1,14 @@
 "use client";
 
-import { type CSSProperties, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Calendar, Check, Clock, MapPin } from "lucide-react";
 import type { RegistrationField } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { formatEventDate, formatEventTime } from "../lib/eventDate";
 import { BrandLogo } from "./BrandLogo";
 import { DotsLoading } from "./DotsLoading";
+import { SuccessCracker } from "./SuccessCracker";
 import {
   buildRegistrationFieldsPayload,
   emptyRegistrationFieldValues,
@@ -82,8 +83,7 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5">
         <div className="relative w-full overflow-hidden rounded-xl border border-charcoal/10 bg-white px-5 py-12 text-center shadow-soft">
-          <span className="success-firework left-7 top-40" style={{ "--rotate": "-44deg", "--dx": "-28px", "--dy": "-30px" } as CSSProperties} />
-          <span className="success-firework right-9 top-36" style={{ "--delay": "0.45s", "--rotate": "40deg", "--dx": "26px", "--dy": "-26px" } as CSSProperties} />
+          <SuccessCracker />
           <div className="relative z-10">
             <BrandLogo variant="horizontal" className="mx-auto h-16 w-48 object-contain" />
             <div className="mx-auto mt-8 flex h-28 w-28 items-center justify-center rounded-full bg-mint shadow-soft">
@@ -107,12 +107,23 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
             <img src={event.logoUrl} alt="" className="mb-3 h-12 max-w-[160px] object-contain object-left" />
           )}
           <h1 className="text-2xl font-bold">{event.name}</h1>
-          <div className="mt-2 flex flex-col gap-1 text-sm text-charcoal/60">
-            <span>📅 {formatEventDate(startDate)}</span>
+          <div className="mt-2 flex flex-col gap-1.5 text-sm text-charcoal/60">
+            <span className="flex items-center gap-1.5">
+              <Calendar size={14} className="shrink-0" />
+              {formatEventDate(startDate)}
+            </span>
             {event.endAt && (
-              <span>⏰ 結束 {formatEventTime(new Date(event.endAt))}</span>
+              <span className="flex items-center gap-1.5">
+                <Clock size={14} className="shrink-0" />
+                結束 {formatEventTime(new Date(event.endAt))}
+              </span>
             )}
-            {event.location && <span>📍 {event.location}</span>}
+            {event.location && (
+              <span className="flex items-center gap-1.5">
+                <MapPin size={14} className="shrink-0" />
+                {event.location}
+              </span>
+            )}
           </div>
           {event.description && (
             <p className="mt-3 text-sm leading-relaxed text-charcoal/70">{event.description}</p>

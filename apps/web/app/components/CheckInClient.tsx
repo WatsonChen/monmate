@@ -10,10 +10,11 @@ import {
   Search,
   XCircle
 } from "lucide-react";
-import { type CSSProperties, useState } from "react";
+import { useState } from "react";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
 import { DotsLoading } from "./DotsLoading";
+import { SuccessCracker } from "./SuccessCracker";
 
 type Method = "qr" | "manual";
 
@@ -115,30 +116,7 @@ export function CheckInClient({
 
       {isSuccess ? (
         <section className="relative mt-8 overflow-hidden rounded-lg border border-charcoal/10 bg-white px-5 py-8 text-center shadow-soft">
-          <span
-            className="success-firework left-7 top-40"
-            style={{ "--rotate": "-44deg", "--dx": "-28px", "--dy": "-30px" } as CSSProperties}
-          />
-          <span
-            className="success-firework right-9 top-36"
-            style={{ "--delay": "0.45s", "--rotate": "40deg", "--dx": "26px", "--dy": "-26px" } as CSSProperties}
-          />
-          <span
-            className="success-firework bottom-44 left-10"
-            style={{ "--delay": "0.85s", "--rotate": "28deg", "--dx": "-20px", "--dy": "-32px" } as CSSProperties}
-          />
-          <span
-            className="success-firework right-12 bottom-40"
-            style={{ "--delay": "0.15s", "--rotate": "-18deg", "--dx": "22px", "--dy": "-20px" } as CSSProperties}
-          />
-          <span
-            className="success-spark right-9 top-52"
-            style={{ "--delay": "0.25s", "--dx": "20px", "--dy": "-16px" } as CSSProperties}
-          />
-          <span
-            className="success-spark left-12 top-44"
-            style={{ "--delay": "0.65s", "--dx": "-16px", "--dy": "-14px" } as CSSProperties}
-          />
+          <SuccessCracker />
 
           <div className="relative z-10">
             <BrandLogo

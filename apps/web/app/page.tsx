@@ -1,4 +1,4 @@
-import type { ComponentType, CSSProperties, ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -32,6 +32,7 @@ import {
 import { FlowTimeline } from "./components/FlowTimeline";
 import { Reveal } from "./components/Reveal";
 import { StageStack } from "./components/StageStack";
+import { SuccessCracker } from "./components/SuccessCracker";
 
 type FeatureItem = {
   title: string;
@@ -389,20 +390,7 @@ export default function HomePage() {
             />
 
             <div className="absolute left-[10.5%] top-[39%] h-[47%] w-[29%] overflow-hidden px-[clamp(4px,1vw,8px)] py-[clamp(6px,1.4vw,10px)]">
-              <span
-                className="success-firework left-3 top-24 h-3 w-1"
-                style={{ "--rotate": "-44deg" } as CSSProperties}
-              />
-              <span
-                className="success-firework right-4 top-24 h-3 w-1"
-                style={
-                  { "--delay": "0.45s", "--rotate": "40deg" } as CSSProperties
-                }
-              />
-              <span
-                className="success-spark right-4 top-36 h-2 w-2"
-                style={{ "--delay": "0.25s" } as CSSProperties}
-              />
+              <SuccessCracker compact />
 
               <div className="relative z-10 flex h-full flex-col items-center text-center">
                 <BrandLogo

@@ -33,79 +33,82 @@ textarea {
   font: inherit;
 }
 
-.success-firework {
+.success-cracker-stage {
   position: absolute;
-  width: 7px;
-  height: 18px;
-  border-radius: 999px;
-  background: #8ee6c1;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.success-cracker-cannon {
+  position: absolute;
+  bottom: 24%;
+  width: 28px;
+  height: 58px;
+  border-radius: 7px 7px 12px 12px;
+  background: repeating-linear-gradient(135deg, #ff7231 0 7px, #ffd8bd 7px 12px, #8ee6c1 12px 19px);
+  box-shadow: 0 8px 16px rgba(26, 36, 33, 0.14);
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
   opacity: 0;
-  transform: translate(0, 0) scale(0.3) rotate(var(--rotate, 0deg));
-  animation: success-firework 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
-  animation-delay: var(--delay, 0s);
+  transform-origin: 50% 100%;
+  animation: success-cracker-pop 720ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
-.success-firework::after {
-  content: "";
-  position: absolute;
-  inset: 5px 0 auto;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: #ff7231;
+.success-cracker-cannon--left { left: 8%; --cannon-angle: -58deg; transform: rotate(-58deg) translateY(16px) scale(0.7); }
+.success-cracker-cannon--right { right: 8%; --cannon-angle: 58deg; transform: rotate(58deg) translateY(16px) scale(0.7); animation-delay: 70ms; }
+
+@keyframes success-cracker-pop {
+  0% { opacity: 0; transform: rotate(var(--cannon-angle)) translateY(16px) scale(0.7); }
+  18% { opacity: 1; transform: rotate(var(--cannon-angle)) translateY(0) scale(1.04); }
+  38% { opacity: 1; transform: rotate(var(--cannon-angle)) translateY(3px) scale(0.98); }
+  100% { opacity: 0; transform: rotate(var(--cannon-angle)) translateY(12px) scale(0.92); }
 }
 
-.success-spark {
+.success-cracker-piece {
   position: absolute;
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  background: #ff7231;
+  width: 8px;
+  height: 22px;
+  border-radius: 3px;
+  background: var(--piece-color, #8ee6c1);
+  box-shadow: 0 3px 7px rgba(26, 36, 33, 0.13);
   opacity: 0;
-  transform: translate(0, 0) rotate(45deg) scale(0.3);
-  animation: success-spark 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) infinite;
-  animation-delay: var(--delay, 0s);
+  animation: success-cracker-piece 920ms cubic-bezier(0.16, 0.8, 0.25, 1) var(--piece-delay, 40ms) both;
 }
 
-/* Two-phase motion: a fast outward burst (0 → 20%) to the point set by
-   --dx/--dy per particle, then gravity takes over — drifting further out
-   and falling while fading, instead of just floating straight up. */
-@keyframes success-firework {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0) scale(0.3) rotate(var(--rotate, 0deg));
-  }
-  20% {
-    opacity: 1;
-    transform: translate(var(--dx, 0), var(--dy, -22px)) scale(1.15) rotate(var(--rotate, 0deg));
-  }
-  100% {
-    opacity: 0;
-    transform: translate(calc(var(--dx, 0) * 1.5), calc(var(--dy, -22px) + 34px)) scale(0.75) rotate(var(--rotate, 0deg));
-  }
+@keyframes success-cracker-piece {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.25) rotate(0deg); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--piece-x)), calc(-50% + var(--piece-y))) scale(0.86) rotate(var(--piece-rotate)); }
 }
 
-@keyframes success-spark {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0) rotate(45deg) scale(0.3);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(var(--dx, 0), var(--dy, -18px)) rotate(45deg) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(calc(var(--dx, 0) * 1.5), calc(var(--dy, -18px) + 28px)) rotate(45deg) scale(0.6);
-  }
-}
+.success-cracker-piece--left-1 { left: 12%; top: 55%; --piece-x: 120px; --piece-y: -105px; --piece-rotate: -48deg; --piece-color: #8ee6c1; }
+.success-cracker-piece--left-2 { left: 12%; top: 55%; --piece-x: 86px; --piece-y: -55px; --piece-rotate: 34deg; --piece-color: #ff7231; --piece-delay: 80ms; }
+.success-cracker-piece--left-3 { left: 12%; top: 55%; --piece-x: 140px; --piece-y: -24px; --piece-rotate: 70deg; --piece-color: #ffd166; --piece-delay: 120ms; }
+.success-cracker-piece--left-4 { left: 12%; top: 55%; --piece-x: 64px; --piece-y: 30px; --piece-rotate: -24deg; --piece-color: #8ee6c1; --piece-delay: 170ms; }
+.success-cracker-piece--left-5 { left: 12%; top: 55%; --piece-x: 180px; --piece-y: -70px; --piece-rotate: 18deg; --piece-color: #ff7231; --piece-delay: 45ms; }
+.success-cracker-piece--right-1 { right: 12%; top: 55%; --piece-x: -120px; --piece-y: -105px; --piece-rotate: 48deg; --piece-color: #8ee6c1; --piece-delay: 70ms; }
+.success-cracker-piece--right-2 { right: 12%; top: 55%; --piece-x: -86px; --piece-y: -55px; --piece-rotate: -34deg; --piece-color: #ff7231; --piece-delay: 110ms; }
+.success-cracker-piece--right-3 { right: 12%; top: 55%; --piece-x: -140px; --piece-y: -24px; --piece-rotate: -70deg; --piece-color: #ffd166; --piece-delay: 150ms; }
+.success-cracker-piece--right-4 { right: 12%; top: 55%; --piece-x: -64px; --piece-y: 30px; --piece-rotate: 24deg; --piece-color: #8ee6c1; --piece-delay: 200ms; }
+.success-cracker-piece--right-5 { right: 12%; top: 55%; --piece-x: -180px; --piece-y: -70px; --piece-rotate: -18deg; --piece-color: #ff7231; --piece-delay: 90ms; }
+
+.success-cracker-stage--compact .success-cracker-cannon { width: 14px; height: 28px; bottom: 20%; }
+.success-cracker-stage--compact .success-cracker-piece { width: 4px; height: 11px; }
+.success-cracker-stage--compact .success-cracker-piece--left-1 { --piece-x: 42px; --piece-y: -36px; }
+.success-cracker-stage--compact .success-cracker-piece--left-2 { --piece-x: 28px; --piece-y: -20px; }
+.success-cracker-stage--compact .success-cracker-piece--left-3 { --piece-x: 52px; --piece-y: -8px; }
+.success-cracker-stage--compact .success-cracker-piece--left-4 { --piece-x: 24px; --piece-y: 14px; }
+.success-cracker-stage--compact .success-cracker-piece--left-5 { --piece-x: 66px; --piece-y: -26px; }
+.success-cracker-stage--compact .success-cracker-piece--right-1 { --piece-x: -42px; --piece-y: -36px; }
+.success-cracker-stage--compact .success-cracker-piece--right-2 { --piece-x: -28px; --piece-y: -20px; }
+.success-cracker-stage--compact .success-cracker-piece--right-3 { --piece-x: -52px; --piece-y: -8px; }
+.success-cracker-stage--compact .success-cracker-piece--right-4 { --piece-x: -24px; --piece-y: 14px; }
+.success-cracker-stage--compact .success-cracker-piece--right-5 { --piece-x: -66px; --piece-y: -26px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .success-firework,
-  .success-spark {
-    animation: none;
-    opacity: 0.75;
-  }
+  .success-cracker-cannon,
+  .success-cracker-piece { animation: none; opacity: 0.75; }
 }
 
 /* Dots loading */

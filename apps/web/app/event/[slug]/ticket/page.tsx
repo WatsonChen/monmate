@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { apiFetch } from "../../../lib/api";
 import type { EventDTO } from "@monmate/types";
-import { QrCode } from "lucide-react";
+import { Check, MapPin, QrCode, Search } from "lucide-react";
 import { EventCoverBanner } from "../../../components/EventCoverBanner";
 import { LogoLoading } from "../../../components/LogoLoading";
 
@@ -41,7 +41,7 @@ export default function TicketPage() {
   if (!data?.attendee) return (
     <main className="grid min-h-dvh place-items-center p-6 text-center">
       <div>
-        <p className="text-2xl">🔍</p>
+        <Search size={36} className="mx-auto text-charcoal/25" />
         <p className="mt-2 font-semibold">找不到票券</p>
         <p className="mt-1 text-sm text-charcoal/60">請確認連結是否正確</p>
       </div>
@@ -60,7 +60,12 @@ export default function TicketPage() {
         <div className="rounded-xl border border-charcoal/10 bg-white p-5 text-center shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-widest text-charcoal/40">入場票券</p>
           <h1 className="mt-1 text-xl font-bold">{event.name}</h1>
-          {event.location && <p className="mt-1 text-sm text-charcoal/60">📍 {event.location}</p>}
+          {event.location && (
+            <p className="mt-1 flex items-center justify-center gap-1 text-sm text-charcoal/60">
+              <MapPin size={14} className="shrink-0" />
+              {event.location}
+            </p>
+          )}
           <p className="mt-1 text-sm text-charcoal/60">
             {new Date(event.startAt).toLocaleString("zh-TW", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
           </p>
@@ -68,8 +73,9 @@ export default function TicketPage() {
           <div className="mt-4 border-t border-charcoal/10 pt-4">
             <p className="font-bold text-lg">{attendee.name}</p>
             {checkedIn && (
-              <span className="mt-1 inline-block rounded-full bg-green-100 px-3 py-0.5 text-xs font-semibold text-green-700">
-                ✅ 已報到
+              <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-0.5 text-xs font-semibold text-green-700">
+                <Check size={12} />
+                已報到
               </span>
             )}
           </div>
