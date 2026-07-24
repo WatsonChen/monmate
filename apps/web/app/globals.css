@@ -100,8 +100,11 @@ textarea {
 
 /* Three-phase motion: burst outward from the cannon (0 → 32%), then
    gravity takes over — the piece keeps drifting outward and falling
-   while tumbling, instead of vanishing the instant it reaches the
-   burst point. Keeps the confetti "raining" for a while after the pop. */
+   while tumbling (32% → 82%), only fading out right at the very end.
+   Opacity is deliberately held near 1 through the whole fall — since
+   every segment shares the same ease-out curve, letting opacity fade
+   in step with the fall (as position does) makes it invisible almost
+   immediately, which hides the extra falling distance entirely. */
 @keyframes success-cracker-piece {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(0.25) rotate(0deg); }
   10% { opacity: 1; }
@@ -109,9 +112,13 @@ textarea {
     opacity: 1;
     transform: translate(calc(-50% + var(--piece-x)), calc(-50% + var(--piece-y))) scale(0.92) rotate(calc(var(--piece-rotate) * 0.6));
   }
+  82% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--piece-x) * 1.15), calc(-50% + var(--piece-y) + var(--piece-fall, 90px))) scale(0.75) rotate(calc(var(--piece-rotate) * 0.94));
+  }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--piece-x) * 1.15), calc(-50% + var(--piece-y) + var(--piece-fall, 90px))) scale(0.7) rotate(var(--piece-rotate));
+    transform: translate(calc(-50% + var(--piece-x) * 1.18), calc(-50% + var(--piece-y) + var(--piece-fall, 90px) * 1.08)) scale(0.7) rotate(var(--piece-rotate));
   }
 }
 
