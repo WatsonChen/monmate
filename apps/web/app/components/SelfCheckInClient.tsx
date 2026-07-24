@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Clock, Phone, RotateCcw, Search, XCircle } from "lucide-react";
+import { AlertTriangle, Check, Clock, Phone, RotateCcw, Search, XCircle } from "lucide-react";
 import type { CheckInResultDTO } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { BrandLogo } from "./BrandLogo";
@@ -85,7 +85,7 @@ export function SelfCheckInClient({ eventId, eventName, eventLocation, venueCode
   const isCapacityExceeded =
     result?.status === "ALREADY_CHECKED_IN" &&
     (result.attendee?.checkInCapacity ?? 1) > 1;
-  const ResultIcon = result ? statusCopy[result.status].icon : null;
+  const ResultIcon = result ? (isCapacityExceeded ? AlertTriangle : statusCopy[result.status].icon) : null;
   const checkInCapacity = result?.attendee?.checkInCapacity ?? 1;
   const checkInCount = result?.attendee?.checkInCount ?? 1;
   const canContinueCheckIn = isSuccess && checkInCount < checkInCapacity;
