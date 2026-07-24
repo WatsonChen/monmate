@@ -12,6 +12,7 @@ type PublicEvent = {
   startAt: string;
   endAt?: string | null;
   location?: string | null;
+  logoUrl?: string | null;
   registrationRequired: boolean;
   registrationFields: Array<{ key: "email" | "age" | "gender"; required: boolean }>;
 };

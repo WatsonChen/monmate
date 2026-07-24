@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { apiFetch } from "../../../lib/api";
 import type { EventDTO } from "@monmate/types";
 import { QrCode } from "lucide-react";
+import { EventCoverBanner } from "../../../components/EventCoverBanner";
 import { LogoLoading } from "../../../components/LogoLoading";
 
 type AttendeeTicket = {
@@ -53,8 +54,9 @@ export default function TicketPage() {
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrValue)}`;
 
   return (
-    <main className="min-h-dvh bg-paper p-4">
-      <div className="mx-auto max-w-sm space-y-4">
+    <main className="min-h-dvh bg-paper">
+      <EventCoverBanner seed={event.slug} />
+      <div className="mx-auto max-w-sm space-y-4 p-4">
         <div className="rounded-xl border border-charcoal/10 bg-white p-5 text-center shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-widest text-charcoal/40">入場票券</p>
           <h1 className="mt-1 text-xl font-bold">{event.name}</h1>

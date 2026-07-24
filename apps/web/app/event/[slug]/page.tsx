@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@monmate/types";
+import type { ApiResponse, RegistrationField } from "@monmate/types";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
@@ -13,8 +13,10 @@ type PublicEvent = {
   startAt: string;
   endAt?: string | null;
   location?: string | null;
+  logoUrl?: string | null;
   registrationRequired: boolean;
   openRegistration: boolean;
+  registrationFields: RegistrationField[];
 };
 
 type TicketData = {
@@ -112,5 +114,27 @@ export default async function PublicEventPage({
     // 需要填表且尚未報名 → 顯示 landing，CTA 指向報名表
   }
 
-  return <EventLandingClient event={event} token={token ?? null} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: event.name,
+    startDate: event.startAt,
+    endDate: event.endAt ?? undefined,
+    description: event.description ?? undefined,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    location: event.location
+      ? { "@type": "Place", name: event.location }
+      : undefined
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <EventLandingClient event={event} token={token ?? null} />
+    </>
+  );
 }

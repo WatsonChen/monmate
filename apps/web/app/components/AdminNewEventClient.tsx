@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
 import { apiFetch } from "../lib/api";
+import { LogoUploadField } from "./LogoUploadField";
 import { RichEditor } from "./RichEditor";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 
@@ -27,6 +28,7 @@ export function AdminNewEventClient() {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [registrationRequired, setRegistrationRequired] = useState(false);
   const [openRegistration, setOpenRegistration] = useState(false);
   const [allowOverCapacity, setAllowOverCapacity] = useState(false);
@@ -68,6 +70,7 @@ export function AdminNewEventClient() {
         location: location.trim() || undefined,
         description: description.trim() || undefined,
         content: content || undefined,
+        logoUrl: logoUrl || undefined,
         attendeeLimit,
         allowOverCapacity,
         registrationRequired,
@@ -130,16 +133,21 @@ export function AdminNewEventClient() {
             />
           </label>
           <label className="text-sm font-semibold">
-            活動網址代號
+            <span className="flex items-center gap-1.5">
+              活動網址代號
+              <div className="group relative inline-flex">
+                <Info size={13} className="text-charcoal/40 cursor-help" />
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                  <p className="text-white/80">會用於報到連結，例如 /event/你的代號/checkin</p>
+                </div>
+              </div>
+            </span>
             <input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               placeholder="留空自動產生"
               className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
             />
-            <span className="mt-1 block text-xs font-normal text-charcoal/45">
-              會用於報到連結，例如 /event/你的代號/checkin
-            </span>
           </label>
           <label className="text-sm font-semibold">
             開始時間
@@ -170,8 +178,12 @@ export function AdminNewEventClient() {
         </label>
 
         <div className="mt-4">
+          <LogoUploadField value={logoUrl} onChange={setLogoUrl} token={token} />
+        </div>
+
+        <div className="mt-4">
           <p className="mb-2 text-sm font-semibold">活動內容（一頁式網站）</p>
-          <RichEditor value={content} onChange={setContent} placeholder="活動詳細說明、注意事項…" />
+          <RichEditor value={content} onChange={setContent} placeholder="活動流程、講者陣容、交通資訊、注意事項…寫得越完整，越能提高報名意願" />
         </div>
 
         {/* 人數上限選擇 */}

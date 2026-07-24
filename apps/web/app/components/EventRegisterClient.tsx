@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import type { RegistrationField } from "@monmate/types";
 import { apiFetch } from "../lib/api";
+import { formatEventDate, formatEventTime } from "../lib/eventDate";
 import { BrandLogo } from "./BrandLogo";
 import { DotsLoading } from "./DotsLoading";
-
-const PRESET_KEYS = ["email", "age", "gender", "capacity"] as const;
+import {
+  buildRegistrationFieldsPayload,
+  emptyRegistrationFieldValues,
+  RegistrationFieldsFieldset,
+  validateRegistrationFields
+} from "./RegistrationFieldsFieldset";
 
 type Props = {
   event: {
@@ -20,6 +25,7 @@ type Props = {
     startAt: string;
     endAt?: string | null;
     location?: string | null;
+    logoUrl?: string | null;
     registrationFields: RegistrationField[];
   };
   attendee: {
@@ -31,54 +37,24 @@ type Props = {
   token: string;
 };
 
-const genderOptions = [
-  { value: "M", label: "男" },
-  { value: "F", label: "女" },
-  { value: "OTHER", label: "其他" }
-];
-
 export function EventRegisterClient({ event, attendee, token }: Props) {
   const router = useRouter();
   const [name, setName] = useState(attendee?.name ?? "");
-  const [email, setEmail] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [capacity, setCapacity] = useState("1");
-  const [customValues, setCustomValues] = useState<Record<string, string>>({});
+  const [fieldValues, setFieldValues] = useState(emptyRegistrationFieldValues());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
 
   const fields = event.registrationFields ?? [];
-  const presetMap = Object.fromEntries(
-    PRESET_KEYS.map((k) => [k, fields.find((f) => f.key === k) ?? null])
-  );
-  const customFields = fields.filter((f) => !PRESET_KEYS.includes(f.key as typeof PRESET_KEYS[number]));
 
   async function submit() {
     if (!name.trim()) { setError("請填寫姓名"); return; }
-    if (presetMap.email?.required && !email.trim()) { setError("請填寫電子郵件"); return; }
-    if (presetMap.age?.required && !age) { setError("請填寫年齡"); return; }
-    if (presetMap.gender?.required && !gender) { setError("請選擇性別"); return; }
-    if (presetMap.capacity?.required && !capacity) { setError("請填寫報名人數"); return; }
-    if (presetMap.capacity && capacity && Number(capacity) < 1) { setError("報名人數至少為 1 人"); return; }
-    for (const f of customFields) {
-      if (f.required && !customValues[f.key]?.trim()) {
-        setError(`請填寫「${f.label ?? f.key}」`);
-        return;
-      }
-    }
+    const fieldError = validateRegistrationFields(fields, fieldValues);
+    if (fieldError) { setError(fieldError); return; }
 
     setIsSubmitting(true);
     setError("");
     try {
-      const customPayload: Record<string, string | number> = {};
-      for (const [k, v] of Object.entries(customValues)) {
-        const field = customFields.find((f) => f.key === k);
-        if (!field || !v.trim()) continue;
-        customPayload[k] = field.type === "number" ? Number(v) : v.trim();
-      }
-
       const res = await apiFetch(
         `/events/${event.id}/attendees/register`,
         {
@@ -86,11 +62,7 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
           body: JSON.stringify({
             token,
             name: name.trim(),
-            email: email.trim() || undefined,
-            age: age ? Number(age) : undefined,
-            gender: gender || undefined,
-            capacity: presetMap.capacity && capacity ? Number(capacity) : undefined,
-            customFields: Object.keys(customPayload).length > 0 ? customPayload : undefined
+            ...buildRegistrationFieldsPayload(fields, fieldValues)
           })
         }
       );
@@ -130,14 +102,15 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
       {/* 活動資訊 */}
       <div className="border-b border-charcoal/10 bg-white px-4 py-6">
         <div className="mx-auto max-w-lg">
-          <BrandLogo variant="horizontal" className="h-10 w-32 object-contain object-left" />
-          <h1 className="mt-4 text-2xl font-bold">{event.name}</h1>
+          {event.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.logoUrl} alt="" className="mb-3 h-12 max-w-[160px] object-contain object-left" />
+          )}
+          <h1 className="text-2xl font-bold">{event.name}</h1>
           <div className="mt-2 flex flex-col gap-1 text-sm text-charcoal/60">
-            <span>
-              📅 {startDate.toLocaleString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit" })}
-            </span>
+            <span>📅 {formatEventDate(startDate)}</span>
             {event.endAt && (
-              <span>⏰ 結束 {new Date(event.endAt).toLocaleString("zh-TW", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span>⏰ 結束 {formatEventTime(new Date(event.endAt))}</span>
             )}
             {event.location && <span>📍 {event.location}</span>}
           </div>
@@ -174,113 +147,7 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
               />
             </label>
 
-            {/* Email */}
-            {presetMap.email && (
-              <label className="block text-sm font-semibold">
-                電子郵件 {presetMap.email.required && <span className="text-orange">*</span>}
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
-                  placeholder="example@email.com"
-                />
-              </label>
-            )}
-
-            {/* 年齡 */}
-            {presetMap.age && (
-              <label className="block text-sm font-semibold">
-                年齡 {presetMap.age.required && <span className="text-orange">*</span>}
-                <input
-                  type="number"
-                  min={1}
-                  max={120}
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
-                  placeholder="請輸入年齡"
-                />
-              </label>
-            )}
-
-            {/* 性別 */}
-            {presetMap.gender && (
-              <div className="text-sm font-semibold">
-                性別 {presetMap.gender.required && <span className="text-orange">*</span>}
-                <div className="mt-2 flex gap-3">
-                  {genderOptions.map((opt) => (
-                    <label key={opt.value} className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg border py-2.5 text-sm font-semibold transition-colors ${
-                      gender === opt.value ? "border-orange bg-orange/10 text-orange" : "border-charcoal/15 bg-paper"
-                    }`}>
-                      <input
-                        type="radio"
-                        name="gender"
-                        value={opt.value}
-                        checked={gender === opt.value}
-                        onChange={() => setGender(opt.value)}
-                        className="sr-only"
-                      />
-                      {opt.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 報名人數 */}
-            {presetMap.capacity && (
-              <label className="block text-sm font-semibold">
-                報名人數 {presetMap.capacity.required && <span className="text-orange">*</span>}
-                <input
-                  type="number"
-                  min={1}
-                  max={999}
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
-                  placeholder="請輸入報名人數"
-                />
-              </label>
-            )}
-
-            {/* 自訂欄位 */}
-            {customFields.map((f) => {
-              const label = f.label ?? f.key;
-              const val = customValues[f.key] ?? "";
-              const setVal = (v: string) => setCustomValues((prev) => ({ ...prev, [f.key]: v }));
-
-              if (f.type === "select" && f.options && f.options.length > 0) {
-                return (
-                  <div key={f.key} className="text-sm font-semibold">
-                    {label} {f.required && <span className="text-orange">*</span>}
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {f.options.map((opt) => (
-                        <label key={opt} className={`flex cursor-pointer items-center rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
-                          val === opt ? "border-orange bg-orange/10 text-orange" : "border-charcoal/15 bg-paper"
-                        }`}>
-                          <input type="radio" name={f.key} value={opt} checked={val === opt} onChange={() => setVal(opt)} className="sr-only" />
-                          {opt}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <label key={f.key} className="block text-sm font-semibold">
-                  {label} {f.required && <span className="text-orange">*</span>}
-                  <input
-                    type={f.type === "number" ? "number" : "text"}
-                    value={val}
-                    onChange={(e) => setVal(e.target.value)}
-                    className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint"
-                    placeholder={`請輸入${label}`}
-                  />
-                </label>
-              );
-            })}
+            <RegistrationFieldsFieldset fields={fields} values={fieldValues} onChange={setFieldValues} />
           </div>
 
           {error && (
@@ -296,6 +163,15 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
             {isSubmitting ? <>送出中<DotsLoading /></> : "完成報名，取得入場票券"}
           </button>
         </div>
+
+        <a
+          href="https://monmate.tw"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block py-6 text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+        >
+          Powered by MonMate
+        </a>
       </div>
     </main>
   );

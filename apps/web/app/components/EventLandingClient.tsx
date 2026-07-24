@@ -4,38 +4,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Calendar, Clock, MapPin } from "lucide-react";
-import { BrandLogo } from "./BrandLogo";
-
-// Hand-rolled instead of Date#toLocaleString: the "zh-TW" weekday+date
-// combo is formatted with different spacing by the server's ICU (Node)
-// vs. the browser's, which fails hydration on every event page. Reading
-// via getUTC* after shifting by a fixed +8h also sidesteps whatever local
-// timezone the server process happens to run in (commonly UTC on Vercel),
-// so events always render true Taiwan wall-clock time on both sides.
-const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
-const TAIPEI_OFFSET_MS = 8 * 60 * 60 * 1000;
-
-function toTaipei(date: Date) {
-  return new Date(date.getTime() + TAIPEI_OFFSET_MS);
-}
-
-function formatEventDate(date: Date) {
-  const d = toTaipei(date);
-  const weekday = WEEKDAYS[d.getUTCDay()];
-  return `${d.getUTCFullYear()}年${d.getUTCMonth() + 1}月${d.getUTCDate()}日週${weekday} ${formatEventTime(date)}`;
-}
-
-function formatEventTime(date: Date) {
-  const d = toTaipei(date);
-  const hours24 = d.getUTCHours();
-  const period = hours24 < 12 ? "上午" : "下午";
-  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
-  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${period}${hours12}:${minutes}`;
-}
+import type { RegistrationField } from "@monmate/types";
+import { apiFetch } from "../lib/api";
+import { formatEventDate, formatEventTime } from "../lib/eventDate";
+import { EventCoverBanner } from "./EventCoverBanner";
+import {
+  buildRegistrationFieldsPayload,
+  emptyRegistrationFieldValues,
+  RegistrationFieldsFieldset,
+  validateRegistrationFields
+} from "./RegistrationFieldsFieldset";
 
 type Props = {
   event: {
+    id: string;
     slug: string;
     name: string;
     description?: string | null;
@@ -43,8 +25,10 @@ type Props = {
     startAt: string;
     endAt?: string | null;
     location?: string | null;
+    logoUrl?: string | null;
     registrationRequired: boolean;
     openRegistration: boolean;
+    registrationFields: RegistrationField[];
   };
   token: string | null;
 };
@@ -56,6 +40,7 @@ export function EventLandingClient({ event, token }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [fieldValues, setFieldValues] = useState(emptyRegistrationFieldValues());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -64,34 +49,59 @@ export function EventLandingClient({ event, token }: Props) {
   async function handlePublicRegister() {
     if (!name.trim()) { setError("請填寫姓名"); return; }
     if (!phone.trim()) { setError("請填寫電話"); return; }
+    if (event.registrationRequired) {
+      const fieldError = validateRegistrationFields(event.registrationFields, fieldValues);
+      if (fieldError) { setError(fieldError); return; }
+    }
+
     setIsSubmitting(true);
     setError("");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    const res = await fetch(`${apiUrl}/events/public/${event.slug}/register`, {
+
+    // 公開報名一律先建立基本資料（姓名＋電話）取得 token；活動若需要
+    // 額外欄位，緊接著在同一次送出裡把資料補完，畫面上不會跳頁，訪客
+    // 只會覺得自己填了「一個」表單。
+    const res = await apiFetch<{ qrToken: string }>(`/events/public/${event.slug}/register`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: name.trim(), phone: phone.trim() })
     });
-    const data = await res.json() as { success: boolean; data?: { qrToken: string }; error?: { message: string } };
-    setIsSubmitting(false);
-    if (!res.ok || !data.success || !data.data) {
-      setError(data.error?.message ?? "報名失敗，請稍後再試");
+    if (!res.success || !res.data) {
+      setIsSubmitting(false);
+      setError(res.error?.message ?? "報名失敗，請稍後再試");
       return;
     }
-    const { qrToken } = data.data;
+    const { qrToken } = res.data;
+
     if (event.registrationRequired) {
-      router.push(`/event/${event.slug}/register?token=${qrToken}`);
+      const completeRes = await apiFetch(`/events/${event.id}/attendees/register`, {
+        method: "POST",
+        body: JSON.stringify({
+          token: qrToken,
+          name: name.trim(),
+          ...buildRegistrationFieldsPayload(event.registrationFields, fieldValues)
+        })
+      });
+      setIsSubmitting(false);
+      if (!completeRes.success) {
+        setError(completeRes.error?.message ?? "報名失敗，請稍後再試");
+        return;
+      }
     } else {
-      router.push(`/event/${event.slug}/ticket?token=${qrToken}`);
+      setIsSubmitting(false);
     }
+
+    router.push(`/event/${event.slug}/ticket?token=${qrToken}`);
   }
 
   return (
     <main className="bg-paper">
+      <EventCoverBanner seed={event.slug} />
       <div className="border-b border-charcoal/10 bg-white px-4 py-6">
         <div className="mx-auto max-w-2xl">
-          <BrandLogo variant="horizontal" className="h-10 w-32 object-contain object-left" />
-          <h1 className="mt-4 text-2xl font-bold">{event.name}</h1>
+          {event.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.logoUrl} alt="" className="mb-3 h-12 max-w-[160px] object-contain object-left" />
+          )}
+          <h1 className="text-2xl font-bold">{event.name}</h1>
           <div className="mt-2 flex flex-col gap-1.5 text-sm text-charcoal/60">
             <span className="flex items-center gap-1.5">
               <Calendar size={14} className="shrink-0" />
@@ -135,6 +145,13 @@ export function EventLandingClient({ event, token }: Props) {
             </button>
           )}
 
+          {/* 邀請制活動、沒帶 token 造訪：沒有任何 CTA 可以顯示，至少說明狀態 */}
+          {!token && !event.openRegistration && (
+            <p className="mt-5 text-sm font-semibold text-charcoal/50">
+              此活動採邀請制，請透過您收到的專屬報名連結完成報名。
+            </p>
+          )}
+
           {!token && event.openRegistration && showForm && (
             <div className="mt-5 rounded-lg border border-charcoal/10 bg-paper p-4">
               <p className="mb-3 text-sm font-bold">填寫報名資料</p>
@@ -159,6 +176,17 @@ export function EventLandingClient({ event, token }: Props) {
                   />
                 </label>
               </div>
+
+              {event.registrationRequired && (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <RegistrationFieldsFieldset
+                    fields={event.registrationFields}
+                    values={fieldValues}
+                    onChange={setFieldValues}
+                  />
+                </div>
+              )}
+
               <div className="mt-3 flex gap-2">
                 <button
                   type="button"
@@ -189,6 +217,15 @@ export function EventLandingClient({ event, token }: Props) {
           />
         </div>
       )}
+
+      <a
+        href="https://monmate.tw"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block px-4 py-6 text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+      >
+        Powered by MonMate
+      </a>
     </main>
   );
 }

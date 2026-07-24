@@ -37,3 +37,18 @@ export async function apiFetch<T>(
 export function getApiBaseUrl() {
   return apiBaseUrl;
 }
+
+export const IMAGE_UPLOAD_MAX_SIZE = 2 * 1024 * 1024; // 2MB
+export const IMAGE_UPLOAD_ACCEPT = "image/png,image/jpeg,image/webp";
+
+export async function uploadImage(file: File, token: string): Promise<ApiResponse<{ url: string }>> {
+  if (file.size > IMAGE_UPLOAD_MAX_SIZE) {
+    return {
+      success: false,
+      error: { code: "FILE_TOO_LARGE", message: "圖片大小不能超過 2MB" }
+    };
+  }
+  const form = new FormData();
+  form.append("file", file);
+  return apiFetch<{ url: string }>("/uploads/image", { method: "POST", token, body: form });
+}

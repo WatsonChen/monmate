@@ -14,6 +14,7 @@ import {
   Info,
   Pencil,
   Plus,
+  QrCode,
   Search,
   Send,
   Trash2,
@@ -27,6 +28,7 @@ import { apiFetch } from "../lib/api";
 import { DateTimePicker } from "./DateTimePicker";
 import { DotsLoading } from "./DotsLoading";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
+import { LogoUploadField } from "./LogoUploadField";
 import { RichEditor } from "./RichEditor";
 import { VenueQrButton } from "./VenueQrModal";
 
@@ -81,6 +83,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editLocation, setEditLocation] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [editLogoUrl, setEditLogoUrl] = useState<string | null>(null);
   const [editRegistrationRequired, setEditRegistrationRequired] = useState(false);
   const [editOpenRegistration, setEditOpenRegistration] = useState(false);
   const [editAllowOverCapacity, setEditAllowOverCapacity] = useState(false);
@@ -138,10 +141,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     ...(showGenderCol ? ["0.5fr"] : []),
     "0.9fr", "0.65fr",
     ...customCols.map(() => "0.9fr"),
-    "0.65fr", "1fr", "64px"
+    "0.65fr", "1fr", "100px"
   ];
   const attendeeTableGridStyle = { gridTemplateColumns: attendeeTableColumns.join(" ") };
-  const attendeeTableMinWidth = 960 + (showAgeCol ? 70 : 0) + (showGenderCol ? 70 : 0) + customCols.length * 110;
+  const attendeeTableMinWidth = 1000 + (showAgeCol ? 70 : 0) + (showGenderCol ? 70 : 0) + customCols.length * 110;
 
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
@@ -167,6 +170,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         setEditLocation(ev.location ?? "");
         setEditDescription(ev.description ?? "");
         setEditContent(ev.content ?? "");
+        setEditLogoUrl(ev.logoUrl ?? null);
         setEditRegistrationRequired(ev.registrationRequired ?? false);
         setEditOpenRegistration(ev.openRegistration ?? false);
         setEditAllowOverCapacity(ev.allowOverCapacity ?? false);
@@ -206,6 +210,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         location: editLocation.trim() || null,
         description: editDescription.trim() || null,
         content: editContent || null,
+        logoUrl: editLogoUrl,
         registrationRequired: editRegistrationRequired,
         openRegistration: editOpenRegistration,
         allowOverCapacity: editAllowOverCapacity,
@@ -791,6 +796,14 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                             {attendee.note ?? <span className="text-charcoal/30">—</span>}
                           </span>
                           <div className="flex items-center gap-1">
+                            <a
+                              href={`/event/${event?.slug}/ticket?token=${attendee.qrToken}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title="預覽票券"
+                              className="flex h-7 w-7 items-center justify-center rounded-lg border border-charcoal/15 text-charcoal/50 hover:border-mint/60 hover:text-charcoal transition-colors">
+                              <QrCode size={13} />
+                            </a>
                             <button type="button"
                               onClick={() => void sendSingleInvite(attendee.id)}
                               disabled={!attendee.email || sendingInviteId === attendee.id}
@@ -949,12 +962,17 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
               </label>
               <label className="text-sm font-semibold">
-                活動網址代號
+                <span className="flex items-center gap-1.5">
+                  活動網址代號
+                  <div className="group relative inline-flex">
+                    <Info size={13} className="text-charcoal/40 cursor-help" />
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                      <p className="text-white/80">會用於報到連結，例如 /event/你的代號/checkin；修改後原連結將失效</p>
+                    </div>
+                  </div>
+                </span>
                 <input value={editSlug} onChange={(e) => setEditSlug(e.target.value)}
                   className="mt-2 h-11 w-full rounded-lg border border-charcoal/15 bg-paper px-3 outline-none focus:border-mint" />
-                <span className="mt-1 block text-xs font-normal text-charcoal/45">
-                  會用於報到連結，例如 /event/你的代號/checkin；修改後原連結將失效
-                </span>
               </label>
               <label className="text-sm font-semibold">
                 開始時間
@@ -976,8 +994,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </label>
             </div>
             <div className="mt-4">
+              <LogoUploadField value={editLogoUrl} onChange={setEditLogoUrl} token={token} />
+            </div>
+            <div className="mt-4">
               <p className="mb-2 text-sm font-semibold">活動內容（一頁式網站）</p>
-              <RichEditor value={editContent} onChange={setEditContent} placeholder="活動詳細說明、注意事項…" />
+              <RichEditor value={editContent} onChange={setEditContent} placeholder="活動流程、講者陣容、交通資訊、注意事項…寫得越完整，越能提高報名意願" />
             </div>
             {/* 報名設定 */}
             <div className="mt-4 rounded-lg bg-paper p-4">
