@@ -14,6 +14,7 @@ import {
   LogIn,
   Mail,
   MessageSquareText,
+  PlayCircle,
   QrCode,
   Send,
   Smartphone,
@@ -21,6 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import { BrandLogo } from "./components/BrandLogo";
+import { DemoVideoTrigger } from "./components/DemoVideoTrigger";
 import { FaqAccordion } from "./components/FaqAccordion";
 import {
   BlobAccent,
@@ -37,8 +39,6 @@ type FeatureItem = {
   icon: ComponentType<{ className?: string; size?: number }>;
   preview?: ReactNode;
 };
-
-const demoCheckInHref = "/event/monmate-demo/checkin?v=homepage-demo";
 
 const navItems = [
   { label: "功能", href: "#features" },
@@ -328,7 +328,7 @@ export default function HomePage() {
             <p className="text-sm font-bold text-orange">
               MonMate・活動報到系統
             </p>
-            <h1 className="mt-3 text-5xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
+            <h1 className="mt-3 text-4xl font-semibold leading-[1.15] tracking-tight sm:text-6xl">
               活動報到，從報名到現場一次搞定
             </h1>
             <p className="mt-5 text-base leading-7 text-charcoal/70 md:max-w-xl">
@@ -355,13 +355,10 @@ export default function HomePage() {
               <CalendarPlus size={18} />
               登入建立活動
             </Link>
-            <Link
-              href={demoCheckInHref}
-              className="flex h-12 items-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-charcoal"
-            >
-              <QrCode size={18} />
-              查看報到 Demo
-            </Link>
+            <DemoVideoTrigger className="flex h-12 items-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-charcoal">
+              <PlayCircle size={18} />
+              看 Demo 影片
+            </DemoVideoTrigger>
           </div>
 
           <div className="relative z-10 mt-8 grid gap-3 sm:grid-cols-3">
@@ -434,18 +431,12 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-auto grid w-full gap-[clamp(4px,0.9vw,7px)] pt-[clamp(8px,1.6vw,14px)]">
-                  <Link
-                    href={demoCheckInHref}
-                    className="flex h-[clamp(20px,3vw,28px)] items-center justify-center rounded-full bg-orange text-[clamp(8px,1.1vw,10px)] font-semibold text-white shadow-soft"
-                  >
+                  <div className="flex h-[clamp(20px,3vw,28px)] items-center justify-center rounded-full bg-orange text-[clamp(8px,1.1vw,10px)] font-semibold text-white shadow-soft">
                     下一位來賓
-                  </Link>
-                  <Link
-                    href="/admin"
-                    className="flex h-[clamp(20px,3vw,28px)] items-center justify-center rounded-full border border-orange/35 bg-white text-[clamp(8px,1.1vw,10px)] font-semibold text-charcoal/70"
-                  >
+                  </div>
+                  <div className="flex h-[clamp(20px,3vw,28px)] items-center justify-center rounded-full border border-orange/35 bg-white text-[clamp(8px,1.1vw,10px)] font-semibold text-charcoal/70">
                     查看報到紀錄
-                  </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -731,9 +722,9 @@ export default function HomePage() {
               <Link href="/admin/login" className="hover:text-charcoal">
                 建立活動
               </Link>
-              <Link href={demoCheckInHref} className="hover:text-charcoal">
+              <DemoVideoTrigger className="text-left hover:text-charcoal">
                 查看 Demo
-              </Link>
+              </DemoVideoTrigger>
             </div>
           </div>
           <div>

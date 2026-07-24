@@ -432,10 +432,21 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       </div>
 
       {message && (
-        <section className={`mt-5 rounded-lg border p-4 text-sm font-semibold ${
+        <section className={`mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4 text-sm font-semibold ${
           message.includes("更新") || message.includes("已") ? "border-green-200 bg-green-50 text-green-700" : "border-orange/20 bg-orange/10"
         }`}>
-          {message}
+          <span>{message}</span>
+          {created && event && (
+            <a
+              href={`/event/${event.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 text-xs font-bold text-green-700 shadow-sm hover:bg-green-50"
+            >
+              <ExternalLink size={13} />
+              預覽活動頁面
+            </a>
+          )}
         </section>
       )}
 

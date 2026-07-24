@@ -8,16 +8,35 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { LogoSpinner } from "./LogoSpinner";
 
+const FALLBACK_DEMO_HREF = "/event/monmate-demo/checkin";
+
 export function AdminHomeClient() {
   const [token, setToken] = useState("");
   const [events, setEvents] = useState<EventDTO[]>([]);
   const [billing, setBilling] = useState<BillingStatusDTO | null>(null);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [demoHref, setDemoHref] = useState(FALLBACK_DEMO_HREF);
 
   useEffect(() => {
     setToken(window.localStorage.getItem("monmate.token") ?? "");
   }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    // The demo checkin link needs the real venue code (a random UUID set
+    // per event) to actually work — resolve it instead of guessing.
+    void apiFetch<EventDTO>("/events/public/monmate-demo").then((eventRes) => {
+      const demoEventId = eventRes.success ? eventRes.data?.id : undefined;
+      if (!demoEventId) return;
+      void apiFetch<{ venueCode: string; venueUrl: string }>(
+        `/events/${demoEventId}/venue-qr`,
+        { token }
+      ).then((qrRes) => {
+        if (qrRes.success && qrRes.data?.venueUrl) setDemoHref(qrRes.data.venueUrl);
+      });
+    });
+  }, [token]);
 
   useEffect(() => {
     if (!token) {
@@ -84,7 +103,8 @@ export function AdminHomeClient() {
             新增活動
           </Link>
           <Link
-            href="/event/monmate-demo/checkin"
+            href={demoHref}
+            target="_blank"
             className="flex h-11 items-center justify-center gap-2 rounded-lg bg-mint px-4 text-sm font-bold text-charcoal"
           >
             <QrCode size={18} />
@@ -122,7 +142,7 @@ export function AdminHomeClient() {
               ["活動數", String(events.length), ClipboardCheck],
               ["總報名", String(totals.attendees), QrCode],
               ["報到紀錄", String(totals.checkIns), ClipboardCheck],
-              ["可建立場次", String(billing?.attendeeCredits ?? 0), CreditCard]
+              ["人次額度", String(billing?.attendeeCredits ?? 0), CreditCard]
             ].map(([label, value, Icon]) => (
               <div key={label as string} className="rounded-lg border border-charcoal/10 bg-white p-4">
                 <div className="flex items-center justify-between gap-3">
