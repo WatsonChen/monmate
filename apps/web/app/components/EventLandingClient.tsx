@@ -6,6 +6,34 @@ import { useState } from "react";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 
+// Hand-rolled instead of Date#toLocaleString: the "zh-TW" weekday+date
+// combo is formatted with different spacing by the server's ICU (Node)
+// vs. the browser's, which fails hydration on every event page. Reading
+// via getUTC* after shifting by a fixed +8h also sidesteps whatever local
+// timezone the server process happens to run in (commonly UTC on Vercel),
+// so events always render true Taiwan wall-clock time on both sides.
+const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+const TAIPEI_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+function toTaipei(date: Date) {
+  return new Date(date.getTime() + TAIPEI_OFFSET_MS);
+}
+
+function formatEventDate(date: Date) {
+  const d = toTaipei(date);
+  const weekday = WEEKDAYS[d.getUTCDay()];
+  return `${d.getUTCFullYear()}年${d.getUTCMonth() + 1}月${d.getUTCDate()}日週${weekday} ${formatEventTime(date)}`;
+}
+
+function formatEventTime(date: Date) {
+  const d = toTaipei(date);
+  const hours24 = d.getUTCHours();
+  const period = hours24 < 12 ? "上午" : "下午";
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${period}${hours12}:${minutes}`;
+}
+
 type Props = {
   event: {
     slug: string;
@@ -59,7 +87,7 @@ export function EventLandingClient({ event, token }: Props) {
   }
 
   return (
-    <main className="min-h-dvh bg-paper">
+    <main className="bg-paper">
       <div className="border-b border-charcoal/10 bg-white px-4 py-6">
         <div className="mx-auto max-w-2xl">
           <BrandLogo variant="horizontal" className="h-10 w-32 object-contain object-left" />
@@ -67,16 +95,12 @@ export function EventLandingClient({ event, token }: Props) {
           <div className="mt-2 flex flex-col gap-1.5 text-sm text-charcoal/60">
             <span className="flex items-center gap-1.5">
               <Calendar size={14} className="shrink-0" />
-              {startDate.toLocaleString("zh-TW", {
-                year: "numeric", month: "long", day: "numeric",
-                weekday: "short", hour: "2-digit", minute: "2-digit",
-              })}
+              {formatEventDate(startDate)}
             </span>
             {event.endAt && (
               <span className="flex items-center gap-1.5">
                 <Clock size={14} className="shrink-0" />
-                結束{" "}
-                {new Date(event.endAt).toLocaleString("zh-TW", { hour: "2-digit", minute: "2-digit" })}
+                結束 {formatEventTime(new Date(event.endAt))}
               </span>
             )}
             {event.location && (

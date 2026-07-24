@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@monmate/types";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
 import { EventLandingClient } from "../../components/EventLandingClient";
@@ -43,6 +44,32 @@ async function getTicket(slug: string, token: string) {
   } catch {
     return null;
   }
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const event = await getEvent(slug);
+
+  if (!event) {
+    return { title: "找不到此活動 - MonMate" };
+  }
+
+  const title = event.name;
+  const description = event.description || "使用 MonMate 建立的活動報到頁面";
+
+  // No per-event cover image field yet — the brand lockup is a reasonable
+  // default so shared links at least show something branded and legible
+  // instead of the generic site-wide "MonMate" card.
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "website", images: ["/brand/logo-slogan.png"] },
+    twitter: { card: "summary_large_image", title, description, images: ["/brand/logo-slogan.png"] }
+  };
 }
 
 export default async function PublicEventPage({
