@@ -109,14 +109,16 @@ export default function TicketPage() {
           </div>
         )}
 
-        <a
-          href="https://monmate.tw"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
-        >
-          Powered by MonMate
-        </a>
+        {!event.unlockedFeatures?.includes("BRANDING") && (
+          <a
+            href="https://monmate.tw"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+          >
+            Powered by MonMate
+          </a>
+        )}
       </div>
     </main>
   );

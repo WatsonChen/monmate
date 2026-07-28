@@ -28,6 +28,7 @@ import { apiFetch } from "../lib/api";
 import { DateTimePicker } from "./DateTimePicker";
 import { DotsLoading } from "./DotsLoading";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
+import { FeatureUnlockControl } from "./FeatureUnlockControl";
 import { LogoUploadField } from "./LogoUploadField";
 import { RichEditor } from "./RichEditor";
 import { VenueQrButton } from "./VenueQrModal";
@@ -564,7 +565,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <ClipboardList size={14} />
                   活動問卷
                 </Link>
-                <VenueQrButton eventId={event.id} eventName={event.name} token={token} />
+                <VenueQrButton
+                  eventId={event.id}
+                  eventName={event.name}
+                  token={token}
+                  brandingUnlocked={event.unlockedFeatures?.includes("BRANDING") ?? false}
+                />
               </div>
             </div>
           </section>
@@ -994,7 +1000,20 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </label>
             </div>
             <div className="mt-4">
-              <LogoUploadField value={editLogoUrl} onChange={setEditLogoUrl} token={token} />
+              <LogoUploadField
+                value={editLogoUrl}
+                onChange={setEditLogoUrl}
+                token={token}
+                unlocked={event!.unlockedFeatures?.includes("BRANDING") ?? false}
+                unlockControl={
+                  <FeatureUnlockControl
+                    eventId={event!.id}
+                    feature="BRANDING"
+                    token={token}
+                    onUnlocked={setEvent}
+                  />
+                }
+              />
             </div>
             <div className="mt-4">
               <p className="mb-2 text-sm font-semibold">活動內容（一頁式網站）</p>

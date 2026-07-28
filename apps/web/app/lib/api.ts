@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@monmate/types";
+import type { ApiResponse, EventDTO, FeatureUnlockKey } from "@monmate/types";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -51,4 +51,16 @@ export async function uploadImage(file: File, token: string): Promise<ApiRespons
   const form = new FormData();
   form.append("file", file);
   return apiFetch<{ url: string }>("/uploads/image", { method: "POST", token, body: form });
+}
+
+export async function unlockFeature(
+  eventId: string,
+  feature: FeatureUnlockKey,
+  token: string
+): Promise<ApiResponse<EventDTO>> {
+  return apiFetch<EventDTO>(`/events/${eventId}/unlock-feature`, {
+    method: "POST",
+    token,
+    body: JSON.stringify({ feature })
+  });
 }

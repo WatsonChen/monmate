@@ -14,6 +14,8 @@ type Props = {
   eventId: string;
   eventName: string;
   token: string;
+  /** BRANDING feature gate — defaults to false so the mark shows unless explicitly unlocked. */
+  brandingUnlocked?: boolean;
 };
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -26,8 +28,15 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-async function buildBrandedQrCanvas(qrImageUrl: string, eventName: string): Promise<HTMLCanvasElement> {
-  const [qrImg, markImg] = await Promise.all([loadImage(qrImageUrl), loadImage("/brand/logo-mark.png")]);
+async function buildBrandedQrCanvas(
+  qrImageUrl: string,
+  eventName: string,
+  showBrandMark: boolean
+): Promise<HTMLCanvasElement> {
+  const [qrImg, markImg] = await Promise.all([
+    loadImage(qrImageUrl),
+    showBrandMark ? loadImage("/brand/logo-mark.png") : Promise.resolve(null)
+  ]);
 
   const width = 480;
   const padding = 40;
@@ -63,23 +72,26 @@ async function buildBrandedQrCanvas(qrImageUrl: string, eventName: string): Prom
   ctx.drawImage(qrImg, padding, y, qrSize, qrSize);
 
   // Center mark sized to stay within the QR's ecc=H error-correction budget (~30%).
-  const markBadge = qrSize * 0.2;
-  const markPadding = markBadge * 0.15;
-  const badgeX = padding + (qrSize - markBadge) / 2;
-  const badgeY = y + (qrSize - markBadge) / 2;
-  const badgeRadius = 10;
+  // Only drawn when the BRANDING feature isn't unlocked for this event.
+  if (showBrandMark && markImg) {
+    const markBadge = qrSize * 0.2;
+    const markPadding = markBadge * 0.15;
+    const badgeX = padding + (qrSize - markBadge) / 2;
+    const badgeY = y + (qrSize - markBadge) / 2;
+    const badgeRadius = 10;
 
-  ctx.fillStyle = "#FFFFFF";
-  ctx.beginPath();
-  ctx.roundRect(badgeX, badgeY, markBadge, markBadge, badgeRadius);
-  ctx.fill();
-  ctx.drawImage(
-    markImg,
-    badgeX + markPadding,
-    badgeY + markPadding,
-    markBadge - markPadding * 2,
-    markBadge - markPadding * 2,
-  );
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath();
+    ctx.roundRect(badgeX, badgeY, markBadge, markBadge, badgeRadius);
+    ctx.fill();
+    ctx.drawImage(
+      markImg,
+      badgeX + markPadding,
+      badgeY + markPadding,
+      markBadge - markPadding * 2,
+      markBadge - markPadding * 2,
+    );
+  }
 
   y += qrSize + 32;
 
@@ -106,7 +118,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines.slice(0, 3);
 }
 
-export function VenueQrButton({ eventId, eventName, token }: Props) {
+export function VenueQrButton({ eventId, eventName, token, brandingUnlocked = false }: Props) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<VenueQrData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -131,13 +143,13 @@ export function VenueQrButton({ eventId, eventName, token }: Props) {
   useEffect(() => {
     if (!qrImageUrl) return;
     let cancelled = false;
-    void buildBrandedQrCanvas(qrImageUrl, eventName).then((canvas) => {
+    void buildBrandedQrCanvas(qrImageUrl, eventName, !brandingUnlocked).then((canvas) => {
       if (!cancelled) setDownloadUrl(canvas.toDataURL("image/png"));
     });
     return () => {
       cancelled = true;
     };
-  }, [qrImageUrl, eventName]);
+  }, [qrImageUrl, eventName, brandingUnlocked]);
 
   return (
     <>

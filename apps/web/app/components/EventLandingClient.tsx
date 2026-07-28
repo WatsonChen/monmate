@@ -29,6 +29,7 @@ type Props = {
     registrationRequired: boolean;
     openRegistration: boolean;
     registrationFields: RegistrationField[];
+    unlockedFeatures?: string[];
   };
   token: string | null;
 };
@@ -218,14 +219,16 @@ export function EventLandingClient({ event, token }: Props) {
         </div>
       )}
 
-      <a
-        href="https://monmate.tw"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block px-4 py-6 text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
-      >
-        Powered by MonMate
-      </a>
+      {!event.unlockedFeatures?.includes("BRANDING") && (
+        <a
+          href="https://monmate.tw"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block px-4 py-6 text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+        >
+          Powered by MonMate
+        </a>
+      )}
     </main>
   );
 }

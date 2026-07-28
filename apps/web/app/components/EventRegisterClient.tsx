@@ -28,6 +28,7 @@ type Props = {
     location?: string | null;
     logoUrl?: string | null;
     registrationFields: RegistrationField[];
+    unlockedFeatures?: string[];
   };
   attendee: {
     id: string;
@@ -175,14 +176,16 @@ export function EventRegisterClient({ event, attendee, token }: Props) {
           </button>
         </div>
 
-        <a
-          href="https://monmate.tw"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block py-6 text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
-        >
-          Powered by MonMate
-        </a>
+        {!event.unlockedFeatures?.includes("BRANDING") && (
+          <a
+            href="https://monmate.tw"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block py-6 text-center text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+          >
+            Powered by MonMate
+          </a>
+        )}
       </div>
     </main>
   );

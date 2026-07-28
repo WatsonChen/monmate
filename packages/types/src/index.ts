@@ -69,11 +69,20 @@ export type EventDTO = {
   openRegistration?: boolean;
   selfCheckInBufferMinutes?: number | null;
   registrationFields?: RegistrationField[];
+  unlockedFeatures?: string[];
   attendeeCount?: number;
   checkInLogCount?: number;
   createdAt?: string;
   updatedAt?: string;
 };
+
+// Premium features an event can unlock once from the user's existing
+// attendeeCredits pool — a flat one-time deduction, not a subscription.
+export const FEATURE_UNLOCK_COSTS = {
+  BRANDING: 50
+} as const;
+
+export type FeatureUnlockKey = keyof typeof FEATURE_UNLOCK_COSTS;
 
 export type AttendeeDTO = {
   id: string;

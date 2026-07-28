@@ -178,7 +178,7 @@ export function AdminNewEventClient() {
         </label>
 
         <div className="mt-4">
-          <LogoUploadField value={logoUrl} onChange={setLogoUrl} token={token} />
+          <LogoUploadField value={logoUrl} onChange={setLogoUrl} token={token} unlocked={false} />
         </div>
 
         <div className="mt-4">
