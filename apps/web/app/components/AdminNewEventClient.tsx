@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
 import { apiFetch } from "../lib/api";
 import { LogoUploadField } from "./LogoUploadField";
+import { CoverImageUploadField } from "./CoverImageUploadField";
 import { RichEditor } from "./RichEditor";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 
@@ -29,6 +30,7 @@ export function AdminNewEventClient() {
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [registrationRequired, setRegistrationRequired] = useState(false);
   const [openRegistration, setOpenRegistration] = useState(false);
   const [allowOverCapacity, setAllowOverCapacity] = useState(false);
@@ -71,6 +73,7 @@ export function AdminNewEventClient() {
         description: description.trim() || undefined,
         content: content || undefined,
         logoUrl: logoUrl || undefined,
+        coverImageUrl: coverImageUrl || undefined,
         attendeeLimit,
         allowOverCapacity,
         registrationRequired,
@@ -179,6 +182,10 @@ export function AdminNewEventClient() {
 
         <div className="mt-4">
           <LogoUploadField value={logoUrl} onChange={setLogoUrl} token={token} unlocked={false} />
+        </div>
+
+        <div className="mt-4">
+          <CoverImageUploadField value={coverImageUrl} onChange={setCoverImageUrl} token={token} unlocked={false} />
         </div>
 
         <div className="mt-4">

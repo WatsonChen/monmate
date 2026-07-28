@@ -26,6 +26,7 @@ type Props = {
     endAt?: string | null;
     location?: string | null;
     logoUrl?: string | null;
+    coverImageUrl?: string | null;
     registrationRequired: boolean;
     openRegistration: boolean;
     registrationFields: RegistrationField[];
@@ -95,7 +96,7 @@ export function EventLandingClient({ event, token }: Props) {
 
   return (
     <main className="bg-paper">
-      <EventCoverBanner seed={event.slug} />
+      <EventCoverBanner seed={event.slug} imageUrl={event.coverImageUrl} />
       <div className="border-b border-charcoal/10 bg-white px-4 py-6">
         <div className="mx-auto max-w-2xl">
           {event.logoUrl && (

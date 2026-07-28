@@ -55,7 +55,7 @@ export default function TicketPage() {
 
   return (
     <main className="min-h-dvh bg-paper">
-      <EventCoverBanner seed={event.slug} />
+      <EventCoverBanner seed={event.slug} imageUrl={event.coverImageUrl} />
       <div className="mx-auto max-w-sm space-y-4 p-4">
         <div className="rounded-xl border border-charcoal/10 bg-white p-5 text-center shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-widest text-charcoal/40">入場票券</p>

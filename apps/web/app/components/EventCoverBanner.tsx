@@ -18,11 +18,11 @@ function pickDefaultCover(seed: string) {
   return DEFAULT_COVERS[hash % DEFAULT_COVERS.length];
 }
 
-export function EventCoverBanner({ seed }: { seed: string }) {
+export function EventCoverBanner({ seed, imageUrl }: { seed: string; imageUrl?: string | null }) {
   return (
     <div className="relative h-40 w-full overflow-hidden bg-paper sm:h-52 md:h-64">
       <Image
-        src={pickDefaultCover(seed)}
+        src={imageUrl || pickDefaultCover(seed)}
         alt=""
         fill
         priority

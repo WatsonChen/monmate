@@ -68,6 +68,7 @@ export type EventDTO = {
   endAt?: string | null;
   location?: string | null;
   logoUrl?: string | null;
+  coverImageUrl?: string | null;
   attendeeLimit?: number | null;
   allowOverCapacity?: boolean;
   registrationRequired?: boolean;

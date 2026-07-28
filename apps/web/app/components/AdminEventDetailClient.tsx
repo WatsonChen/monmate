@@ -30,6 +30,7 @@ import { DotsLoading } from "./DotsLoading";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 import { FeatureUnlockControl } from "./FeatureUnlockControl";
 import { LogoUploadField } from "./LogoUploadField";
+import { CoverImageUploadField } from "./CoverImageUploadField";
 import { RichEditor } from "./RichEditor";
 import { VenueQrButton } from "./VenueQrModal";
 
@@ -85,6 +86,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [editDescription, setEditDescription] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editLogoUrl, setEditLogoUrl] = useState<string | null>(null);
+  const [editCoverImageUrl, setEditCoverImageUrl] = useState<string | null>(null);
   const [editRegistrationRequired, setEditRegistrationRequired] = useState(false);
   const [editOpenRegistration, setEditOpenRegistration] = useState(false);
   const [editAllowOverCapacity, setEditAllowOverCapacity] = useState(false);
@@ -172,6 +174,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         setEditDescription(ev.description ?? "");
         setEditContent(ev.content ?? "");
         setEditLogoUrl(ev.logoUrl ?? null);
+        setEditCoverImageUrl(ev.coverImageUrl ?? null);
         setEditRegistrationRequired(ev.registrationRequired ?? false);
         setEditOpenRegistration(ev.openRegistration ?? false);
         setEditAllowOverCapacity(ev.allowOverCapacity ?? false);
@@ -212,6 +215,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
         description: editDescription.trim() || null,
         content: editContent || null,
         logoUrl: editLogoUrl,
+        coverImageUrl: editCoverImageUrl,
         registrationRequired: editRegistrationRequired,
         openRegistration: editOpenRegistration,
         allowOverCapacity: editAllowOverCapacity,
@@ -1003,6 +1007,22 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               <LogoUploadField
                 value={editLogoUrl}
                 onChange={setEditLogoUrl}
+                token={token}
+                unlocked={event!.unlockedFeatures?.includes("BRANDING") ?? false}
+                unlockControl={
+                  <FeatureUnlockControl
+                    eventId={event!.id}
+                    feature="BRANDING"
+                    token={token}
+                    onUnlocked={setEvent}
+                  />
+                }
+              />
+            </div>
+            <div className="mt-4">
+              <CoverImageUploadField
+                value={editCoverImageUrl}
+                onChange={setEditCoverImageUrl}
                 token={token}
                 unlocked={event!.unlockedFeatures?.includes("BRANDING") ?? false}
                 unlockControl={
