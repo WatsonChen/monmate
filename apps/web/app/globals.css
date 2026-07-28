@@ -91,6 +91,43 @@ textarea {
 .success-cracker-piece--right-4 { right: 12%; top: 55%; --piece-x: -64px; --piece-y: 30px; --piece-fall: 70px; --piece-rotate: 24deg; --piece-color: #8ee6c1; --piece-delay: 200ms; }
 .success-cracker-piece--right-5 { right: 12%; top: 55%; --piece-x: -180px; --piece-y: -70px; --piece-fall: 110px; --piece-rotate: -18deg; --piece-color: #ff7231; --piece-delay: 90ms; }
 
+/* Continuous rain, layered on top of the corner burst above — many
+   pieces drop straight down from above the stage on staggered delays and
+   durations, so at any moment during the ~3.5s window some are near the
+   top and others near the bottom. That overlap is what actually reads as
+   "still falling", rather than one synchronized burst that lands at once.
+   Motion is plain linear, not eased: real paper confetti is light enough
+   to hit terminal velocity almost immediately, so a steady fall is more
+   realistic than an accelerating one, and it also can't stutter since
+   there's only a single unbroken segment. */
+.success-cracker-rain {
+  position: absolute;
+  top: -10%;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  transform: translateX(-50%) scale(var(--rain-scale, 1)) rotate(0deg);
+  animation: success-cracker-rain var(--rain-duration, 2800ms) linear var(--rain-delay, 0ms) both;
+}
+
+@keyframes success-cracker-rain {
+  0% {
+    top: -10%;
+    opacity: 0;
+    transform: translateX(-50%) scale(var(--rain-scale, 1)) rotate(0deg);
+  }
+  8% { opacity: 1; }
+  90% { opacity: 1; }
+  100% {
+    top: 108%;
+    opacity: 0;
+    transform: translateX(calc(-50% + var(--rain-drift, 0px))) scale(var(--rain-scale, 1)) rotate(var(--rain-rotate, 220deg));
+  }
+}
+
+.success-cracker-stage--compact .success-cracker-rain { width: 4px; height: 7px; }
+
 .success-cracker-stage--compact .success-cracker-piece { width: 4px; height: 11px; }
 .success-cracker-stage--compact .success-cracker-piece--left-1 { --piece-x: 42px; --piece-y: -36px; --piece-fall: 44px; }
 .success-cracker-stage--compact .success-cracker-piece--left-2 { --piece-x: 28px; --piece-y: -20px; --piece-fall: 32px; }
@@ -104,7 +141,8 @@ textarea {
 .success-cracker-stage--compact .success-cracker-piece--right-5 { --piece-x: -66px; --piece-y: -26px; --piece-fall: 37px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .success-cracker-piece { animation: none; opacity: 0.75; }
+  .success-cracker-piece,
+  .success-cracker-rain { animation: none; opacity: 0.75; }
 }
 
 /* Dots loading */
