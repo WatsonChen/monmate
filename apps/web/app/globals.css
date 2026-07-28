@@ -34,17 +34,17 @@ textarea {
 }
 
 .success-cracker-stage {
-  --success-charge-duration: 760ms;
+  --success-charge-duration: 560ms;
   --success-origin-y: 47%;
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: 20;
   overflow: hidden;
   pointer-events: none;
 }
 
 .success-cracker-stage--compact {
-  --success-charge-duration: 580ms;
+  --success-charge-duration: 460ms;
   --success-origin-y: 50%;
 }
 
@@ -60,15 +60,16 @@ textarea {
   position: absolute;
   left: 50%;
   top: var(--success-origin-y);
-  width: 74px;
-  height: 74px;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.96) 0 9%, transparent 30%),
-    radial-gradient(circle, rgba(142, 230, 193, 0.92) 0 26%, rgba(142, 230, 193, 0.36) 48%, transparent 72%);
-  filter: drop-shadow(0 10px 18px rgba(103, 215, 189, 0.3));
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.98) 0 12%, transparent 32%),
+    radial-gradient(circle, #ffffff 0 22%, rgba(142, 230, 193, 0.96) 34%, rgba(142, 230, 193, 0.3) 58%, transparent 74%);
+  filter: drop-shadow(0 6px 12px rgba(103, 215, 189, 0.42));
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.18);
+  transform: translate(-50%, -50%) scale(0.36);
   animation: success-charge-bloom var(--success-charge-duration) cubic-bezier(0.2, 0.78, 0.24, 1) both;
 }
 
@@ -80,11 +81,11 @@ textarea {
 }
 
 .success-cracker-charge::before {
-  inset: -11px;
-  border: 3px solid rgba(255, 114, 49, 0.42);
+  inset: -9px;
+  border: 3px solid rgba(255, 114, 49, 0.68);
   box-shadow:
-    0 0 0 7px rgba(142, 230, 193, 0.13),
-    0 8px 20px rgba(255, 114, 49, 0.1);
+    0 0 0 5px rgba(142, 230, 193, 0.2),
+    0 6px 14px rgba(255, 114, 49, 0.18);
 }
 
 .success-cracker-charge::after {
@@ -96,38 +97,38 @@ textarea {
 }
 
 .success-cracker-stage--compact .success-cracker-charge {
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
 }
 
 .success-cracker-stage--compact .success-cracker-charge::before {
-  inset: -6px;
+  inset: -5px;
   border-width: 2px;
-  box-shadow: 0 0 0 4px rgba(142, 230, 193, 0.13);
+  box-shadow: 0 0 0 3px rgba(142, 230, 193, 0.18);
 }
 
 @keyframes success-charge-bloom {
   0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.18);
+    opacity: 0.32;
+    transform: translate(-50%, -50%) scale(0.36);
   }
-  28% {
-    opacity: 0.72;
-    transform: translate(-50%, -50%) scale(0.72);
+  18% {
+    opacity: 0.78;
+    transform: translate(-50%, -50%) scale(0.84);
   }
-  62% {
+  56% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
+    transform: translate(-50%, -50%) scale(1.14);
   }
   78% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(0.68);
-    filter: drop-shadow(0 8px 15px rgba(103, 215, 189, 0.38)) brightness(1.08);
+    transform: translate(-50%, -50%) scale(0.54);
+    filter: drop-shadow(0 5px 10px rgba(103, 215, 189, 0.5)) brightness(1.12);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(2.35);
-    filter: drop-shadow(0 14px 28px rgba(255, 114, 49, 0.12)) brightness(1.14);
+    transform: translate(-50%, -50%) scale(1.9);
+    filter: drop-shadow(0 10px 20px rgba(255, 114, 49, 0.2)) brightness(1.2);
   }
 }
 

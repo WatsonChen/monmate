@@ -16,8 +16,8 @@ const COLORS: ParticleColor[] = [
 ];
 
 const FRAME_MS = 1000 / 60;
-const CHARGE_DURATION = 760;
-const COMPACT_CHARGE_DURATION = 580;
+const CHARGE_DURATION = 560;
+const COMPACT_CHARGE_DURATION = 460;
 const MAX_ANIMATION_DURATION = 4200;
 
 function randomRange(min: number, max: number) {
