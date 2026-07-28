@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { RegistrationField } from "@monmate/types";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 
@@ -21,6 +22,28 @@ function isPreset(key: string) {
 
 function labelForKey(key: string) {
   return PRESET_FIELDS.find((p) => p.key === key)?.label ?? key;
+}
+
+// Owns its own draft text instead of always displaying options.join(","):
+// that derived value strips the trailing empty segment the instant a comma
+// is typed (split + filter(Boolean) drops it), so the controlled value
+// shrinks out from under the cursor and it jumps to the end. Keeping the
+// raw text local lets the user type a comma and keep going; the parsed,
+// trimmed options list is still pushed up to the parent on every change.
+function OptionsInput({ options, onChange }: { options: string[]; onChange: (options: string[]) => void }) {
+  const [text, setText] = useState(options.join(","));
+
+  return (
+    <input
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value);
+        onChange(e.target.value.split(",").map((s) => s.trim()).filter(Boolean));
+      }}
+      placeholder="選項（用逗號分隔）"
+      className="h-9 w-36 shrink-0 rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
+    />
+  );
 }
 
 export function RegistrationFieldsEditor({ fields, onChange }: Props) {
@@ -101,23 +124,21 @@ export function RegistrationFieldsEditor({ fields, onChange }: Props) {
                 value={f.label ?? ""}
                 onChange={(e) => updateCustomField(f.key, { label: e.target.value })}
                 placeholder="欄位名稱（例：公司名稱）"
-                className="h-9 flex-1 rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
+                className="h-9 min-w-0 flex-1 rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
               />
               <select
                 value={f.type ?? "text"}
                 onChange={(e) => updateCustomField(f.key, { type: e.target.value as "text" | "number" | "select" })}
-                className="h-9 rounded-lg border border-charcoal/15 bg-white px-2 text-sm outline-none focus:border-mint"
+                className="h-9 shrink-0 rounded-lg border border-charcoal/15 bg-white px-2 text-sm outline-none focus:border-mint"
               >
                 <option value="text">文字</option>
                 <option value="number">數字</option>
                 <option value="select">單選</option>
               </select>
               {f.type === "select" && (
-                <input
-                  value={(f.options ?? []).join(",")}
-                  onChange={(e) => updateCustomField(f.key, { options: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
-                  placeholder="選項（用逗號分隔）"
-                  className="h-9 w-36 rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
+                <OptionsInput
+                  options={f.options ?? []}
+                  onChange={(options) => updateCustomField(f.key, { options })}
                 />
               )}
               <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs font-semibold text-charcoal/60">
