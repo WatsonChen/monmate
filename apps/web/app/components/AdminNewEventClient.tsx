@@ -183,7 +183,7 @@ export function AdminNewEventClient() {
 
         <div className="mt-4">
           <p className="mb-2 text-sm font-semibold">活動內容（一頁式網站）</p>
-          <RichEditor value={content} onChange={setContent} placeholder="活動流程、講者陣容、交通資訊、注意事項…寫得越完整，越能提高報名意願" />
+          <RichEditor value={content} onChange={setContent} token={token} placeholder="活動流程、講者陣容、交通資訊、注意事項…寫得越完整，越能提高報名意願" />
         </div>
 
         {/* 人數上限選擇 */}

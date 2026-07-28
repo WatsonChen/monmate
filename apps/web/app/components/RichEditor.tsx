@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, Link as LinkIcon } from "lucide-react";
+import { Image as ImageIcon, Link as LinkIcon, Loader2 } from "lucide-react";
+import { uploadImage } from "../lib/api";
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  token: string;
 }
 
-export function RichEditor({ value, onChange, placeholder }: Props) {
+export function RichEditor({ value, onChange, placeholder, token }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const isComposing = useRef(false);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     if (ref.current && ref.current.innerHTML !== value) {
@@ -34,17 +38,24 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
     onChange(ref.current?.innerHTML ?? "");
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (typeof ev.target?.result === "string") {
-        insertImage(ev.target.result);
-      }
-    };
-    reader.readAsDataURL(file);
     e.target.value = "";
+    if (!file) return;
+
+    // Upload to Blob storage and embed the URL, not a base64 data URI —
+    // inlining images directly bloats the event's content field (a single
+    // photo easily adds hundreds of KB), which then gets re-sent in full on
+    // every page load, admin edit, and save of the event.
+    setUploadError("");
+    setIsUploadingImage(true);
+    const res = await uploadImage(file, token);
+    setIsUploadingImage(false);
+    if (!res.success || !res.data) {
+      setUploadError(res.error?.message ?? "圖片上傳失敗");
+      return;
+    }
+    insertImage(res.data.url);
   }
 
   function confirmLink() {
@@ -83,10 +94,11 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
         <button
           type="button"
           title="插入圖片"
+          disabled={isUploadingImage}
           onMouseDown={(e) => { e.preventDefault(); fileRef.current?.click(); }}
-          className="flex h-7 w-7 items-center justify-center rounded text-sm hover:bg-charcoal/10"
+          className="flex h-7 w-7 items-center justify-center rounded text-sm hover:bg-charcoal/10 disabled:opacity-50"
         >
-          <ImageIcon size={14} />
+          {isUploadingImage ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
         </button>
         <button
           type="button"
@@ -101,9 +113,15 @@ export function RichEditor({ value, onChange, placeholder }: Props) {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChange}
+          onChange={(e) => void handleFileChange(e)}
         />
       </div>
+
+      {uploadError && (
+        <p className="border-b border-red-100 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">
+          {uploadError}
+        </p>
+      )}
 
       {showLinkInput && (
         <div className="flex items-center gap-2 border-b border-charcoal/10 bg-paper px-3 py-2">

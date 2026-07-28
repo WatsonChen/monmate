@@ -1017,7 +1017,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             </div>
             <div className="mt-4">
               <p className="mb-2 text-sm font-semibold">活動內容（一頁式網站）</p>
-              <RichEditor value={editContent} onChange={setEditContent} placeholder="活動流程、講者陣容、交通資訊、注意事項…寫得越完整，越能提高報名意願" />
+              <RichEditor value={editContent} onChange={setEditContent} token={token} placeholder="活動流程、講者陣容、交通資訊、注意事項…寫得越完整，越能提高報名意願" />
             </div>
             {/* 報名設定 */}
             <div className="mt-4 rounded-lg bg-paper p-4">
