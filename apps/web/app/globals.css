@@ -81,11 +81,7 @@ textarea {
 }
 
 .success-cracker-charge::before {
-  inset: -9px;
-  border: 3px solid rgba(255, 114, 49, 0.68);
-  box-shadow:
-    0 0 0 5px rgba(142, 230, 193, 0.2),
-    0 6px 14px rgba(255, 114, 49, 0.18);
+  display: none;
 }
 
 .success-cracker-charge::after {
@@ -99,12 +95,6 @@ textarea {
 .success-cracker-stage--compact .success-cracker-charge {
   width: 28px;
   height: 28px;
-}
-
-.success-cracker-stage--compact .success-cracker-charge::before {
-  inset: -5px;
-  border-width: 2px;
-  box-shadow: 0 0 0 3px rgba(142, 230, 193, 0.18);
 }
 
 @keyframes success-charge-bloom {
