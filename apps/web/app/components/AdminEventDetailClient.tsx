@@ -604,7 +604,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
             {/* 手機版直排：標題列 → 統計列 → 按鈕列。桌面版把按鈕列拉到跟標題同一列
                 的右側（sm:order-2），統計列改成強制獨立佔滿一整列（sm:order-3 + w-full）。*/}
             <div className="mb-3 flex flex-col flex-wrap gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2 sm:order-1">
+              <div className="order-1 flex items-center gap-2">
                 <Users size={18} />
                 <h2 className="text-lg font-bold">報名名單</h2>
                 {attendees.length > 0 && (
@@ -627,7 +627,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
 
               {/* 統計數字，用淺色底區隔，避免資訊全部擠在同一行 */}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-paper px-3 py-2 text-sm sm:order-3 sm:w-full">
+              <div className="order-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-paper px-3 py-2 text-sm sm:w-full">
                 <span className="text-charcoal/60">
                   報名 <strong>{attendees.length}</strong> 組 / <strong>{totalRegistered}</strong> 人
                 </span>
@@ -643,7 +643,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               {/* 操作按鈕：發送/新增維持醒目的橘色主按鈕，匯出/匯入是同類的資料操作，
                   合併成一個灰底群組（匯出改成下拉選單），減少一整排按鈕的擁擠感。
                   手機版縮小字級/間距讓三組能排在同一行。*/}
-              <div className="flex flex-wrap items-center gap-1.5 sm:order-2 sm:gap-2">
+              <div className="order-2 flex w-full items-center justify-between gap-1.5 sm:w-auto sm:justify-start sm:gap-2">
                 <button
                   type="button"
                   disabled={attendees.length === 0 || isSendingInvite}
