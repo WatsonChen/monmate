@@ -4,17 +4,17 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "../../lib/api";
 import type { CheckInResultDTO, EventDTO, UserDTO } from "@monmate/types";
-import { Info, Camera, CameraOff, Check, RotateCcw, Search, XCircle, StickyNote, Users } from "lucide-react";
+import { Info, Camera, CameraOff, Check, Search, XCircle, StickyNote, Users } from "lucide-react";
 import { DotsLoading } from "../../components/DotsLoading";
 import { SuccessCracker } from "../../components/SuccessCracker";
 
 const resultConfig = {
   SUCCESS: { color: "bg-mint/20 border-mint/50", icon: Check, iconBg: "bg-mint", label: "報到成功！" },
-  ALREADY_CHECKED_IN: { color: "bg-orange/10 border-orange/30", icon: RotateCcw, iconBg: "bg-orange/80", label: "已全員報到" },
-  NOT_FOUND: { color: "bg-red-50 border-red-200", icon: Search, iconBg: "bg-red-400", label: "找不到此代碼" },
-  INVALID: { color: "bg-red-50 border-red-200", icon: XCircle, iconBg: "bg-red-400", label: "代碼無效" },
+  ALREADY_CHECKED_IN: { color: "bg-orange/10 border-orange/30", icon: Check, iconBg: "bg-orange", label: "已全員報到" },
+  NOT_FOUND: { color: "bg-red-50 border-red-200", icon: Search, iconBg: "bg-orange", label: "找不到此代碼" },
+  INVALID: { color: "bg-red-50 border-red-200", icon: XCircle, iconBg: "bg-orange", label: "代碼無效" },
   // 工作人員現場報到不受開放時間限制，此狀態實際上不會出現，僅為型別完整性保留
-  NOT_STARTED: { color: "bg-orange/10 border-orange/30", icon: XCircle, iconBg: "bg-orange/80", label: "活動尚未開放報到" }
+  NOT_STARTED: { color: "bg-orange/10 border-orange/30", icon: XCircle, iconBg: "bg-orange", label: "活動尚未開放報到" }
 } as const;
 
 export default function StaffScanPage() {

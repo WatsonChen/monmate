@@ -6,7 +6,6 @@ import {
   Check,
   Keyboard,
   QrCode,
-  RotateCcw,
   Search,
   XCircle
 } from "lucide-react";
@@ -27,7 +26,7 @@ const statusCopy = {
   ALREADY_CHECKED_IN: {
     title: "已報到過",
     tone: "bg-orange/10 border-orange/30 text-charcoal",
-    icon: RotateCcw
+    icon: Check
   },
   NOT_FOUND: {
     title: "找不到報名資料",
@@ -250,8 +249,8 @@ export function CheckInClient({
             <section className={`mt-4 rounded-lg border p-4 ${statusCopy[result.status].tone}`}>
               <div className="flex items-center gap-3">
                 {ResultIcon ? (
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white">
-                    <ResultIcon size={24} />
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange">
+                    <ResultIcon className="text-white" size={24} strokeWidth={2.5} />
                   </span>
                 ) : null}
                 <div>
