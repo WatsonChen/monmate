@@ -34,11 +34,107 @@ textarea {
 }
 
 .success-cracker-stage {
+  --success-charge-duration: 760ms;
+  --success-origin-y: 47%;
   position: absolute;
   inset: 0;
   z-index: 5;
   overflow: hidden;
   pointer-events: none;
+}
+
+.success-cracker-stage--compact {
+  --success-charge-duration: 580ms;
+  --success-origin-y: 50%;
+}
+
+.success-cracker-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.success-cracker-charge {
+  position: absolute;
+  left: 50%;
+  top: var(--success-origin-y);
+  width: 74px;
+  height: 74px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.96) 0 9%, transparent 30%),
+    radial-gradient(circle, rgba(142, 230, 193, 0.92) 0 26%, rgba(142, 230, 193, 0.36) 48%, transparent 72%);
+  filter: drop-shadow(0 10px 18px rgba(103, 215, 189, 0.3));
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.18);
+  animation: success-charge-bloom var(--success-charge-duration) cubic-bezier(0.2, 0.78, 0.24, 1) both;
+}
+
+.success-cracker-charge::before,
+.success-cracker-charge::after {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+}
+
+.success-cracker-charge::before {
+  inset: -11px;
+  border: 3px solid rgba(255, 114, 49, 0.42);
+  box-shadow:
+    0 0 0 7px rgba(142, 230, 193, 0.13),
+    0 8px 20px rgba(255, 114, 49, 0.1);
+}
+
+.success-cracker-charge::after {
+  inset: 26%;
+  background: #ffffff;
+  box-shadow:
+    inset 0 -4px 7px rgba(103, 215, 189, 0.2),
+    0 5px 10px rgba(26, 36, 33, 0.1);
+}
+
+.success-cracker-stage--compact .success-cracker-charge {
+  width: 38px;
+  height: 38px;
+}
+
+.success-cracker-stage--compact .success-cracker-charge::before {
+  inset: -6px;
+  border-width: 2px;
+  box-shadow: 0 0 0 4px rgba(142, 230, 193, 0.13);
+}
+
+@keyframes success-charge-bloom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.18);
+  }
+  28% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.68);
+    filter: drop-shadow(0 8px 15px rgba(103, 215, 189, 0.38)) brightness(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.35);
+    filter: drop-shadow(0 14px 28px rgba(255, 114, 49, 0.12)) brightness(1.14);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-cracker-charge {
+    display: none;
+  }
 }
 
 /* Dots loading */

@@ -3,13 +3,22 @@
 import { useEffect, useRef } from "react";
 
 type Vec2 = { x: number; y: number };
+type ParticleColor = {
+  front: string;
+  back: string;
+  highlight: string;
+};
 
-const COLORS = [
-  { front: "#8ee6c1", back: "#5fbf95" },
-  { front: "#ff7231", back: "#d4581c" },
-  { front: "#ffd166", back: "#e0ac2e" },
-  { front: "#4fb0e0", back: "#2e86b3" }
+const COLORS: ParticleColor[] = [
+  { front: "#8ee6c1", back: "#67d7bd", highlight: "#d9fff0" },
+  { front: "#ff7231", back: "#e45c20", highlight: "#ffd8c4" },
+  { front: "#f0eee9", back: "#d8d4cc", highlight: "#ffffff" }
 ];
+
+const FRAME_MS = 1000 / 60;
+const CHARGE_DURATION = 760;
+const COMPACT_CHARGE_DURATION = 580;
+const MAX_ANIMATION_DURATION = 4200;
 
 function randomRange(min: number, max: number) {
   return Math.random() * (max - min) + min;
@@ -19,73 +28,125 @@ function pickColor() {
   return COLORS[Math.floor(randomRange(0, COLORS.length))];
 }
 
-// Weighted spread, not uniform random: most pieces travel a moderate
-// distance and only a few go furthest, which is how a real confetti
-// cannon actually disperses (adapted from the codepen.io/coopergoeke
-// "Confetti Button" reference).
-function burstVelocity(xRange: [number, number], yRange: [number, number]): Vec2 {
-  const x = randomRange(xRange[0], xRange[1]);
-  const range = yRange[1] - yRange[0] + 1;
-  let y = yRange[1] - Math.abs(randomRange(0, range) + randomRange(0, range) - range);
-  if (y >= yRange[1] - 1 && Math.random() < 0.25) y += randomRange(1, 3);
-  return { x, y: -y };
+function roundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  const safeRadius = Math.min(radius, Math.abs(width) / 2, Math.abs(height) / 2);
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, height, safeRadius);
 }
 
 class Confetto {
   color = pickColor();
-  dimensions = { x: randomRange(5, 9), y: randomRange(8, 15) };
+  dimensions = { x: randomRange(6, 10), y: randomRange(11, 18) };
   rotation = randomRange(0, Math.PI * 2);
-  scale = { x: 1, y: 1 };
-  randomModifier = randomRange(0, 99);
+  angularVelocity = randomRange(-0.07, 0.07);
+  flipPhase = randomRange(0, Math.PI * 2);
+  swayPhase = randomRange(0, Math.PI * 2);
+  age = 0;
+  maxAge = randomRange(2800, 3800);
 
   constructor(
     public position: Vec2,
-    public velocity: Vec2
+    public velocity: Vec2,
+    private gravity: number,
+    private drag: number,
+    private terminalVelocity: number
   ) {}
 
-  update(gravity: number, drag: number, terminalVelocity: number) {
-    this.velocity.x -= this.velocity.x * drag;
-    this.velocity.y = Math.min(this.velocity.y + gravity, terminalVelocity);
-    this.velocity.x += Math.random() > 0.5 ? Math.random() : -Math.random();
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
-    // Oscillating y-scale = a continuous tumble; sign flips the fill
-    // between front/back color, mimicking a flat card flipping in the air.
-    this.scale.y = Math.cos((this.position.y + this.randomModifier) * 0.09);
+  update(deltaMs: number) {
+    const frameScale = Math.min(deltaMs, 34) / FRAME_MS;
+    this.age += deltaMs;
+    this.velocity.x *= Math.pow(1 - this.drag, frameScale);
+    this.velocity.y = Math.min(
+      this.velocity.y + this.gravity * frameScale,
+      this.terminalVelocity
+    );
+    const sway = Math.sin(this.age * 0.004 + this.swayPhase) * 0.18;
+    this.position.x += (this.velocity.x + sway) * frameScale;
+    this.position.y += this.velocity.y * frameScale;
+    this.rotation += this.angularVelocity * frameScale;
+  }
+
+  isAlive(height: number) {
+    return this.age < this.maxAge && this.position.y < height + 30;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const w = this.dimensions.x * this.scale.x;
-    const h = this.dimensions.y * this.scale.y;
+    const flip = Math.cos(this.age * 0.012 + this.flipPhase);
+    const width = this.dimensions.x;
+    const height = this.dimensions.y;
+
     ctx.save();
     ctx.translate(this.position.x, this.position.y);
     ctx.rotate(this.rotation);
-    ctx.fillStyle = this.scale.y > 0 ? this.color.front : this.color.back;
-    ctx.fillRect(-w / 2, -h / 2, w, h);
+    ctx.scale(1, Math.max(0.16, Math.abs(flip)));
+    ctx.shadowColor = "rgba(26, 36, 33, 0.14)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = 2;
+
+    roundedRect(ctx, -width / 2, -height / 2, width, height, 2.8);
+    ctx.fillStyle = flip >= 0 ? this.color.front : this.color.back;
+    ctx.fill();
+
+    ctx.shadowColor = "transparent";
+    roundedRect(
+      ctx,
+      -width * 0.28,
+      -height * 0.38,
+      width * 0.22,
+      height * 0.52,
+      1.5
+    );
+    ctx.globalAlpha = 0.52;
+    ctx.fillStyle = this.color.highlight;
+    ctx.fill();
     ctx.restore();
   }
 }
 
-class Sequin {
-  color = pickColor().back;
-  radius = randomRange(1, 2);
+class SoftDot {
+  color = pickColor();
+  radius = randomRange(1.6, 3.2);
+  age = 0;
+  maxAge = randomRange(2200, 3200);
 
   constructor(
     public position: Vec2,
-    public velocity: Vec2
+    public velocity: Vec2,
+    private gravity: number,
+    private drag: number,
+    private terminalVelocity: number
   ) {}
 
-  update(gravity: number, drag: number) {
-    this.velocity.x -= this.velocity.x * drag;
-    this.velocity.y += gravity;
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
+  update(deltaMs: number) {
+    const frameScale = Math.min(deltaMs, 34) / FRAME_MS;
+    this.age += deltaMs;
+    this.velocity.x *= Math.pow(1 - this.drag, frameScale);
+    this.velocity.y = Math.min(
+      this.velocity.y + this.gravity * frameScale,
+      this.terminalVelocity
+    );
+    this.position.x += this.velocity.x * frameScale;
+    this.position.y += this.velocity.y * frameScale;
+  }
+
+  isAlive(height: number) {
+    return this.age < this.maxAge && this.position.y < height + 20;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.save();
     ctx.translate(this.position.x, this.position.y);
-    ctx.fillStyle = this.color;
+    ctx.shadowColor = "rgba(26, 36, 33, 0.12)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = 2;
+    ctx.fillStyle = this.color.front;
     ctx.beginPath();
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -93,39 +154,73 @@ class Sequin {
   }
 }
 
-// The codepen.io reference launches confetti inside a full 100vh canvas,
-// so its velocities give an arc a couple hundred px tall. Our stage is a
-// bounded card, not the whole viewport — the same velocities sent pieces
-// well above the origin, overlapping the logo/header instead of staying
-// near the checkmark. These ranges are scaled down to fit that headroom.
-function makeBurstConfetto(originX: number, originY: number, spread: number) {
-  const position = { x: originX + randomRange(-spread, spread), y: originY + randomRange(-8, 8) };
-  return new Confetto(position, burstVelocity([-6, 6], [3.5, 7]));
+function makeBurstConfetto(originX: number, originY: number) {
+  const angle = randomRange(Math.PI * 1.08, Math.PI * 1.92);
+  const speed = randomRange(5.4, 9.2);
+  return new Confetto(
+    {
+      x: originX + randomRange(-7, 7),
+      y: originY + randomRange(-5, 5)
+    },
+    {
+      x: Math.cos(angle) * speed,
+      y: Math.sin(angle) * speed
+    },
+    0.13,
+    0.018,
+    1.9
+  );
 }
 
-function makeBurstSequin(originX: number, originY: number, spread: number) {
-  const position = { x: originX + randomRange(-spread, spread), y: originY + randomRange(-8, 8) };
-  return new Sequin(position, { x: randomRange(-4, 4), y: randomRange(-7, -4) });
+function makeBurstDot(originX: number, originY: number) {
+  const angle = randomRange(Math.PI * 1.08, Math.PI * 1.92);
+  const speed = randomRange(4.8, 8);
+  return new SoftDot(
+    {
+      x: originX + randomRange(-5, 5),
+      y: originY + randomRange(-4, 4)
+    },
+    {
+      x: Math.cos(angle) * speed,
+      y: Math.sin(angle) * speed
+    },
+    0.16,
+    0.022,
+    2.1
+  );
 }
 
-// Rain pieces enter above the canvas with a gentle, mostly-downward
-// initial velocity — gravity does the rest — so they read as falling
-// from above rather than another burst from the middle.
-function makeRainConfetto(width: number) {
-  const position = { x: randomRange(0, width), y: randomRange(-30, -6) };
-  return new Confetto(position, { x: randomRange(-1.2, 1.2), y: randomRange(0, 1.4) });
+function makeDriftConfetto(width: number) {
+  return new Confetto(
+    {
+      x: randomRange(width * 0.08, width * 0.92),
+      y: randomRange(-24, -8)
+    },
+    {
+      x: randomRange(-0.7, 0.7),
+      y: randomRange(0.15, 0.55)
+    },
+    0.045,
+    0.01,
+    1.15
+  );
 }
 
-function makeRainSequin(width: number) {
-  const position = { x: randomRange(0, width), y: randomRange(-30, -6) };
-  return new Sequin(position, { x: randomRange(-1, 1), y: randomRange(0, 1.2) });
+function makeDriftDot(width: number) {
+  return new SoftDot(
+    {
+      x: randomRange(width * 0.08, width * 0.92),
+      y: randomRange(-18, -6)
+    },
+    {
+      x: randomRange(-0.45, 0.45),
+      y: randomRange(0.1, 0.4)
+    },
+    0.04,
+    0.012,
+    1
+  );
 }
-
-const GRAVITY_CONFETTI = 0.28;
-const GRAVITY_SEQUINS = 0.5;
-const DRAG_CONFETTI = 0.07;
-const DRAG_SEQUINS = 0.02;
-const TERMINAL_VELOCITY = 2.6;
 
 export function SuccessCracker({ compact = false }: { compact?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -134,80 +229,133 @@ export function SuccessCracker({ compact = false }: { compact?: boolean }) {
     const canvas = canvasRef.current;
     const stage = canvas?.parentElement;
     if (!canvas || !stage) return;
+    const canvasElement: HTMLCanvasElement = canvas;
+    const stageElement: HTMLElement = stage;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvasElement.getContext("2d");
     if (!ctx) return;
+    const context: CanvasRenderingContext2D = ctx;
 
     let width = 0;
     let height = 0;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     function resize() {
-      const rect = stage!.getBoundingClientRect();
+      const rect = stageElement.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
-      canvas!.width = width * dpr;
-      canvas!.height = height * dpr;
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvasElement.width = Math.max(1, Math.round(width * dpr));
+      canvasElement.height = Math.max(1, Math.round(height * dpr));
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+
     resize();
     window.addEventListener("resize", resize);
 
-    let confetti: Confetto[] = [];
-    let sequins: Sequin[] = [];
-
-    function burst(confettiCount: number, sequinCount: number) {
-      const originX = width / 2;
-      const originY = height * (compact ? 0.5 : 0.47);
-      const spread = (compact ? 0.08 : 0.16) * width;
-      for (let i = 0; i < confettiCount; i++) confetti.push(makeBurstConfetto(originX, originY, spread));
-      for (let i = 0; i < sequinCount; i++) sequins.push(makeBurstSequin(originX, originY, spread));
-    }
-
-    function rain(confettiCount: number, sequinCount: number) {
-      for (let i = 0; i < confettiCount; i++) confetti.push(makeRainConfetto(width));
-      for (let i = 0; i < sequinCount; i++) sequins.push(makeRainSequin(width));
-    }
-
-    function drawFrame() {
-      ctx!.clearRect(0, 0, width, height);
-      confetti = confetti.filter((c) => c.position.y < height + 20);
-      sequins = sequins.filter((s) => s.position.y < height + 20);
-      confetti.forEach((c) => {
-        c.update(GRAVITY_CONFETTI, DRAG_CONFETTI, TERMINAL_VELOCITY);
-        c.draw(ctx!);
-      });
-      sequins.forEach((s) => {
-        s.update(GRAVITY_SEQUINS, DRAG_SEQUINS);
-        s.draw(ctx!);
-      });
-    }
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (reduceMotion) {
-      burst(compact ? 8 : 16, compact ? 4 : 8);
-      drawFrame();
       return () => window.removeEventListener("resize", resize);
     }
 
-    burst(compact ? 16 : 42, compact ? 8 : 22);
+    let confetti: Confetto[] = [];
+    let dots: SoftDot[] = [];
+    let animationFrame = 0;
+    let startedAt = 0;
+    let previousFrame = 0;
+    let didBurst = false;
+    let driftWave = 0;
+    const chargeDuration = compact
+      ? COMPACT_CHARGE_DURATION
+      : CHARGE_DURATION;
+    const driftWaveTimes = compact
+      ? [chargeDuration + 520, chargeDuration + 1050]
+      : [
+          chargeDuration + 500,
+          chargeDuration + 900,
+          chargeDuration + 1320,
+          chargeDuration + 1760
+        ];
 
-    let rafId = 0;
-    function loop() {
-      drawFrame();
-      rafId = requestAnimationFrame(loop);
+    function burst() {
+      const originX = width / 2;
+      const originY = height * (compact ? 0.5 : 0.47);
+      const confettiCount = compact ? 18 : 38;
+      const dotCount = compact ? 7 : 14;
+      confetti.push(
+        ...Array.from({ length: confettiCount }, () =>
+          makeBurstConfetto(originX, originY)
+        )
+      );
+      dots.push(
+        ...Array.from({ length: dotCount }, () =>
+          makeBurstDot(originX, originY)
+        )
+      );
     }
-    loop();
 
-    const spawnId = window.setInterval(
-      () => rain(compact ? 2 : 5, compact ? 1 : 2),
-      compact ? 900 : 620
-    );
+    function addDriftWave() {
+      const confettiCount = compact ? 3 : 6;
+      const dotCount = compact ? 1 : 2;
+      confetti.push(
+        ...Array.from({ length: confettiCount }, () =>
+          makeDriftConfetto(width)
+        )
+      );
+      dots.push(
+        ...Array.from({ length: dotCount }, () => makeDriftDot(width))
+      );
+    }
+
+    function drawFrame(timestamp: number) {
+      if (!startedAt) {
+        startedAt = timestamp;
+        previousFrame = timestamp;
+      }
+
+      const elapsed = timestamp - startedAt;
+      const deltaMs = timestamp - previousFrame;
+      previousFrame = timestamp;
+
+      if (!didBurst && elapsed >= chargeDuration) {
+        didBurst = true;
+        burst();
+      }
+
+      while (
+        driftWave < driftWaveTimes.length &&
+        elapsed >= driftWaveTimes[driftWave]
+      ) {
+        addDriftWave();
+        driftWave += 1;
+      }
+
+      context.clearRect(0, 0, width, height);
+      confetti = confetti.filter((piece) => piece.isAlive(height));
+      dots = dots.filter((dot) => dot.isAlive(height));
+
+      for (const piece of confetti) {
+        piece.update(deltaMs);
+        piece.draw(context);
+      }
+      for (const dot of dots) {
+        dot.update(deltaMs);
+        dot.draw(context);
+      }
+
+      const hasParticles = confetti.length > 0 || dots.length > 0;
+      if (elapsed < MAX_ANIMATION_DURATION || hasParticles) {
+        animationFrame = requestAnimationFrame(drawFrame);
+      } else {
+        context.clearRect(0, 0, width, height);
+      }
+    }
+
+    animationFrame = requestAnimationFrame(drawFrame);
 
     return () => {
-      cancelAnimationFrame(rafId);
-      window.clearInterval(spawnId);
+      cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", resize);
     };
   }, [compact]);
@@ -217,7 +365,8 @@ export function SuccessCracker({ compact = false }: { compact?: boolean }) {
       className={`success-cracker-stage${compact ? " success-cracker-stage--compact" : ""}`}
       aria-hidden="true"
     >
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
+      <span className="success-cracker-charge" />
+      <canvas ref={canvasRef} className="success-cracker-canvas" />
     </div>
   );
 }
