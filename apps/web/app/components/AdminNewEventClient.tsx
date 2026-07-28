@@ -118,7 +118,7 @@ export function AdminNewEventClient() {
           <div>
             <h2 className="text-lg font-bold">活動基本資料</h2>
             <p className="text-sm text-charcoal/60">
-              目前剩餘 <span className="font-bold text-orange">{credits}</span> 人次額度
+              目前剩餘 <span className="font-bold text-orange">{credits}</span> 點
             </p>
           </div>
         </div>

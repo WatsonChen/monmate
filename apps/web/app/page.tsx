@@ -274,8 +274,8 @@ const faqItems: [string, string][] = [
   ["與會者需要登入嗎？", "不需要，開啟報到連結即可操作。"],
   ["適合哪些活動？", "講座、課程、品牌活動、展會都適合。"],
   [
-    "人次額度怎麼算？可以跨活動用嗎？",
-    "儲值到帳號，用多少扣多少，可跨活動使用。",
+    "點數怎麼算？可以跨活動用嗎？",
+    "儲值到帳號，新增報名者依人數扣點，也能拿來解鎖活動的進階功能，可跨活動使用。",
   ],
   ["同事可以一起顧報到桌嗎？", "可以，支援多帳號、多裝置同時上線。"],
   ["活動結束後可以整理資料嗎？", "可以查看報到狀態，並匯出報表對帳。"],
@@ -584,10 +584,10 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-bold text-orange">價格</p>
             <h2 className="mt-2 text-2xl font-bold">
-              儲值人次額度，用多少扣多少
+              儲值點數，用多少扣多少
             </h2>
             <p className="mt-3 text-sm leading-6 text-charcoal/65">
-              先依需求購買人次額度，之後新增或匯入報名者才會從額度扣抵；額度可以跨活動使用，不用每辦一場活動就重新開通，建立活動本身不額外收費。
+              先依需求購買點數，新增或匯入報名者依人數扣點，也能用來解鎖活動的進階功能；點數可以跨活動使用，不用每辦一場活動就重新開通，建立活動本身不額外收費。
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -597,7 +597,7 @@ export default function HomePage() {
                   <CreditCard className="text-orange" size={22} />
                   <p className="mt-4 text-2xl font-bold">NT$ {tier.price}</p>
                   <p className="mt-1 text-sm font-semibold text-charcoal/60">
-                    {tier.credits} 人次・約 NT$ {tier.perUnit} / 人
+                    {tier.credits} 點・約 NT$ {tier.perUnit} / 點
                   </p>
                   <p className="mt-3 text-sm leading-6 text-charcoal/65">
                     {tier.fit}
@@ -652,7 +652,7 @@ export default function HomePage() {
                       登入建立活動
                     </Link>
                     <p className="text-xs font-semibold text-charcoal/55">
-                      建立活動免費，人次額度用多少扣多少
+                      建立活動免費，點數用多少扣多少
                     </p>
                   </div>
                 </div>

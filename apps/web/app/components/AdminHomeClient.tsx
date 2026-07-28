@@ -142,7 +142,7 @@ export function AdminHomeClient() {
               ["活動數", String(events.length), ClipboardCheck],
               ["總報名", String(totals.attendees), QrCode],
               ["報到紀錄", String(totals.checkIns), ClipboardCheck],
-              ["人次額度", String(billing?.attendeeCredits ?? 0), CreditCard]
+              ["點數", String(billing?.attendeeCredits ?? 0), CreditCard]
             ].map(([label, value, Icon]) => (
               <div key={label as string} className="rounded-lg border border-charcoal/10 bg-white p-4">
                 <div className="flex items-center justify-between gap-3">

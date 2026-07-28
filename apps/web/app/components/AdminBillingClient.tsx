@@ -43,7 +43,8 @@ const reasonLabel: Record<CreditTransactionReason, string> = {
   PAYMENT_TOPUP: "購買加值",
   ATTENDEE_CREATE: "新增報名者",
   ATTENDEE_IMPORT: "匯入報名者",
-  MANUAL_ADJUSTMENT: "人工調整"
+  MANUAL_ADJUSTMENT: "人工調整",
+  FEATURE_UNLOCK: "解鎖進階功能"
 };
 
 export function AdminBillingClient() {
@@ -73,7 +74,7 @@ export function AdminBillingClient() {
     const storedToken = window.localStorage.getItem("monmate.token") ?? "";
     setToken(storedToken);
     const params = new URLSearchParams(window.location.search);
-    if (params.get("payment") === "success") setMessage("付款完成！人次額度已入帳。");
+    if (params.get("payment") === "success") setMessage("付款完成！點數已入帳。");
     if (params.get("payment") === "cancelled") setMessage("付款已取消。");
     if (params.get("payment") === "failed") setMessage("付款失敗，請重試。");
     void loadBilling(storedToken);
@@ -114,7 +115,7 @@ export function AdminBillingClient() {
     <>
       <div>
         <p className="text-sm font-bold text-orange">儲值</p>
-        <h1 className="text-2xl font-bold">人次額度管理</h1>
+        <h1 className="text-2xl font-bold">點數管理</h1>
       </div>
 
       {message && (
@@ -133,8 +134,8 @@ export function AdminBillingClient() {
               <CreditCard size={20} />
             </span>
             <div>
-              <h2 className="text-lg font-bold">目前人次額度</h2>
-              <p className="text-sm text-charcoal/60">可用於創建活動的報到名額</p>
+              <h2 className="text-lg font-bold">目前點數</h2>
+              <p className="text-sm text-charcoal/60">可用於新增報到名額，或解鎖活動的進階功能</p>
             </div>
             <button
               type="button"
@@ -146,16 +147,16 @@ export function AdminBillingClient() {
           </div>
           <div className="mt-5 flex items-end gap-2">
             <span className="text-5xl font-bold text-orange">{credits}</span>
-            <span className="mb-1 text-lg font-semibold text-charcoal/60">人次</span>
+            <span className="mb-1 text-lg font-semibold text-charcoal/60">點</span>
           </div>
           <p className="mt-2 text-xs text-charcoal/50">
-            新增或匯入報名者時依實際人數扣除，活動的人數上限僅作為容量設定
+            新增或匯入報名者時依實際人數扣點，活動的人數上限僅作為容量設定
           </p>
         </section>
 
         {/* 購買方案 */}
         <section className="rounded-lg border border-charcoal/10 bg-white p-5">
-          <h2 className="text-lg font-bold">購買人次額度</h2>
+          <h2 className="text-lg font-bold">購買點數</h2>
           <p className="mt-1 text-sm text-charcoal/60">選擇方案後前往藍新金流付款</p>
 
           <div className="mt-4 space-y-2">
@@ -171,7 +172,7 @@ export function AdminBillingClient() {
                 <span>
                   <span className="block font-bold">{tier.label}</span>
                   <span className="text-xs text-charcoal/55">
-                    {tier.attendeeCredits} 人次 · {tier.attendeeRange}
+                    {tier.attendeeCredits} 點 · {tier.attendeeRange}
                   </span>
                 </span>
                 <span className="flex items-center gap-2 font-bold">
@@ -197,16 +198,16 @@ export function AdminBillingClient() {
           {selectedTier && (
             <div className="mt-4 rounded-lg bg-paper p-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-charcoal/60">購買人次</span>
-                <span className="font-bold">{selectedTier.attendeeCredits} 人次</span>
+                <span className="text-charcoal/60">購買點數</span>
+                <span className="font-bold">{selectedTier.attendeeCredits} 點</span>
               </div>
               <div className="mt-1 flex justify-between">
                 <span className="text-charcoal/60">單價</span>
                 <span className="flex flex-col items-end font-semibold">
                   <span className="text-xs font-normal text-charcoal/40 line-through">
-                    NT$ {(selectedTier.amount * 5 / selectedTier.attendeeCredits).toFixed(1)} / 人次
+                    NT$ {(selectedTier.amount * 5 / selectedTier.attendeeCredits).toFixed(1)} / 點
                   </span>
-                  NT$ {(selectedTier.amount / selectedTier.attendeeCredits).toFixed(1)} / 人次
+                  NT$ {(selectedTier.amount / selectedTier.attendeeCredits).toFixed(1)} / 點
                 </span>
               </div>
               <div className="mt-2 flex justify-between border-t border-charcoal/10 pt-2">
@@ -246,7 +247,7 @@ export function AdminBillingClient() {
             <div className="min-w-[560px] overflow-hidden rounded-lg border border-charcoal/10">
               <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] bg-cloud px-4 py-3 text-sm font-bold">
                 <span>方案</span>
-                <span>人次</span>
+                <span>點數</span>
                 <span>金額</span>
                 <span>狀態</span>
                 <span>日期</span>
@@ -270,12 +271,12 @@ export function AdminBillingClient() {
         </section>
       )}
 
-      {/* 額度異動明細 */}
+      {/* 點數異動明細 */}
       {billing && billing.recentTransactions.length > 0 && (
         <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
           <div className="flex items-center gap-2">
             <History size={18} />
-            <h2 className="text-lg font-bold">額度異動明細</h2>
+            <h2 className="text-lg font-bold">點數異動明細</h2>
           </div>
           <div className="mt-4 overflow-x-auto">
             <div className="min-w-[560px] overflow-hidden rounded-lg border border-charcoal/10">

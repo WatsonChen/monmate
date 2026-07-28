@@ -76,7 +76,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               >
                 <div className="flex items-center gap-2">
                   <CreditCard size={15} />
-                  <span>人次額度</span>
+                  <span>點數</span>
                 </div>
                 <span className="rounded-full bg-white/25 px-2.5 py-0.5 text-xs font-bold">
                   {credits}
@@ -151,7 +151,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     className="flex h-9 items-center gap-1 rounded-lg border border-orange/20 bg-orange/10 px-2 text-xs font-bold text-orange whitespace-nowrap sm:gap-1.5 sm:px-3"
                   >
                     <CreditCard size={13} className="shrink-0" />
-                    <span>{credits} 人次</span>
+                    <span>{credits} 點</span>
                   </Link>
                 )}
                 <button
