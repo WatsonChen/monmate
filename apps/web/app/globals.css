@@ -92,14 +92,21 @@ textarea {
 .success-cracker-piece--right-5 { right: 12%; top: 55%; --piece-x: -180px; --piece-y: -70px; --piece-fall: 110px; --piece-rotate: -18deg; --piece-color: #ff7231; --piece-delay: 90ms; }
 
 /* Continuous rain, layered on top of the corner burst above — many
-   pieces drop straight down from above the stage on staggered delays and
-   durations, so at any moment during the ~3.5s window some are near the
-   top and others near the bottom. That overlap is what actually reads as
-   "still falling", rather than one synchronized burst that lands at once.
-   Motion is plain linear, not eased: real paper confetti is light enough
-   to hit terminal velocity almost immediately, so a steady fall is more
-   realistic than an accelerating one, and it also can't stutter since
-   there's only a single unbroken segment. */
+   pieces drop straight down from above the stage, each on its own
+   randomized delay/duration/sway so at any moment some are near the top
+   and others near the bottom. Each piece's --rain-delay is offset past
+   the burst's own finish time (see BURST_DURATION_MS in the component),
+   so the rain only starts once the burst has fully played out — and each
+   piece loops (animation-iteration-count: infinite), so once a delayed
+   first drop lands the rain keeps going indefinitely rather than stopping.
+   Vertical fall (the `top` property) is only ever set at 0% and 100%, so
+   it interpolates as one continuous linear motion across the whole
+   duration no matter how many transform-only waypoints sit in between —
+   giving a slow, steady, un-stuttering descent (real paper confetti is
+   light enough to hit terminal velocity almost immediately, so a steady
+   fall reads more realistic than an accelerating one). The sway1/sway2
+   waypoints only affect horizontal drift + rotation, giving each piece a
+   loose side-to-side flutter as it falls, like a real paper scrap. */
 .success-cracker-rain {
   position: absolute;
   top: -10%;
@@ -108,7 +115,7 @@ textarea {
   border-radius: 2px;
   opacity: 0;
   transform: translateX(-50%) scale(var(--rain-scale, 1)) rotate(0deg);
-  animation: success-cracker-rain var(--rain-duration, 2800ms) linear var(--rain-delay, 0ms) both;
+  animation: success-cracker-rain var(--rain-duration, 5200ms) linear var(--rain-delay, 2100ms) infinite both;
 }
 
 @keyframes success-cracker-rain {
@@ -117,8 +124,14 @@ textarea {
     opacity: 0;
     transform: translateX(-50%) scale(var(--rain-scale, 1)) rotate(0deg);
   }
-  8% { opacity: 1; }
-  90% { opacity: 1; }
+  6% { opacity: 1; }
+  30% {
+    transform: translateX(calc(-50% + var(--rain-sway1, 20px))) scale(var(--rain-scale, 1)) rotate(calc(var(--rain-rotate, 220deg) * 0.3));
+  }
+  60% {
+    transform: translateX(calc(-50% + var(--rain-sway2, -20px))) scale(var(--rain-scale, 1)) rotate(calc(var(--rain-rotate, 220deg) * 0.65));
+  }
+  92% { opacity: 1; }
   100% {
     top: 108%;
     opacity: 0;
