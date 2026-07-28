@@ -55,7 +55,7 @@ export function FeatureUnlockControl({
         未解鎖
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-lg bg-charcoal p-3 text-xs text-white shadow-lg">
+        <div className="absolute left-1/2 top-full z-20 mt-2 w-64 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-lg bg-charcoal p-3 text-xs text-white shadow-lg sm:w-72">
           <p className="text-sm font-bold">{copy.title}</p>
           <p className="mt-1 leading-relaxed text-white/75">{copy.description}</p>
           {error && <p className="mt-2 font-semibold text-orange">{error}</p>}
