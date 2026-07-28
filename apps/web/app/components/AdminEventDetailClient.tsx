@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowUpDown,
   Check,
+  ChevronDown,
   ClipboardList,
   AlertTriangle,
   Copy,
@@ -104,6 +105,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   const [isAddingStaff, setIsAddingStaff] = useState(false);
 
   // Attendee list actions
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -599,8 +601,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
 
           {/* 報名名單 */}
           <section className="mt-5 rounded-lg border border-charcoal/10 bg-white p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+            {/* 手機版直排：標題列 → 統計列 → 按鈕列。桌面版把按鈕列拉到跟標題同一列
+                的右側（sm:order-2），統計列改成強制獨立佔滿一整列（sm:order-3 + w-full）。*/}
+            <div className="mb-3 flex flex-col flex-wrap gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2 sm:order-1">
                 <Users size={18} />
                 <h2 className="text-lg font-bold">報名名單</h2>
                 {attendees.length > 0 && (
@@ -621,7 +625,9 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   </div>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+
+              {/* 統計數字，用淺色底區隔，避免資訊全部擠在同一行 */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-paper px-3 py-2 text-sm sm:order-3 sm:w-full">
                 <span className="text-charcoal/60">
                   報名 <strong>{attendees.length}</strong> 組 / <strong>{totalRegistered}</strong> 人
                 </span>
@@ -632,42 +638,78 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 {partiallyCheckedIn > 0 && (
                   <span className="font-semibold text-orange">部分 {partiallyCheckedIn} 組</span>
                 )}
+              </div>
+
+              {/* 操作按鈕：發送/新增維持醒目的橘色主按鈕，匯出/匯入是同類的資料操作，
+                  合併成一個灰底群組（匯出改成下拉選單），減少一整排按鈕的擁擠感。
+                  手機版縮小字級/間距讓三組能排在同一行。*/}
+              <div className="flex flex-wrap items-center gap-1.5 sm:order-2 sm:gap-2">
                 <button
                   type="button"
                   disabled={attendees.length === 0 || isSendingInvite}
                   onClick={() => setConfirmSendAll(true)}
-                  className="flex h-8 items-center gap-1.5 rounded-lg bg-orange px-3 text-xs font-bold text-white disabled:opacity-40"
+                  className="flex h-7 items-center gap-1 rounded-lg bg-orange px-2 text-[11px] font-bold text-white disabled:opacity-40 sm:h-8 sm:gap-1.5 sm:px-3 sm:text-xs"
                 >
-                  <Send size={13} />
+                  <Send size={12} className="sm:hidden" />
+                  <Send size={13} className="hidden sm:block" />
                   {isSendingInvite ? "發送中…" : `發送全部`}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => void downloadExport("xlsx")}
-                  className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper"
-                >
-                  <FileSpreadsheet size={13} />匯出 XLSX
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void downloadExport("csv")}
-                  className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper"
-                >
-                  <FileSpreadsheet size={13} />匯出 CSV
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setShowImportForm((v) => !v); setShowAddForm(false); setImportMsg(""); }}
-                  className="flex h-8 items-center gap-1.5 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper"
-                >
-                  <Upload size={13} />匯入
-                </button>
+
+                <div className="flex items-center gap-0.5 rounded-lg border border-charcoal/15 bg-paper p-0.5">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowExportMenu((v) => !v)}
+                      className="flex h-6 items-center gap-0.5 rounded-md px-1.5 text-[11px] font-semibold hover:bg-white sm:h-7 sm:gap-1 sm:px-2.5 sm:text-xs"
+                    >
+                      <FileSpreadsheet size={12} className="sm:hidden" />
+                      <FileSpreadsheet size={13} className="hidden sm:block" />
+                      匯出
+                      <ChevronDown size={10} className={`sm:hidden ${showExportMenu ? "rotate-180" : ""}`} />
+                      <ChevronDown size={11} className={`hidden sm:block ${showExportMenu ? "rotate-180" : ""}`} />
+                    </button>
+                    {showExportMenu && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
+                        <div className="absolute left-0 top-full z-20 mt-1 w-28 overflow-hidden rounded-lg border border-charcoal/10 bg-white py-1 shadow-lg">
+                          <button
+                            type="button"
+                            onClick={() => { void downloadExport("xlsx"); setShowExportMenu(false); }}
+                            className="block w-full px-3 py-1.5 text-left text-xs font-semibold hover:bg-paper"
+                          >
+                            匯出 XLSX
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { void downloadExport("csv"); setShowExportMenu(false); }}
+                            className="block w-full px-3 py-1.5 text-left text-xs font-semibold hover:bg-paper"
+                          >
+                            匯出 CSV
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="h-4 w-px bg-charcoal/15" />
+                  <button
+                    type="button"
+                    onClick={() => { setShowImportForm((v) => !v); setShowAddForm(false); setImportMsg(""); }}
+                    className="flex h-6 items-center gap-0.5 rounded-md px-1.5 text-[11px] font-semibold hover:bg-white sm:h-7 sm:gap-1.5 sm:px-2.5 sm:text-xs"
+                  >
+                    <Upload size={12} className="sm:hidden" />
+                    <Upload size={13} className="hidden sm:block" />
+                    匯入
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => { setShowAddForm((v) => !v); setShowImportForm(false); setAddMsg(""); }}
-                  className="flex h-8 items-center gap-1.5 rounded-lg bg-orange px-3 text-xs font-bold text-white hover:bg-orange/90"
+                  className="flex h-7 items-center gap-1 rounded-lg bg-orange px-2 text-[11px] font-bold text-white hover:bg-orange/90 sm:h-8 sm:gap-1.5 sm:px-3 sm:text-xs"
                 >
-                  <Plus size={13} />新增
+                  <Plus size={12} className="sm:hidden" />
+                  <Plus size={13} className="hidden sm:block" />
+                  新增
                 </button>
               </div>
             </div>
