@@ -282,7 +282,7 @@ const faqItems: [string, string][] = [
   ["活動後可以做問卷調查嗎？", "可以，後台建立題目，報到後自動發送。"],
 ];
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://monmate.tw").replace(/\/$/, "");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.monmate.tw").replace(/\/$/, "");
 
 const jsonLd = {
   "@context": "https://schema.org",

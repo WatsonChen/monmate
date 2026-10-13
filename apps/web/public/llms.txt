@@ -10,6 +10,6 @@
 - 計價：點數制儲值（199 點 NT$590、599 點 NT$790、999 點 NT$990），點數可跨活動使用
 
 ## 連結
-- [首頁](https://monmate.tw/)
-- [隱私權條款](https://monmate.tw/privacy)
-- [退款條款](https://monmate.tw/refund)
+- [首頁](https://www.monmate.tw/)
+- [隱私權條款](https://www.monmate.tw/privacy)
+- [退款條款](https://www.monmate.tw/refund)

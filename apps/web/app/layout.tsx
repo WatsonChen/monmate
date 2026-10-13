@@ -7,7 +7,7 @@ const siteDescription =
   "MonMate 是活動報到系統：建立活動、開放線上報名或匯入名單，現場用手機掃 QR Code、輸入序號或查電話即可報到，並提供報到率數據、報表匯出與問卷。講座、課程、品牌活動、展會都適用。";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://monmate.tw"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.monmate.tw"),
   title: {
     default: "MonMate 活動報到系統｜QR Code 報到、線上報名、名單管理",
     template: "%s｜MonMate 活動報到系統"
