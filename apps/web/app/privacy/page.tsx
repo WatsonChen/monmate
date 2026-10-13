@@ -3,7 +3,8 @@ import Link from "next/link";
 import { BrandLogo } from "../components/BrandLogo";
 
 export const metadata: Metadata = {
-  title: "隱私權條款 | MonMate",
+  title: "隱私權條款",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

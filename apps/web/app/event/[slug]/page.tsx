@@ -57,7 +57,7 @@ export async function generateMetadata({
   const event = await getEvent(slug);
 
   if (!event) {
-    return { title: "找不到此活動 - MonMate" };
+    return { title: "找不到此活動", robots: { index: false } };
   }
 
   const title = event.name;
@@ -69,7 +69,8 @@ export async function generateMetadata({
   return {
     title,
     description,
-    openGraph: { title, description, type: "website", images: ["/brand/logo-slogan.png"] },
+    alternates: { canonical: `/event/${slug}` },
+    openGraph: { title, description, url: `/event/${slug}`, type: "website", images: ["/brand/logo-slogan.png"] },
     twitter: { card: "summary_large_image", title, description, images: ["/brand/logo-slogan.png"] }
   };
 }

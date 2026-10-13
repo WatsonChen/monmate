@@ -282,9 +282,60 @@ const faqItems: [string, string][] = [
   ["活動後可以做問卷調查嗎？", "可以，後台建立題目，報到後自動發送。"],
 ];
 
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://monmate.tw").replace(/\/$/, "");
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "MonMate",
+      url: siteUrl,
+      logo: `${siteUrl}/brand/logo-mark.png`,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "MonMate 活動報到系統",
+      alternateName: ["MonMate", "MonMate 活動報到"],
+      inLanguage: "zh-Hant-TW",
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "MonMate 活動報到系統",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: siteUrl,
+      description:
+        "建立活動、開放線上報名或匯入名單，現場用手機以 QR Code、序號或電話完成報到，並提供報到數據、報表匯出與問卷。",
+      offers: pricingTiers.map((t) => ({
+        "@type": "Offer",
+        name: `${t.credits} 點`,
+        price: t.price,
+        priceCurrency: "TWD",
+      })),
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: faqItems.map(([q, a]) => ({
+        "@type": "Question",
+        name: q,
+        acceptedAnswer: { "@type": "Answer", text: a },
+      })),
+    },
+  ],
+};
+
 export default function HomePage() {
   return (
     <main className="min-h-dvh bg-paper text-charcoal">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="sticky top-0 z-20 border-b border-charcoal/10 bg-paper/95 backdrop-blur">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Link href="/" className="flex items-center">

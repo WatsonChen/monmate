@@ -3,7 +3,8 @@ import Link from "next/link";
 import { BrandLogo } from "../components/BrandLogo";
 
 export const metadata: Metadata = {
-  title: "退款條款 | MonMate",
+  title: "退款條款",
+  alternates: { canonical: "/refund" },
 };
 
 export default function RefundPage() {
