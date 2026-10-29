@@ -444,7 +444,7 @@ export default function HomePage() {
             <div className="absolute left-[10.5%] top-[39%] h-[47%] w-[29%] overflow-hidden px-[clamp(4px,1vw,8px)] py-[clamp(6px,1.4vw,10px)]">
               <SuccessCracker compact />
 
-              <div className="relative z-10 flex h-full flex-col items-center text-center">
+              <div className="relative flex h-full flex-col items-center text-center">
                 <BrandLogo
                   variant="horizontal"
                   className="h-[clamp(18px,3vw,26px)] w-[clamp(60px,9vw,82px)] object-contain"
@@ -456,7 +456,10 @@ export default function HomePage() {
                   2026 MonMate 年度峰會
                 </p>
 
-                <div className="mt-[clamp(12px,2.2vw,18px)] flex h-[clamp(38px,6vw,52px)] w-[clamp(38px,6vw,52px)] items-center justify-center rounded-full bg-mint shadow-soft">
+                <div
+                  data-cracker-origin
+                  className="relative z-30 mt-[clamp(12px,2.2vw,18px)] flex h-[clamp(38px,6vw,52px)] w-[clamp(38px,6vw,52px)] items-center justify-center rounded-full bg-mint shadow-soft"
+                >
                   <CheckCircle2
                     className="h-[62%] w-[62%] text-white"
                     strokeWidth={2.8}

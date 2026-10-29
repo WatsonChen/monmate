@@ -238,12 +238,33 @@ export function SuccessCracker({ compact = false }: { compact?: boolean }) {
 
     let width = 0;
     let height = 0;
+    // 起始點：優先對齊內容中標記 data-cracker-origin 的元素（例如綠色勾勾）圓心
+    let originX = 0;
+    let originY = 0;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function measureOrigin() {
+      const rect = stageElement.getBoundingClientRect();
+      const anchor = stageElement.parentElement?.querySelector<HTMLElement>(
+        "[data-cracker-origin]"
+      );
+      if (anchor) {
+        const box = anchor.getBoundingClientRect();
+        originX = box.left + box.width / 2 - rect.left;
+        originY = box.top + box.height / 2 - rect.top;
+      } else {
+        originX = rect.width / 2;
+        originY = rect.height * (compact ? 0.5 : 0.47);
+      }
+      stageElement.style.setProperty("--success-origin-x", `${originX}px`);
+      stageElement.style.setProperty("--success-origin-y", `${originY}px`);
+    }
 
     function resize() {
       const rect = stageElement.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
+      measureOrigin();
       canvasElement.width = Math.max(1, Math.round(width * dpr));
       canvasElement.height = Math.max(1, Math.round(height * dpr));
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -279,8 +300,7 @@ export function SuccessCracker({ compact = false }: { compact?: boolean }) {
         ];
 
     function burst() {
-      const originX = width / 2;
-      const originY = height * (compact ? 0.5 : 0.47);
+      measureOrigin();
       const confettiCount = compact ? 18 : 38;
       const dotCount = compact ? 7 : 14;
       confetti.push(

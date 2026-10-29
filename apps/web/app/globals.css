@@ -35,6 +35,7 @@ textarea {
 
 .success-cracker-stage {
   --success-charge-duration: 560ms;
+  --success-origin-x: 50%;
   --success-origin-y: 47%;
   position: absolute;
   inset: 0;
@@ -58,7 +59,7 @@ textarea {
 
 .success-cracker-charge {
   position: absolute;
-  left: 50%;
+  left: var(--success-origin-x);
   top: var(--success-origin-y);
   z-index: 5;
   width: 46px;
@@ -92,9 +93,9 @@ textarea {
     0 5px 10px rgba(26, 36, 33, 0.1);
 }
 
+/* compact 版的起始點被綠色勾勾遮住，蓄力光球會從勾勾邊緣滲出光暈，所以不顯示 */
 .success-cracker-stage--compact .success-cracker-charge {
-  width: 28px;
-  height: 28px;
+  display: none;
 }
 
 @keyframes success-charge-bloom {
