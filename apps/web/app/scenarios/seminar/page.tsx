@@ -9,6 +9,7 @@ const content: ScenarioContent = {
   h1: "講座、課程、教育訓練的簽到怎麼做？",
   intro:
     "講座、課程與內部訓練的簽到，重點是現場快、事後好對帳。MonMate 讓學員用 QR Code、序號或電話完成報到，報到資料即時整理成可匯出的名單。",
+  image: "/brand/scenario-seminar.png",
   crumbName: "講座、課程、教育訓練",
   pains: [
     {

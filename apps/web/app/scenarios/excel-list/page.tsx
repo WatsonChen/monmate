@@ -9,6 +9,7 @@ const content: ScenarioContent = {
   h1: "已經有 Excel 名單，只需要現場報到怎麼辦？",
   intro:
     "邀請制活動、內部活動或名單早已確定的場合，不需要開放線上報名。把 Excel 名單匯入 MonMate，現場直接用手機核對與報到。",
+  image: "/brand/scenario-excel.png",
   crumbName: "已有 Excel 名單",
   pains: [
     {

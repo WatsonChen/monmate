@@ -189,13 +189,15 @@ export function Section({
   title,
   children,
   tone = "paper",
+  id,
 }: {
   title: string;
   children: ReactNode;
   tone?: "paper" | "white";
+  id?: string;
 }) {
   return (
-    <section className={tone === "white" ? "bg-white" : "bg-paper"}>
+    <section id={id} className={`${tone === "white" ? "bg-white" : "bg-paper"} scroll-mt-16`}>
       <div className="mx-auto max-w-4xl px-5 py-10">
         <h2 className="text-2xl font-bold">{title}</h2>
         <div className="mt-5 text-sm leading-7 text-charcoal/80">{children}</div>

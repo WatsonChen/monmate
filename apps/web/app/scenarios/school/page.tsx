@@ -9,6 +9,7 @@ const content: ScenarioContent = {
   h1: "學校家長會、校內研討會的報到怎麼做？",
   intro:
     "家長會、校內研習與研討會的報到常常集中在開場前十幾分鐘。用 MonMate，與會者掃現場張貼的 QR Code 就能自助報到，承辦人不必再逐一核對紙本名單。",
+  image: "/brand/scenario-school.png",
   crumbName: "學校活動",
   pains: [
     {

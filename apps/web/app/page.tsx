@@ -217,7 +217,7 @@ const teamItems: FeatureItem[] = [
   },
 ];
 
-const scenarioItems = [
+const scenarioItems: { title: string; text: string; image: string; href?: string }[] = [
   {
     title: "學校活動",
     text: "家長會、校內研習、研討會，現場自助報到。",
@@ -240,13 +240,13 @@ const scenarioItems = [
     title: "品牌活動／展會",
     text: "來賓資訊準確核對，維持品牌形象。",
     image: "/brand/scenario-expo.png",
-    href: "/scenarios/excel-list",
+    href: "/scenarios/brand-event",
   },
   {
     title: "社群聚會",
     text: "不用正式報名，也能簡單管理。",
     image: "/brand/scenario-community.png",
-    href: "/scenarios/seminar",
+    href: "/scenarios/community",
   },
   {
     title: "已經有 Excel 名單",
@@ -658,24 +658,31 @@ export default function HomePage() {
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {scenarioItems.map((item, index) => (
               <Reveal key={item.title} delay={index * 100} className="h-full">
-                <Link
-                  href={item.href}
-                  className="block h-full rounded-lg border border-charcoal/10 bg-paper p-5 text-center transition-colors hover:border-orange/40"
-                >
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    width={72}
-                    height={72}
-                    className="mx-auto h-[72px] w-[72px] object-contain"
-                    unoptimized
-                  />
-                  <h3 className="mt-4 text-base font-bold">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-charcoal/65">
-                    {item.text}
-                  </p>
-                  <p className="mt-3 text-xs font-bold text-orange">了解做法 →</p>
-                </Link>
+                {(() => {
+                  const cardClass = "block h-full rounded-lg border border-charcoal/10 bg-paper p-5 text-center";
+                  const content = (
+                    <>
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        width={72}
+                        height={72}
+                        className="mx-auto h-[72px] w-[72px] object-contain"
+                        unoptimized
+                      />
+                      <h3 className="mt-4 text-base font-bold">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-charcoal/65">{item.text}</p>
+                      {item.href ? <p className="mt-3 text-xs font-bold text-orange">了解做法 →</p> : null}
+                    </>
+                  );
+                  return item.href ? (
+                    <Link href={item.href} className={`${cardClass} transition-colors hover:border-orange/40`}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <div className={cardClass}>{content}</div>
+                  );
+                })()}
               </Reveal>
             ))}
           </div>

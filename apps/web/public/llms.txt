@@ -35,6 +35,8 @@
 - [學校家長會、校內研討會報到](https://www.monmate.tw/scenarios/school)
 - [講座、課程、教育訓練簽到](https://www.monmate.tw/scenarios/seminar)
 - [已有 Excel 名單的活動報到](https://www.monmate.tw/scenarios/excel-list)
+- [品牌活動、展會報到](https://www.monmate.tw/scenarios/brand-event)
+- [社群聚會、小型活動報到](https://www.monmate.tw/scenarios/community)
 - [客戶案例：小學家長會與研討會](https://www.monmate.tw/cases/elementary-school)
 - [隱私權條款](https://www.monmate.tw/privacy)
 - [退款條款](https://www.monmate.tw/refund)
