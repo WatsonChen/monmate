@@ -32,7 +32,7 @@ import {
 } from "./components/FloatingShapes";
 import { FlowTimeline } from "./components/FlowTimeline";
 import { Reveal } from "./components/Reveal";
-import { EXAMPLE_HEADCOUNTS, PRICING_TIERS, estimateCost, formatTwd } from "./lib/pricing";
+import { EXAMPLE_HEADCOUNTS, PRICING_TIERS, estimateCost, formatTwd, perPointPrice } from "./lib/pricing";
 import { StageStack } from "./components/StageStack";
 import { SuccessCracker } from "./components/SuccessCracker";
 
@@ -284,11 +284,10 @@ const flowItems = [
   },
 ];
 
-const perUnitLabels = ["2.97", "1.32", "0.99"];
-const pricingTiers = PRICING_TIERS.map((t, i) => ({
+const pricingTiers = PRICING_TIERS.map((t) => ({
   credits: String(t.credits),
   price: String(t.price),
-  perUnit: perUnitLabels[i],
+  perUnit: perPointPrice(t),
   fit: t.fit,
 }));
 
@@ -312,8 +311,8 @@ const faqItems: [string, string][] = [
     `100 位報名者（含攜伴）共扣 100 點，購買 199 點方案 NT$${PRICING_TIERS[0].price}，剩下的點數會保留在帳號，下一場可以繼續使用。`,
   ],
   [
-    "現場沒有網路或掃不到 QR Code 怎麼辦？",
-    "掃不到 QR Code 時，工作人員可以改用輸入序號或查電話完成報到。",
+    "掃不到 QR Code 怎麼辦？",
+    "掃不到 QR Code 時，工作人員可以改用輸入序號或查電話完成報到。報到操作需要網路連線。",
   ],
   [
     "點數怎麼算？可以跨活動用嗎？",

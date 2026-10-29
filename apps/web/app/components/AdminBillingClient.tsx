@@ -10,6 +10,7 @@ import type {
 import { CreditCard, RefreshCcw, Receipt, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { perPointPrice } from "../lib/pricing";
 import { DotsLoading } from "./DotsLoading";
 
 function formatDate(value: string) {
@@ -233,9 +234,9 @@ export function AdminBillingClient() {
                 <span className="text-charcoal/60">單價</span>
                 <span className="flex flex-col items-end font-semibold">
                   <span className="text-xs font-normal text-charcoal/40 line-through">
-                    NT$ {(selectedTier.amount * 5 / selectedTier.attendeeCredits).toFixed(1)} / 點
+                    NT$ {(selectedTier.amount * 5 / selectedTier.attendeeCredits).toFixed(2)} / 點
                   </span>
-                  NT$ {(selectedTier.amount / selectedTier.attendeeCredits).toFixed(1)} / 點
+                  NT$ {perPointPrice({ credits: selectedTier.attendeeCredits, price: selectedTier.amount })} / 點
                 </span>
               </div>
               <div className="mt-2 flex justify-between border-t border-charcoal/10 pt-2">

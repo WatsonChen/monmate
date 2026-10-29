@@ -59,6 +59,11 @@ export function estimateCost(headcount: number, withBranding = false) {
   return { needed, ...cheapestPlan(needed) };
 }
 
+// 每點價格：由方案價格與點數計算，四捨五入到兩位小數（全站共用，避免各處手寫不一致）
+export function perPointPrice(tier: Pick<PricingTier, "credits" | "price">) {
+  return (tier.price / tier.credits).toFixed(2);
+}
+
 export function formatTwd(amount: number) {
   return `NT$${amount.toLocaleString("en-US")}`;
 }
