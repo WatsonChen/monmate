@@ -216,6 +216,22 @@ export function ImportWizard({ eventId, token, onCompleted, onClose }: Props) {
     if (res.success && res.data) setHistory(res.data);
   }
 
+  // 取消或關閉時立刻刪除暫存的預覽資料（含名單個資）；失敗也不阻擋使用者，最慢 24 小時後仍會自動清除
+  function discardPreview() {
+    if (!preview) return;
+    void apiFetch(`${base}/import/${preview.sessionId}`, { method: "DELETE", token }).catch(() => undefined);
+  }
+
+  function cancelPreview() {
+    discardPreview();
+    reset();
+  }
+
+  function closeWizard() {
+    discardPreview();
+    onClose?.();
+  }
+
   function reset() {
     setPreview(null);
     setResult(null);
@@ -239,7 +255,7 @@ export function ImportWizard({ eventId, token, onCompleted, onClose }: Props) {
           </p>
         </div>
         {onClose ? (
-          <button type="button" onClick={onClose} aria-label="關閉匯入" className="rounded-lg p-1.5 text-charcoal/50 hover:bg-white">
+          <button type="button" onClick={closeWizard} aria-label="關閉匯入" className="rounded-lg p-1.5 text-charcoal/50 hover:bg-white">
             <X size={16} />
           </button>
         ) : null}
@@ -438,12 +454,12 @@ export function ImportWizard({ eventId, token, onCompleted, onClose }: Props) {
                 {busy === "confirm" ? <>匯入中<DotsLoading /></> : preview.billableHeadcount > 0 ? `確認匯入並扣 ${preview.billableHeadcount} 點` : "確認匯入"}
               </button>
             )}
-            <button type="button" onClick={reset} className="h-10 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-semibold hover:bg-paper">
+            <button type="button" onClick={cancelPreview} className="h-10 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-semibold hover:bg-paper">
               取消
             </button>
             {nothingToDo && c.suspectPending === 0 ? <span className="text-xs text-charcoal/55">沒有需要新增或更新的資料。</span> : null}
           </div>
-          <p className="text-xs text-charcoal/45">取消不會寫入任何資料也不會扣點；預覽資料會在 24 小時後自動清除。</p>
+          <p className="text-xs text-charcoal/45">取消不會寫入任何資料也不會扣點，暫存的預覽資料會立刻刪除；沒有取消的話，24 小時後也會自動清除。</p>
         </div>
       ) : null}
 
