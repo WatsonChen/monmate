@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import type { RegistrationField } from "@monmate/types";
 import { apiFetch } from "../lib/api";
@@ -39,6 +39,8 @@ export function EventLandingClient({ event, token }: Props) {
   const router = useRouter();
   const startDate = new Date(event.startAt);
 
+  // 同一次送出的重試共用同一個識別碼，後端據此防重；它不代表身份，換瀏覽器或清除資料後會是新的
+  const requestIdRef = useRef<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -64,7 +66,7 @@ export function EventLandingClient({ event, token }: Props) {
     // 只會覺得自己填了「一個」表單。
     const res = await apiFetch<{ qrToken: string }>(`/events/public/${event.slug}/register`, {
       method: "POST",
-      body: JSON.stringify({ name: name.trim(), phone: phone.trim() })
+      body: JSON.stringify({ name: name.trim(), phone: phone.trim(), requestId: (requestIdRef.current ??= crypto.randomUUID()) })
     });
     if (!res.success || !res.data) {
       setIsSubmitting(false);
