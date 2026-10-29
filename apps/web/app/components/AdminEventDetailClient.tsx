@@ -1,6 +1,6 @@
 "use client";
 
-import type { AttendeeDTO, EventDTO, RegistrationField, StaffDTO } from "@monmate/types";
+import type { AttendeeDTO, EventDTO, InsufficientCreditsDetails, RegistrationField, StaffDTO } from "@monmate/types";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -30,6 +30,8 @@ import { DateTimePicker } from "./DateTimePicker";
 import { DotsLoading } from "./DotsLoading";
 import { RegistrationFieldsEditor } from "./RegistrationFieldsEditor";
 import { FeatureUnlockControl } from "./FeatureUnlockControl";
+import { ImportWizard } from "./ImportWizard";
+import { TopUpDialog } from "./TopUpDialog";
 import { LogoUploadField } from "./LogoUploadField";
 import { CoverImageUploadField } from "./CoverImageUploadField";
 import { RichEditor } from "./RichEditor";
@@ -107,9 +109,8 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   // Attendee list actions
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importMsg, setImportMsg] = useState("");
+  // 新增單筆時點數不足：開啟儲值視窗（匯入的儲值流程在 ImportWizard 內）
+  const [topUpNeed, setTopUpNeed] = useState<InsufficientCreditsDetails | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addName, setAddName] = useState("");
   const [addPhone, setAddPhone] = useState("");
@@ -154,6 +155,8 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   useEffect(() => {
     const t = window.localStorage.getItem("monmate.token") ?? "";
     setToken(t);
+    // 從付款頁回來時，直接打開匯入精靈接續原本的預覽
+    if (new URLSearchParams(window.location.search).get("importSession")) setShowImportForm(true);
   }, []);
 
   useEffect(() => {
@@ -252,17 +255,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
     if (res.success) setStaffList((prev) => prev.filter((s) => s.id !== staffId));
   }
 
-  async function importAttendees() {
-    if (!importFile) return;
-    setIsImporting(true); setImportMsg("");
-    const form = new FormData();
-    form.append("file", importFile);
-    const res = await apiFetch<{ imported: number }>(`/events/${eventId}/attendees/import`, { method: "POST", token, body: form });
-    setIsImporting(false);
-    if (!res.success || !res.data) { setImportMsg(res.error?.message ?? "匯入失敗"); return; }
-    setImportMsg(`已匯入 ${res.data.imported} 筆名單`);
-    setImportFile(null); setShowImportForm(false);
-    window.dispatchEvent(new CustomEvent("credits-changed"));
+  async function reloadAttendees() {
     const r = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
     if (r.success && r.data) setAttendees(r.data);
   }
@@ -275,7 +268,15 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
       body: JSON.stringify({ name: addName.trim(), phone: addPhone.trim(), email: addEmail.trim() || undefined, capacity: addCapacity })
     });
     setIsAdding(false);
-    if (!res.success || !res.data) { setAddMsg(res.error?.message ?? "新增失敗"); return; }
+    if (!res.success || !res.data) {
+      if (res.error?.code === "INSUFFICIENT_ATTENDEE_CREDITS" && res.error.details) {
+        setTopUpNeed(res.error.details as InsufficientCreditsDetails);
+        setAddMsg("");
+        return;
+      }
+      setAddMsg(res.error?.message ?? "新增失敗");
+      return;
+    }
     setAttendees((prev) => [...prev, res.data!]);
     setAddName(""); setAddPhone(""); setAddEmail(""); setAddCapacity(1); setShowAddForm(false); setAddMsg("");
     window.dispatchEvent(new CustomEvent("credits-changed"));
@@ -693,7 +694,7 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <div className="h-4 w-px bg-charcoal/15" />
                   <button
                     type="button"
-                    onClick={() => { setShowImportForm((v) => !v); setShowAddForm(false); setImportMsg(""); }}
+                    onClick={() => { setShowImportForm((v) => !v); setShowAddForm(false); }}
                     className="flex h-6 items-center gap-0.5 rounded-md px-1.5 text-[11px] font-semibold hover:bg-white sm:h-7 sm:gap-1.5 sm:px-2.5 sm:text-xs"
                   >
                     <Upload size={12} className="sm:hidden" />
@@ -760,27 +761,25 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
             )}
 
-            {/* 匯入表單 */}
-            {showImportForm && (
-              <div className="mb-4 rounded-lg border border-charcoal/10 bg-paper p-4">
-                <p className="mb-1 text-sm font-bold">匯入名單</p>
-                <p className="mb-3 text-xs text-charcoal/50">支援 Excel (.xlsx / .xls)、CSV、Numbers、ODS，需含「姓名」與「電話」欄位</p>
-                <div className="flex flex-wrap items-end gap-3">
-                  <input type="file" accept=".xlsx,.xls,.csv,.numbers,.ods"
-                    onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
-                    className="h-10 rounded-lg border border-charcoal/15 bg-white px-3 py-2 text-sm outline-none focus:border-mint" />
-                  <button type="button" disabled={!importFile || isImporting} onClick={() => void importAttendees()}
-                    className="flex h-10 items-center gap-2 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40">
-                    <Upload size={15} />{isImporting ? "匯入中…" : "匯入"}
-                  </button>
-                  <button type="button" onClick={() => { setShowImportForm(false); setImportFile(null); setImportMsg(""); }}
-                    className="h-10 rounded-lg border border-charcoal/15 px-4 text-sm font-semibold hover:bg-white">取消</button>
-                </div>
-                {importMsg && (
-                  <p className={`mt-2 text-xs font-semibold ${importMsg.includes("已匯入") ? "text-green-600" : "text-red-600"}`}>{importMsg}</p>
-                )}
-              </div>
+            {/* 匯入：預覽 → 確認 */}
+            {showImportForm && token && (
+              <ImportWizard
+                eventId={eventId}
+                token={token}
+                onCompleted={() => void reloadAttendees()}
+                onClose={() => setShowImportForm(false)}
+              />
             )}
+
+            <TopUpDialog
+              open={topUpNeed !== null}
+              token={token}
+              onClose={() => setTopUpNeed(null)}
+              needed={topUpNeed?.required ?? 0}
+              balance={topUpNeed?.balance ?? 0}
+              returnTo={`/admin/events/${eventId}`}
+              description="付款完成後會回到這個活動頁，請再按一次「新增」。"
+            />
 
             {attendees.length === 0 ? (
               <div className="py-8 text-center text-sm text-charcoal/50">

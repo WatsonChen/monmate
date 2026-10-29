@@ -12,11 +12,12 @@ import {
   LogOut,
   QrCode,
   Users,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { apiFetch } from "../lib/api";
-import type { UserDTO } from "@monmate/types";
+import { CREDIT_FLOOR, type UserDTO } from "@monmate/types";
 
 const navItems = [
   { label: "總覽", icon: Home, href: "/admin" },
@@ -38,6 +39,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<UserDTO | null>(null);
+  const [creditReminderDismissed, setCreditReminderDismissed] = useState(false);
 
   function fetchUser() {
     const token = window.localStorage.getItem("monmate.token");
@@ -187,7 +189,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </nav>
           </header>
 
-          <div className="px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
+          <div className="px-4 py-5 sm:px-6 md:px-8 md:py-7">
+            {credits !== null && credits < 0 && !creditReminderDismissed && !isActive(pathname, "/admin/billing") ? (
+              <div className="mb-5 flex items-start justify-between gap-3 rounded-lg border border-orange/30 bg-orange/10 p-3 text-sm print:hidden" role="status">
+                <p>
+                  點數餘額為 <strong>{credits}</strong> 點，目前使用的是臨時額度（最低可到 {CREDIT_FLOOR} 點）。
+                  {credits <= CREDIT_FLOOR ? "臨時額度已用完，儲值後才能再新增報名者。" : "建議儲值，以免下次新增或匯入被擋下。"}
+                  <Link href="/admin/billing" className="ml-1 font-bold text-orange underline">前往儲值</Link>
+                </p>
+                <button type="button" onClick={() => setCreditReminderDismissed(true)} aria-label="關閉提醒" className="rounded p-1 text-charcoal/60 hover:bg-white/60">
+                  <X size={14} />
+                </button>
+              </div>
+            ) : null}
+            {children}
+          </div>
         </section>
       </div>
     </main>

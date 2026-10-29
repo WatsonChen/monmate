@@ -1,6 +1,18 @@
 export type ApiError = {
   code: string;
   message: string;
+  details?: unknown;
+};
+
+// 點數錢包最低可用餘額：帳戶層級的臨時額度（最多可先使用 3 點），與後端一致
+export const CREDIT_FLOOR = -3;
+
+// 點數不足（402 INSUFFICIENT_ATTENDEE_CREDITS）時後端附帶的細節，供儲值視窗使用
+export type InsufficientCreditsDetails = {
+  required: number;
+  balance: number;
+  balanceAfter: number;
+  floor: number;
 };
 
 export type ApiResponse<T> = {
@@ -183,4 +195,84 @@ export type PricingTierDTO = {
   attendeeCredits: number;
   amount: number;
   currency: "TWD";
+};
+
+// ---------- 名單匯入（預覽 → 確認） ----------
+
+export type ImportRowErrorDTO = { rowNumber: number; field: string; reason: string };
+export type ImportDecisionDTO = { action: "UPDATE" | "NEW" | "SKIP"; targetId?: string };
+
+export type ImportSuspectDTO = {
+  rowNumber: number;
+  name: string;
+  phone: string;
+  capacity: number;
+  candidates: { id: string; name: string; phone: string }[];
+  decision: ImportDecisionDTO | null;
+};
+
+export type ImportPreviewDTO = {
+  sessionId: string;
+  fileName: string;
+  counts: {
+    totalRows: number;
+    errorRows: number;
+    duplicateInFile: number;
+    unchanged: number;
+    toUpdate: number;
+    toCreate: number;
+    skippedByUser: number;
+    suspect: number;
+    suspectPending: number;
+  };
+  // 紀錄筆數（counts）與含攜伴的計費人數分開
+  billableHeadcount: number;
+  costIsFinal: boolean;
+  wallet: { balance: number; balanceAfter: number; floor: number; needsTopUp: boolean; minTopUp: number };
+  capacity: { blocked: boolean; limit: number | null };
+  warnings: string[];
+  errors: ImportRowErrorDTO[];
+  errorsTruncated: boolean;
+  suspects: ImportSuspectDTO[];
+  previouslyImported: boolean;
+};
+
+export type ImportResultDTO = {
+  fileName: string;
+  created: number;
+  updated: number;
+  unchanged: number;
+  duplicateInFile: number;
+  skippedByUser: number;
+  errorRows: number;
+  billedHeadcount: number;
+  balanceAfter: number;
+};
+
+export type ImportSessionDTO =
+  | { status: "PREVIEW"; preview: ImportPreviewDTO }
+  | { status: "CONFIRMED"; result: ImportResultDTO | null };
+
+export type ImportConfirmDTO =
+  | { status: "CONFIRMED"; alreadyConfirmed: boolean; result: ImportResultDTO }
+  | { status: "CHANGED"; preview: ImportPreviewDTO };
+
+export type ImportHistoryItemDTO = {
+  id: string;
+  fileName: string;
+  confirmedAt: string | null;
+  result: ImportResultDTO | null;
+};
+
+export type PaymentStatusDTO = {
+  id: string;
+  status: PaymentStatus;
+  amountTotal: number | null;
+  pricingTier: string | null;
+  attendeeLimit: number | null;
+  creditsGranted: number;
+  createdAt: string;
+  paidAt: string | null;
+  stale: boolean;
+  balance: number;
 };

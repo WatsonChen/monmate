@@ -2,6 +2,7 @@
 
 import type {
   BillingStatusDTO,
+  PaymentStatusDTO,
   CheckoutSessionDTO,
   CreditTransactionReason,
   PricingTierDTO
@@ -74,12 +75,39 @@ export function AdminBillingClient() {
     const storedToken = window.localStorage.getItem("monmate.token") ?? "";
     setToken(storedToken);
     const params = new URLSearchParams(window.location.search);
-    if (params.get("payment") === "success") setMessage("付款完成！點數已入帳。");
-    if (params.get("payment") === "cancelled") setMessage("付款已取消。");
-    if (params.get("payment") === "failed") setMessage("付款失敗，請重試。");
+    const paymentId = params.get("paymentId");
+    // 返回網址上的狀態只用來決定顯示什麼，是否入帳一律向後端確認（後端驗簽金流通知後才會加點）
+    if (paymentId && storedToken) {
+      void confirmPayment(paymentId, storedToken);
+    } else if (params.get("payment") === "failed") {
+      setMessage("付款失敗，請重試。");
+    }
     void loadBilling(storedToken);
     void loadPricingTiers(storedToken);
   }, []);
+
+  async function confirmPayment(paymentId: string, authToken: string) {
+    setMessage("正在確認付款結果…");
+    for (let i = 0; i < 30; i += 1) {
+      const res = await apiFetch<PaymentStatusDTO>(`/billing/payments/${paymentId}`, { token: authToken });
+      if (res.success && res.data) {
+        const p = res.data;
+        if (p.status === "PAID") {
+          setMessage("付款完成！點數已入帳。");
+          void loadBilling(authToken);
+          window.dispatchEvent(new CustomEvent("credits-changed"));
+          return;
+        }
+        if (p.status === "FAILED" || p.status === "CANCELED" || p.status === "EXPIRED") {
+          setMessage("付款失敗或已取消，沒有扣款也沒有加點，可以重新購買。");
+          return;
+        }
+        if (p.stale) break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+    setMessage("尚未收到付款結果。若你已付款，點數會在金流通知到達後自動入帳，請稍後重新整理本頁。");
+  }
 
   async function checkout() {
     setIsCheckingOut(true);
