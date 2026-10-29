@@ -8,6 +8,7 @@ import type { RegistrationField } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { formatEventDate, formatEventTime } from "../lib/eventDate";
 import { EventCoverBanner } from "./EventCoverBanner";
+import { TurnstileWidget, turnstileSiteKey } from "./TurnstileWidget";
 import {
   buildRegistrationFieldsPayload,
   emptyRegistrationFieldValues,
@@ -31,6 +32,7 @@ type Props = {
     openRegistration: boolean;
     registrationFields: RegistrationField[];
     unlockedFeatures?: string[];
+    registrationPaused?: boolean;
   };
   token: string | null;
 };
@@ -47,6 +49,8 @@ export function EventLandingClient({ event, token }: Props) {
   const [fieldValues, setFieldValues] = useState(emptyRegistrationFieldValues());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
 
   const ctaHref = token ? `/event/${event.slug}/register?token=${token}` : null;
 
@@ -58,6 +62,8 @@ export function EventLandingClient({ event, token }: Props) {
       if (fieldError) { setError(fieldError); return; }
     }
 
+    if (turnstileSiteKey && !captchaToken) { setError("請先完成人機驗證"); return; }
+
     setIsSubmitting(true);
     setError("");
 
@@ -66,11 +72,14 @@ export function EventLandingClient({ event, token }: Props) {
     // 只會覺得自己填了「一個」表單。
     const res = await apiFetch<{ qrToken: string }>(`/events/public/${event.slug}/register`, {
       method: "POST",
-      body: JSON.stringify({ name: name.trim(), phone: phone.trim(), requestId: (requestIdRef.current ??= crypto.randomUUID()) })
+      body: JSON.stringify({ name: name.trim(), phone: phone.trim(), requestId: (requestIdRef.current ??= crypto.randomUUID()), turnstileToken: captchaToken ?? undefined })
     });
     if (!res.success || !res.data) {
       setIsSubmitting(false);
       setError(res.error?.message ?? "報名失敗，請稍後再試");
+      // 驗證 token 只能使用一次：任何失敗後都要重新驗證
+      setCaptchaToken(null);
+      setCaptchaResetKey((k) => k + 1);
       return;
     }
     const { qrToken } = res.data;
@@ -139,7 +148,14 @@ export function EventLandingClient({ event, token }: Props) {
           )}
 
           {/* 公開報名 */}
-          {!token && event.openRegistration && !showForm && (
+          {/* 主辦暫停新增報名：只影響新報名，已報名者持原連結仍可查看票券與報到 */}
+          {!token && event.openRegistration && event.registrationPaused && (
+            <p className="mt-5 text-sm font-semibold text-charcoal/60">
+              目前暫停接受新的報名，請聯絡主辦單位。
+            </p>
+          )}
+
+          {!token && event.openRegistration && !event.registrationPaused && !showForm && (
             <button
               type="button"
               onClick={() => setShowForm(true)}
@@ -156,7 +172,7 @@ export function EventLandingClient({ event, token }: Props) {
             </p>
           )}
 
-          {!token && event.openRegistration && showForm && (
+          {!token && event.openRegistration && !event.registrationPaused && showForm && (
             <div className="mt-5 rounded-lg border border-charcoal/10 bg-paper p-4">
               <p className="mb-3 text-sm font-bold">填寫報名資料</p>
               {error && <p className="mb-3 text-xs font-semibold text-red-500">{error}</p>}
@@ -190,6 +206,8 @@ export function EventLandingClient({ event, token }: Props) {
                   />
                 </div>
               )}
+
+              <TurnstileWidget onToken={setCaptchaToken} resetKey={captchaResetKey} />
 
               <div className="mt-3 flex gap-2">
                 <button

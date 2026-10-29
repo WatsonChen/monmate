@@ -88,6 +88,8 @@ export type EventDTO = {
   selfCheckInBufferMinutes?: number | null;
   registrationFields?: RegistrationField[];
   unlockedFeatures?: string[];
+  /** 主辦手動暫停新增公開報名的時間；null 代表未暫停 */
+  registrationPausedAt?: string | null;
   attendeeCount?: number;
   checkInLogCount?: number;
   createdAt?: string;

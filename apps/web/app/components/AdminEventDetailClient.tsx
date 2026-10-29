@@ -69,6 +69,15 @@ function getAttendanceState(attendee: AttendeeDTO) {
   return { label: "未報到", tone: "text-charcoal/40", showCheck: false };
 }
 
+const abuseTypeLabel: Record<string, string> = {
+  RATE_ALERT_EVENT: "此活動短時間內大量新增報名（告警）",
+  RATE_ALERT_IP: "單一來源短時間內大量新增報名（告警）",
+  RATE_LIMITED: "有請求因過於頻繁被限制",
+  CAPTCHA_FAILED: "有請求未通過人機驗證",
+  REGISTRATION_PAUSED: "已手動暫停新增報名",
+  REGISTRATION_RESUMED: "已恢復新增報名"
+};
+
 export function AdminEventDetailClient({ eventId, created }: Props) {
   const [token, setToken] = useState("");
   const [event, setEvent] = useState<EventDTO | null>(null);
@@ -258,6 +267,30 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   async function reloadAttendees() {
     const r = await apiFetch<AttendeeDTO[]>(`/events/${eventId}/attendees`, { token });
     if (r.success && r.data) setAttendees(r.data);
+  }
+
+  // 暫停／恢復「新增公開報名」：只停止新報名，既有參加者的報到與查詢不受影響
+  const [isTogglingPause, setIsTogglingPause] = useState(false);
+  const [pauseMsg, setPauseMsg] = useState("");
+  const [abuseRows, setAbuseRows] = useState<{ id: string; type: string; createdAt: string }[] | null>(null);
+
+  async function togglePublicRegistrationPause() {
+    if (!event || isTogglingPause) return;
+    const pausing = !event.registrationPausedAt;
+    if (pausing && !window.confirm("暫停後，新的公開報名會被擋下；已報名者的報到與查詢不受影響。確定要暫停嗎？")) return;
+    setIsTogglingPause(true); setPauseMsg("");
+    const res = await apiFetch<{ registrationPausedAt: string | null }>(
+      `/events/${eventId}/public-registration/${pausing ? "pause" : "resume"}`, { method: "POST", token }
+    );
+    setIsTogglingPause(false);
+    if (!res.success || !res.data) { setPauseMsg(res.error?.message ?? "操作失敗，請稍後再試"); return; }
+    setEvent({ ...event, registrationPausedAt: res.data.registrationPausedAt });
+    setAbuseRows(null);
+  }
+
+  async function loadAbuseEvents() {
+    const res = await apiFetch<{ id: string; type: string; createdAt: string }[]>(`/events/${eventId}/abuse-events`, { token });
+    if (res.success && res.data) setAbuseRows(res.data.slice(0, 10));
   }
 
   async function addAttendee() {
@@ -528,8 +561,29 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 <div>
                   <span className="text-charcoal/50">公開報名</span>
                   <p className={`font-semibold ${event.openRegistration ? "text-green-600" : "text-charcoal/40"}`}>
-                    {event.openRegistration ? "開放中" : "未開放"}
+                    {event.openRegistration ? (event.registrationPausedAt ? "已暫停新增報名" : "開放中") : "未開放"}
                   </p>
+                  {event.openRegistration && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      <button type="button" disabled={isTogglingPause} onClick={() => void togglePublicRegistrationPause()}
+                        className="h-8 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper disabled:opacity-40">
+                        {event.registrationPausedAt ? "恢復新增報名" : "暫停新增報名"}
+                      </button>
+                      <button type="button" onClick={() => void loadAbuseEvents()}
+                        className="text-xs font-semibold text-charcoal/50 hover:text-charcoal">查看異常紀錄</button>
+                    </div>
+                  )}
+                  {pauseMsg && <p className="mt-1 text-xs font-semibold text-red-500">{pauseMsg}</p>}
+                  {abuseRows && (
+                    <ul className="mt-2 grid gap-1 text-xs text-charcoal/60">
+                      {abuseRows.length === 0 && <li>目前沒有異常紀錄</li>}
+                      {abuseRows.map((r) => (
+                        <li key={r.id}>
+                          {new Date(r.createdAt).toLocaleString("zh-TW")}・{abuseTypeLabel[r.type] ?? r.type}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 <div>
                   <span className="text-charcoal/50">自助報到開放時間</span>
