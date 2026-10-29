@@ -27,7 +27,7 @@ const crumbs: Crumb[] = [
   { name: "客戶案例：小學家長會與研討會", href: path },
 ];
 
-const metrics = ["參加人數", "報到所花時間", "現場工作人員人數"];
+// 成效數據與承辦人引言待取得學校同意與實際資料後再加入，未取得前不公開空白區塊
 
 export default function ElementarySchoolCasePage() {
   return (
@@ -60,40 +60,6 @@ export default function ElementarySchoolCasePage() {
             承辦人覺得整理資料的過程很快、很流暢，下一場活動也會繼續使用。
           </li>
         </ul>
-      </Section>
-
-      <Section title="成效數據" tone="white">
-        <p className="text-charcoal/60">
-          以下數據尚未取得，待取得學校同意與實際資料後補上，不會以估計值代替。
-        </p>
-        <div className="mt-4 overflow-x-auto rounded-lg border border-charcoal/10 bg-white">
-          <table className="w-full min-w-[480px] text-left text-sm">
-            <thead className="bg-paper text-xs text-charcoal/60">
-              <tr>
-                <th className="px-4 py-3 font-semibold">指標</th>
-                <th className="px-4 py-3 font-semibold">改用前</th>
-                <th className="px-4 py-3 font-semibold">改用後</th>
-                <th className="px-4 py-3 font-semibold">差異</th>
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.map((m) => (
-                <tr key={m} className="border-t border-charcoal/10">
-                  <td className="px-4 py-3 font-semibold">{m}</td>
-                  <td className="px-4 py-3">【待補】</td>
-                  <td className="px-4 py-3">【待補】</td>
-                  <td className="px-4 py-3">【待補】</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      <Section title="承辦人的話">
-        <blockquote className="rounded-lg border-l-4 border-orange bg-white px-5 py-4">
-          【待補：需取得同意後放入】
-        </blockquote>
       </Section>
 
       <Section title="想了解更多？" tone="white">

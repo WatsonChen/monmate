@@ -23,7 +23,7 @@ import {
 const path = "/pricing";
 const title = "價格說明：點數制計費與各人數費用表";
 const description =
-  "MonMate 採點數制：1 位報名者（含攜伴）扣 1 點，建立活動免費，點數可跨活動使用。提供 50／100／300／500／1,000 人的費用表與品牌客製化扣點方式。";
+  "MonMate 採點數制：每人 1 點（報名者與攜伴分別計算），建立活動免費，點數可跨活動使用。提供 50／100／300／500／1,000 人的費用表與品牌客製化扣點方式。";
 
 export const metadata: Metadata = {
   title,
@@ -45,6 +45,10 @@ const faq: [string, string][] = [
   [
     "活動設定的人數上限會扣點嗎？",
     "不會。人數上限只是容量設定，實際扣點依新增或匯入的報名人數（含攜伴）計算。",
+  ],
+  [
+    "是依實際到場人數扣點嗎？",
+    "不是。計費人數是新增或匯入的報名人數（含攜伴），每人 1 點，報名者與攜伴分別計算。",
   ],
   [
     "買了點數用不完怎麼辦？",
@@ -87,13 +91,13 @@ export default function PricingPage() {
       <Section title="計價規則" tone="white">
         <ul className="grid gap-2 pl-5">
           <li className="list-disc">
-            <strong>1 位報名者（含攜伴）＝ 1 點。</strong>報名者攜伴的每個人各算 1 點。
+            <strong>每人 1 點，報名者與攜伴分別計算。</strong>例如 1 位報名者帶 2 位同伴，共 3 人，扣 3 點。
           </li>
           <li className="list-disc">
             <strong>建立活動免費。</strong>
           </li>
           <li className="list-disc">
-            <strong>人數上限只是容量設定，不扣點。</strong>實際扣點依新增或匯入的報名人數計算。
+            <strong>人數上限只是容量設定，不扣點。</strong>計費人數＝新增或匯入的報名人數（含攜伴），不是當天實際到場人數。
           </li>
           <li className="list-disc">
             <strong>品牌客製化每場 {BRANDING_CREDITS} 點，選用。</strong>
@@ -121,14 +125,15 @@ export default function PricingPage() {
           以下依上方方案與計價規則自動計算，列出湊足所需點數、總價最低的購買方式（方案可重複購買）。
         </p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-charcoal/10 bg-white">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-paper text-xs text-charcoal/60">
               <tr>
-                <th className="px-4 py-3 font-semibold">報到人數（含攜伴）</th>
-                <th className="px-4 py-3 font-semibold">需扣點數</th>
-                <th className="px-4 py-3 font-semibold">購買方式</th>
-                <th className="px-4 py-3 font-semibold">約</th>
-                <th className="px-4 py-3 font-semibold">加購品牌客製化後約</th>
+                <th className="px-4 py-3 font-semibold">報名／匯入人數（含攜伴）</th>
+                <th className="px-4 py-3 font-semibold">本場扣點</th>
+                <th className="px-4 py-3 font-semibold">零餘額時的購買方式</th>
+                <th className="px-4 py-3 font-semibold">本次需購買金額</th>
+                <th className="px-4 py-3 font-semibold">活動後剩餘點數</th>
+                <th className="px-4 py-3 font-semibold">加購品牌客製化後需購買金額</th>
               </tr>
             </thead>
             <tbody>
@@ -138,6 +143,7 @@ export default function PricingPage() {
                   <td className="px-4 py-3">{r.plain.needed} 點</td>
                   <td className="px-4 py-3">{describePlan(r.plain.counts)}</td>
                   <td className="px-4 py-3 font-bold">{formatTwd(r.plain.total)}</td>
+                  <td className="px-4 py-3">{r.plain.credits - r.plain.needed} 點</td>
                   <td className="px-4 py-3">
                     {formatTwd(r.branded.total)}
                     <span className="ml-1 text-xs text-charcoal/50">（共 {r.branded.needed} 點）</span>
@@ -148,7 +154,7 @@ export default function PricingPage() {
           </table>
         </div>
         <p className="mt-3 text-xs text-charcoal/60">
-          剩下的點數會保留在帳號，下一場活動可以繼續使用。實際金額以購買當下的方案價格為準。
+          「本次需購買金額」是帳戶沒有餘額時，湊足本場所需點數的最低購買金額，不是每場都要重新付費；剩下的點數會保留在帳號，下一場活動可以繼續使用。實際金額以購買當下的方案價格為準。
         </p>
         <div className="mt-6">
           <CreditEstimator tiers={PRICING_TIERS} />

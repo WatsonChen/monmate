@@ -43,7 +43,8 @@ export function cheapestPlan(needed: number, tiers: PricingTier[] = PRICING_TIER
     counts[pick[c]] += 1;
     c = Math.max(0, c - tiers[pick[c]].credits);
   }
-  return { total: bestCost, counts };
+  const credits = counts.reduce((sum, n, i) => sum + n * tiers[i].credits, 0);
+  return { total: bestCost, counts, credits };
 }
 
 export function describePlan(counts: number[], tiers: PricingTier[] = PRICING_TIERS) {

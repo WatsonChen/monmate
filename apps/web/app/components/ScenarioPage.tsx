@@ -121,10 +121,10 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
           <table className="w-full min-w-[420px] text-left text-sm">
             <thead className="bg-paper text-xs text-charcoal/60">
               <tr>
-                <th className="px-4 py-3 font-semibold">報到人數（含攜伴）</th>
+                <th className="px-4 py-3 font-semibold">報名／匯入人數（含攜伴）</th>
                 <th className="px-4 py-3 font-semibold">需扣點數</th>
                 <th className="px-4 py-3 font-semibold">最划算的購買方式</th>
-                <th className="px-4 py-3 font-semibold">約</th>
+                <th className="px-4 py-3 font-semibold">零餘額時最低購買金額</th>
               </tr>
             </thead>
             <tbody>
@@ -140,7 +140,7 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
           </table>
         </div>
         <p className="mt-3 text-xs text-charcoal/60">
-          1 位報名者（含攜伴）扣 1 點；建立活動免費；人數上限只是容量設定，不扣點；點數可跨活動使用，用不完會保留在帳號中。
+          每人 1 點，報名者與攜伴分別計算；依報名／匯入人數計算，不是實際到場人數；建立活動免費；人數上限只是容量設定，不扣點；點數可跨活動使用，用不完會保留在帳號中。
           <Link href="/pricing" className="ml-1 font-bold text-orange">
             完整價格說明
           </Link>

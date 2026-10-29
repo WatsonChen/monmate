@@ -26,8 +26,7 @@ const content: ScenarioContent = {
   ],
   before: [
     "建立活動，選擇之後匯入名單、不開放公開報名",
-    "上傳 Excel 名單（.xlsx／.xls，至少包含姓名、電話），支援攜伴人數",
-    "CSV 格式匯入：【待補：確認後台是否支援直接匯入 CSV】",
+    "上傳 Excel 或 CSV 名單（.xlsx／.xls／.csv，至少包含姓名、電話），支援攜伴人數",
     "用 Email 寄送含 QR Code 的報到通知，或複製報到連結",
   ],
   during: [
@@ -45,7 +44,7 @@ const content: ScenarioContent = {
     "工作人員主要處理例外狀況（查無名單、忘記電話）並引導動線。",
     "可邀請多位同事各自登入、多支手機同時報到。",
   ],
-  exampleIntro: "名單匯入時依人數（含攜伴）扣點，常見規模與對應費用如下（依現有計價規則自動計算）：",
+  exampleIntro: "名單匯入時依匯入人數（含攜伴）扣點，常見規模與對應費用如下（依現有計價規則自動計算）：",
   exampleHeadcounts: [50, 100, 300, 500, 1000],
   faq: [
     [

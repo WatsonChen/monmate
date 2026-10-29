@@ -42,12 +42,11 @@ export function CreditEstimator({ tiers }: { tiers: PricingTier[] }) {
         <div className="overflow-hidden">
           <div className="px-5 pb-5">
             <p className="text-xs leading-5 text-charcoal/60">
-              1 位報名者 = 1 點，攜伴者每人各算 1
-              點；建立活動免費，活動人數上限只是容量設定、不會扣點。
+              每人 1 點，報名者與攜伴分別計算（1 位報名者帶 2 位同伴 = 3 點）；依新增或匯入的報名人數計算，不是當天實際到場人數。建立活動免費，人數上限只是容量設定、不會扣點。
             </p>
             <div className="mt-4 flex flex-wrap items-end gap-4">
               <label className="block">
-                <span className="text-sm font-semibold">預計報到人數（含攜伴）</span>
+                <span className="text-sm font-semibold">預計報名／匯入人數（含攜伴）</span>
                 <input
                   type="number"
                   inputMode="numeric"

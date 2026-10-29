@@ -9,7 +9,6 @@ import {
   FileSpreadsheet,
   FileWarning,
   Files,
-  GraduationCap,
   Hourglass,
   LayoutTemplate,
   LogIn,
@@ -133,7 +132,7 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
     items: [
       {
         title: "QR／序號／電話，三種報到方式",
-        text: "現場沒訊號、掃不到碼都有備案，手機直接操作。",
+        text: "來賓可自己掃現場 QR Code；找不到或掃不到時，改用序號或電話查詢，手機直接操作。",
         icon: QrCode,
         preview: (
           <Image
@@ -222,8 +221,8 @@ const scenarioItems = [
   {
     title: "學校活動",
     text: "家長會、校內研習、研討會，現場自助報到。",
+    image: "/brand/scenario-school.png",
     href: "/scenarios/school",
-    icon: GraduationCap,
   },
   {
     title: "講座／發表會",
@@ -252,8 +251,8 @@ const scenarioItems = [
   {
     title: "已經有 Excel 名單",
     text: "名單先備好，只需要現場報到。",
+    image: "/brand/scenario-excel.png",
     href: "/scenarios/excel-list",
-    icon: FileSpreadsheet,
   },
 ];
 
@@ -310,15 +309,15 @@ const faqItems: [string, string][] = [
   ],
   [
     "100 人的活動要多少錢？",
-    `100 位報名者（含攜伴）扣 100 點，購買 199 點方案 NT$${PRICING_TIERS[0].price}，剩下的點數會保留在帳號，下一場可以繼續使用。`,
+    `100 位報名者（含攜伴）共扣 100 點，購買 199 點方案 NT$${PRICING_TIERS[0].price}，剩下的點數會保留在帳號，下一場可以繼續使用。`,
   ],
   [
     "現場沒有網路或掃不到 QR Code 怎麼辦？",
-    "掃不到 QR Code 時，工作人員可以改用輸入序號或查電話完成報到。現場完全沒有網路時的處理方式：【待補：確認是否支援離線報到】。",
+    "掃不到 QR Code 時，工作人員可以改用輸入序號或查電話完成報到。",
   ],
   [
     "點數怎麼算？可以跨活動用嗎？",
-    "儲值到帳號，1 位報名者（含攜伴者）扣 1 點，品牌客製化每場 50 點，建立活動免費，點數可跨活動使用。價格區有試算器可預估整場預算。",
+    "儲值到帳號，每人 1 點（報名者與攜伴分別計算），品牌客製化每場 50 點，建立活動免費，點數可跨活動使用。價格區有試算器可預估整場預算。",
   ],
   ["同事可以一起顧報到桌嗎？", "可以，支援多帳號、多裝置同時上線。"],
   ["活動結束後可以整理資料嗎？", "可以查看報到狀態，並匯出報表對帳。"],
@@ -443,8 +442,8 @@ export default function HomePage() {
               活動報到，從報名到現場一次搞定
             </h1>
             <p className="mt-5 text-base leading-7 text-charcoal/70 md:max-w-xl">
-              建立活動、開放報名或匯入名單，產生報到連結；現場用手機掃 QR
-              Code、輸入序號或查電話完成報到，事後還有數據與問卷追蹤成效。
+              來賓可掃現場 QR Code 自助報到，不必每個人都排隊核對；需要協助時，工作人員也能掃個人 QR
+              Code、輸入序號或查電話。從名單匯入到活動後出席統計，一套完成。
             </p>
           </div>
 
@@ -663,20 +662,14 @@ export default function HomePage() {
                   href={item.href}
                   className="block h-full rounded-lg border border-charcoal/10 bg-paper p-5 text-center transition-colors hover:border-orange/40"
                 >
-                  {item.image ? (
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      width={72}
-                      height={72}
-                      className="mx-auto h-[72px] w-[72px] object-contain"
-                      unoptimized
-                    />
-                  ) : item.icon ? (
-                    <span className="mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-full bg-orange/12">
-                      <item.icon className="text-orange" size={32} />
-                    </span>
-                  ) : null}
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={72}
+                    height={72}
+                    className="mx-auto h-[72px] w-[72px] object-contain"
+                    unoptimized
+                  />
                   <h3 className="mt-4 text-base font-bold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-charcoal/65">
                     {item.text}
@@ -732,7 +725,7 @@ export default function HomePage() {
           <div className="md:col-span-2">
             <p className="mb-4 text-sm leading-6 text-charcoal/75">
               <span className="font-bold text-charcoal">費用範例：</span>
-              {priceExampleText}。1 位報名者（含攜伴）扣 1 點，建立活動免費。
+              {priceExampleText}。每人 1 點，報名者與攜伴分別計算，建立活動免費。
               <Link href="/pricing" className="ml-1 font-bold text-orange">
                 查看完整價格說明 →
               </Link>
