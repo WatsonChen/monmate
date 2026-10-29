@@ -38,7 +38,7 @@ monmate/
 ## 安裝
 
 ```bash
-npm install
+yarn install
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
@@ -61,17 +61,17 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 ## Prisma
 
 ```bash
-npm run prisma:generate
-npm run prisma:migrate -- --name init
-npm run seed
+yarn prisma:generate
+yarn prisma:migrate --name init
+yarn seed
 ```
 
 也可以使用較一致的 root scripts：
 
 ```bash
-npm run db:generate
-npm run db:migrate -- --name init
-npm run db:seed
+yarn db:generate
+yarn db:migrate --name init
+yarn db:seed
 ```
 
 Prisma / DB scripts 會明確讀取 `apps/api/.env`，避免把資料庫連線字串放到前端或混在 web env。
@@ -102,8 +102,8 @@ http://localhost:3000/event/monmate-demo/checkin
 ## 開發啟動
 
 ```bash
-npm run dev:api
-npm run dev:web
+yarn dev:api
+yarn dev:web
 ```
 
 預設網址：
@@ -115,14 +115,14 @@ npm run dev:web
 也可以同時啟動：
 
 ```bash
-npm run dev
+yarn dev
 ```
 
 ## Build / Typecheck
 
 ```bash
-npm run typecheck
-npm run build
+yarn typecheck
+yarn build
 ```
 
 ## Vercel 部署
@@ -140,9 +140,9 @@ No Output Directory named "public" found after the Build completed.
 ```txt
 Framework Preset: Next.js
 Root Directory: apps/web
-Build Command: npm run build
+Build Command: yarn build
 Output Directory: .next
-Install Command: npm install
+Install Command: yarn install
 ```
 
 repo 內已提供 `apps/web/vercel.json`；如果 Vercel 專案 Root Directory 設為 `apps/web`，它會使用該設定。若 Root Directory 保持 repo root，則會使用根目錄 `vercel.json`，build `@monmate/web` 並使用 `apps/web/.next` 作為 output。
