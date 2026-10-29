@@ -22,6 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import { BrandLogo } from "./components/BrandLogo";
+import { CreditEstimator } from "./components/CreditEstimator";
 import { DemoVideoTrigger } from "./components/DemoVideoTrigger";
 import { FaqAccordion } from "./components/FaqAccordion";
 import {
@@ -275,7 +276,7 @@ const faqItems: [string, string][] = [
   ["適合哪些活動？", "講座、課程、品牌活動、展會都適合。"],
   [
     "點數怎麼算？可以跨活動用嗎？",
-    "儲值到帳號，新增報名者依人數扣點，也能拿來解鎖活動的進階功能，可跨活動使用。",
+    "儲值到帳號，1 位報名者（含攜伴者）扣 1 點，品牌客製化每場 50 點，建立活動免費，點數可跨活動使用。價格區有試算器可預估整場預算。",
   ],
   ["同事可以一起顧報到桌嗎？", "可以，支援多帳號、多裝置同時上線。"],
   ["活動結束後可以整理資料嗎？", "可以查看報到狀態，並匯出報表對帳。"],
@@ -656,6 +657,14 @@ export default function HomePage() {
                 </div>
               </Reveal>
             ))}
+          </div>
+          <div className="md:col-span-2">
+            <CreditEstimator
+              tiers={pricingTiers.map((t) => ({
+                credits: Number(t.credits),
+                price: Number(t.price),
+              }))}
+            />
           </div>
         </div>
       </section>
