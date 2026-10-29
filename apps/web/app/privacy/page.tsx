@@ -24,7 +24,7 @@ export default function PrivacyPage() {
       <div className="mx-auto max-w-3xl px-5 py-12">
         <p className="text-sm font-bold text-orange">法律文件</p>
         <h1 className="mt-2 text-3xl font-bold">隱私權條款</h1>
-        <p className="mt-3 text-sm text-charcoal/50">最後更新日期：2026 年 6 月 5 日</p>
+        <p className="mt-3 text-sm text-charcoal/50">最後更新日期：2026 年 10 月 29 日</p>
 
         <div className="mt-10 grid gap-8 text-sm leading-7 text-charcoal/80">
           <section>
@@ -81,6 +81,9 @@ export default function PrivacyPage() {
                 <strong>簡訊服務商：</strong>傳送報到通知所需之電話號碼。
               </li>
               <li className="list-disc">
+                <strong>網站流量分析（Google Analytics）：</strong>僅用於本服務公開介紹頁（首頁、價格、使用情境與條款頁）的匿名流量統計，不用於報名、報到、票券、問卷或後台頁面，也不包含您填寫的個人資料。
+              </li>
+              <li className="list-disc">
                 <strong>法律要求：</strong>依法院命令或主管機關要求提供必要資料。
               </li>
             </ul>
@@ -110,7 +113,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-bold text-charcoal">八、Cookie 使用</h2>
             <p className="mt-3">
-              本服務使用 Cookie 及類似技術以維持登入狀態及改善使用體驗。您可透過瀏覽器設定拒絕 Cookie，但部分功能可能因此受到影響。
+              本服務使用 Cookie 及類似技術以維持登入狀態及改善使用體驗。公開介紹頁使用 Google Analytics 的 Cookie 統計匿名流量，我們未啟用廣告個人化功能。您可透過瀏覽器設定拒絕 Cookie，但部分功能可能因此受到影響。
             </p>
           </section>
 
