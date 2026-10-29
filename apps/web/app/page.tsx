@@ -9,6 +9,7 @@ import {
   FileSpreadsheet,
   FileWarning,
   Files,
+  GraduationCap,
   Hourglass,
   LayoutTemplate,
   LogIn,
@@ -32,6 +33,7 @@ import {
 } from "./components/FloatingShapes";
 import { FlowTimeline } from "./components/FlowTimeline";
 import { Reveal } from "./components/Reveal";
+import { EXAMPLE_HEADCOUNTS, PRICING_TIERS, estimateCost, formatTwd } from "./lib/pricing";
 import { StageStack } from "./components/StageStack";
 import { SuccessCracker } from "./components/SuccessCracker";
 
@@ -47,6 +49,8 @@ const navItems = [
   { label: "流程", href: "#flow" },
   { label: "價格", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
+  { label: "價格說明", href: "/pricing" },
+  { label: "客戶案例", href: "/cases/elementary-school" },
 ];
 
 const heroHighlights = [
@@ -216,24 +220,40 @@ const teamItems: FeatureItem[] = [
 
 const scenarioItems = [
   {
+    title: "學校活動",
+    text: "家長會、校內研習、研討會，現場自助報到。",
+    href: "/scenarios/school",
+    icon: GraduationCap,
+  },
+  {
     title: "講座／發表會",
     text: "人數多，報到要快、名單要準。",
     image: "/brand/scenario-seminar.png",
+    href: "/scenarios/seminar",
   },
   {
     title: "課程／內部訓練",
     text: "多場次課程，出席資料好整理。",
     image: "/brand/scenario-training.png",
+    href: "/scenarios/seminar",
   },
   {
     title: "品牌活動／展會",
     text: "來賓資訊準確核對，維持品牌形象。",
     image: "/brand/scenario-expo.png",
+    href: "/scenarios/excel-list",
   },
   {
     title: "社群聚會",
     text: "不用正式報名，也能簡單管理。",
     image: "/brand/scenario-community.png",
+    href: "/scenarios/seminar",
+  },
+  {
+    title: "已經有 Excel 名單",
+    text: "名單先備好，只需要現場報到。",
+    href: "/scenarios/excel-list",
+    icon: FileSpreadsheet,
   },
 ];
 
@@ -265,15 +285,37 @@ const flowItems = [
   },
 ];
 
-const pricingTiers = [
-  { credits: "199", price: "590", perUnit: "2.97", fit: "小型講座首選" },
-  { credits: "599", price: "790", perUnit: "1.32", fit: "品牌活動熱門" },
-  { credits: "999", price: "990", perUnit: "0.99", fit: "大型展覽適用" },
-];
+const perUnitLabels = ["2.97", "1.32", "0.99"];
+const pricingTiers = PRICING_TIERS.map((t, i) => ({
+  credits: String(t.credits),
+  price: String(t.price),
+  perUnit: perUnitLabels[i],
+  fit: t.fit,
+}));
+
+// 價格範例由共用的試算邏輯算出（伺服器端渲染），與試算器結果一致
+const priceExamples = [50, 300, 1000].map((n) => ({
+  headcount: n,
+  total: estimateCost(n).total,
+}));
+const priceExampleText = priceExamples
+  .map((e) => `${e.headcount.toLocaleString("en-US")} 人活動約 ${formatTwd(e.total)}`)
+  .join("｜");
 
 const faqItems: [string, string][] = [
   ["與會者需要登入嗎？", "不需要，開啟報到連結即可操作。"],
-  ["適合哪些活動？", "講座、課程、品牌活動、展會都適合。"],
+  [
+    "適合哪些活動？",
+    "講座、課程、品牌活動、展會都適合，也適用學校活動，例如家長會、校內研習與研討會。",
+  ],
+  [
+    "100 人的活動要多少錢？",
+    `100 位報名者（含攜伴）扣 100 點，購買 199 點方案 NT$${PRICING_TIERS[0].price}，剩下的點數會保留在帳號，下一場可以繼續使用。`,
+  ],
+  [
+    "現場沒有網路或掃不到 QR Code 怎麼辦？",
+    "掃不到 QR Code 時，工作人員可以改用輸入序號或查電話完成報到。現場完全沒有網路時的處理方式：【待補：確認是否支援離線報到】。",
+  ],
   [
     "點數怎麼算？可以跨活動用嗎？",
     "儲值到帳號，1 位報名者（含攜伴者）扣 1 點，品牌客製化每場 50 點，建立活動免費，點數可跨活動使用。價格區有試算器可預估整場預算。",
@@ -312,6 +354,12 @@ const jsonLd = {
       url: siteUrl,
       description:
         "建立活動、開放線上報名或匯入名單，現場用手機以 QR Code、序號或電話完成報到，並提供報到數據、報表匯出與問卷。",
+      audience: {
+        "@type": "Audience",
+        audienceType:
+          "活動主辦方與承辦人：學校（家長會、校內研習、研討會）、講座與課程單位、企業內部訓練、品牌活動與展會主辦方、社群聚會召集人",
+        geographicArea: { "@type": "Country", name: "台灣" },
+      },
       offers: pricingTiers.map((t) => ({
         "@type": "Offer",
         name: `${t.credits} 點`,
@@ -347,15 +395,25 @@ export default function HomePage() {
           </Link>
 
           <div className="hidden items-center gap-6 md:flex">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="text-sm font-bold text-charcoal/70 hover:text-charcoal"
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item) =>
+              item.href.startsWith("/") ? (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-bold text-charcoal/70 hover:text-charcoal"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-bold text-charcoal/70 hover:text-charcoal"
+                >
+                  {item.label}
+                </a>
+              ),
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -590,7 +648,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white lg:relative lg:z-10">
+      <section id="scenarios" className="bg-white lg:relative lg:z-10">
         <div className="mx-auto max-w-6xl px-5 py-12">
           <div className="text-center">
             <p className="text-sm font-bold text-orange">適用場景</p>
@@ -598,23 +656,33 @@ export default function HomePage() {
               這些場合都適合用 MonMate
             </h2>
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {scenarioItems.map((item, index) => (
               <Reveal key={item.title} delay={index * 100} className="h-full">
-                <div className="h-full rounded-lg border border-charcoal/10 bg-paper p-5 text-center">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    width={72}
-                    height={72}
-                    className="mx-auto h-[72px] w-[72px] object-contain"
-                    unoptimized
-                  />
+                <Link
+                  href={item.href}
+                  className="block h-full rounded-lg border border-charcoal/10 bg-paper p-5 text-center transition-colors hover:border-orange/40"
+                >
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      width={72}
+                      height={72}
+                      className="mx-auto h-[72px] w-[72px] object-contain"
+                      unoptimized
+                    />
+                  ) : item.icon ? (
+                    <span className="mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-full bg-orange/12">
+                      <item.icon className="text-orange" size={32} />
+                    </span>
+                  ) : null}
                   <h3 className="mt-4 text-base font-bold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-charcoal/65">
                     {item.text}
                   </p>
-                </div>
+                  <p className="mt-3 text-xs font-bold text-orange">了解做法 →</p>
+                </Link>
               </Reveal>
             ))}
           </div>
@@ -662,12 +730,14 @@ export default function HomePage() {
             ))}
           </div>
           <div className="md:col-span-2">
-            <CreditEstimator
-              tiers={pricingTiers.map((t) => ({
-                credits: Number(t.credits),
-                price: Number(t.price),
-              }))}
-            />
+            <p className="mb-4 text-sm leading-6 text-charcoal/75">
+              <span className="font-bold text-charcoal">費用範例：</span>
+              {priceExampleText}。1 位報名者（含攜伴）扣 1 點，建立活動免費。
+              <Link href="/pricing" className="ml-1 font-bold text-orange">
+                查看完整價格說明 →
+              </Link>
+            </p>
+            <CreditEstimator tiers={PRICING_TIERS} />
           </div>
         </div>
       </section>
@@ -762,6 +832,12 @@ export default function HomePage() {
               <a href="#faq" className="hover:text-charcoal">
                 FAQ
               </a>
+              <Link href="/pricing" className="hover:text-charcoal">
+                價格說明
+              </Link>
+              <Link href="/cases/elementary-school" className="hover:text-charcoal">
+                客戶案例
+              </Link>
             </div>
           </div>
           <div>

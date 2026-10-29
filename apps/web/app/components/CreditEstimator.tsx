@@ -1,53 +1,18 @@
 "use client";
 
-import { FEATURE_UNLOCK_COSTS } from "@monmate/types";
 import { ChevronDown, Calculator } from "lucide-react";
 import { useState } from "react";
-
-type Tier = { credits: number; price: number };
+import { BRANDING_CREDITS, cheapestPlan, describePlan, type PricingTier } from "../lib/pricing";
 
 const MAX_HEADCOUNT = 100000;
 
-// 以最低總價湊足所需點數（方案可重複購買）
-function cheapestPlan(needed: number, tiers: Tier[]) {
-  const maxCredits = Math.max(...tiers.map((t) => t.credits));
-  const limit = needed + maxCredits;
-  const best: number[] = Array(limit + 1).fill(Infinity);
-  const pick: number[] = Array(limit + 1).fill(-1);
-  best[0] = 0;
-  for (let c = 1; c <= limit; c++) {
-    tiers.forEach((t, i) => {
-      const prev = Math.max(0, c - t.credits);
-      if (best[prev] + t.price < best[c]) {
-        best[c] = best[prev] + t.price;
-        pick[c] = i;
-      }
-    });
-  }
-  let target = needed;
-  let bestCost = Infinity;
-  for (let c = needed; c <= limit; c++) {
-    if (best[c] < bestCost) {
-      bestCost = best[c];
-      target = c;
-    }
-  }
-  const counts = tiers.map(() => 0);
-  let c = target;
-  while (c > 0) {
-    counts[pick[c]] += 1;
-    c = Math.max(0, c - tiers[pick[c]].credits);
-  }
-  return { total: bestCost, counts };
-}
-
-export function CreditEstimator({ tiers }: { tiers: Tier[] }) {
+export function CreditEstimator({ tiers }: { tiers: PricingTier[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [headcount, setHeadcount] = useState("100");
   const [branding, setBranding] = useState(false);
 
   const people = Math.min(MAX_HEADCOUNT, Math.max(0, Math.floor(Number(headcount) || 0)));
-  const brandingCost = branding ? FEATURE_UNLOCK_COSTS.BRANDING : 0;
+  const brandingCost = branding ? BRANDING_CREDITS : 0;
   const needed = people + brandingCost;
   const plan = needed > 0 ? cheapestPlan(needed, tiers) : null;
 
@@ -100,7 +65,7 @@ export function CreditEstimator({ tiers }: { tiers: Tier[] }) {
                   onChange={(e) => setBranding(e.target.checked)}
                   className="h-4 w-4 accent-orange"
                 />
-                解鎖品牌客製化（每場 {FEATURE_UNLOCK_COSTS.BRANDING} 點，選用）
+                解鎖品牌客製化（每場 {BRANDING_CREDITS} 點，選用）
               </label>
             </div>
 
@@ -108,23 +73,16 @@ export function CreditEstimator({ tiers }: { tiers: Tier[] }) {
               {plan ? (
                 <>
                   <p>
-                    報名扣點 <span className="font-bold">{people}</span> 點
                     {branding ? (
                       <>
-                        ＋ 品牌客製化 <span className="font-bold">{brandingCost}</span> 點
+                        報名扣點 <span className="font-bold">{people}</span> 點 ＋ 品牌客製化{" "}
+                        <span className="font-bold">{brandingCost}</span> 點 ＝{" "}
                       </>
                     ) : null}
-                    ＝ 共需 <span className="font-bold text-orange">{needed}</span> 點
+                    共需 <span className="font-bold text-orange">{needed}</span> 點
                   </p>
                   <p className="mt-2 text-charcoal/70">
-                    最划算的購買方式：
-                    {tiers
-                      .map((t, i) =>
-                        plan.counts[i] ? `${t.credits} 點 × ${plan.counts[i]}` : null,
-                      )
-                      .filter(Boolean)
-                      .join("、")}
-                    ，約{" "}
+                    最划算的購買方式：{describePlan(plan.counts, tiers)}，約{" "}
                     <span className="font-bold text-charcoal">
                       NT$ {plan.total.toLocaleString()}
                     </span>
