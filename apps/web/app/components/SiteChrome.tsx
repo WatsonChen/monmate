@@ -38,6 +38,8 @@ export function faqJsonLd(items: [string, string][]) {
   };
 }
 
+import { contentDate, contentDates, formatContentDate } from "../lib/content-dates";
+
 export function pageJsonLd({
   path,
   name,
@@ -61,6 +63,7 @@ export function pageJsonLd({
         name,
         description,
         inLanguage: "zh-Hant-TW",
+        ...(contentDate(path) ? { dateModified: contentDate(path) } : {}),
         isPartOf: { "@type": "WebSite", url: siteUrl, name: "MonMate 活動報到系統" },
         breadcrumb: { "@id": `${siteUrl}${path}#breadcrumb` },
       },
@@ -71,7 +74,9 @@ export function pageJsonLd({
 }
 
 export function Breadcrumb({ crumbs }: { crumbs: Crumb[] }) {
+  const updated = contentDates[crumbs[crumbs.length - 1]?.href ?? ""];
   return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
     <nav aria-label="麵包屑" className="text-xs font-semibold text-charcoal/55">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {crumbs.map((c, i) => (
@@ -92,6 +97,12 @@ export function Breadcrumb({ crumbs }: { crumbs: Crumb[] }) {
         ))}
       </ol>
     </nav>
+    {updated ? (
+      <p className="text-xs text-charcoal/50">
+        最後更新：<time dateTime={updated}>{formatContentDate(updated)}</time>
+      </p>
+    ) : null}
+    </div>
   );
 }
 
