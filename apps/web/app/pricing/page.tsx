@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CreditEstimator } from "../components/CreditEstimator";
+import Image from "next/image";
+import { CompanionDemo } from "../components/CompanionDemo";
+import { PricingPlayground } from "../components/PricingPlayground";
+import { TierCards } from "../components/TierCards";
 import { FaqAccordion } from "../components/FaqAccordion";
 import {
   Breadcrumb,
@@ -18,6 +21,7 @@ import {
   describePlan,
   estimateCost,
   formatTwd,
+  perPointPrice,
 } from "../lib/pricing";
 
 const path = "/pricing";
@@ -74,21 +78,45 @@ export default function PricingPage() {
   return (
     <PageShell>
       <JsonLd data={pageJsonLd({ path, name: title, description, crumbs, faq })} />
-      <div className="mx-auto max-w-4xl px-5 pb-6 pt-8">
+      <div className="mx-auto max-w-4xl px-5 pb-8 pt-8">
         <Breadcrumb crumbs={crumbs} />
-        <p className="mt-6 text-sm font-bold text-orange">價格說明</p>
-        <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-4xl">
-          點數制計費，用多少扣多少
-        </h1>
-        <p className="mt-4 text-base leading-7 text-charcoal/75">
-          建立活動免費。先儲值點數，之後新增或匯入報名者時依人數扣點，點數可以跨活動使用，用不完會保留在帳號中。
-        </p>
-        <div className="mt-6">
-          <CtaButton />
+        <div className="mt-6 flex items-center gap-6">
+          <div className="min-w-0 flex-1">
+            <p className="pricing-rise text-sm font-bold text-orange">價格說明</p>
+            <h1
+              className="pricing-rise mt-2 text-3xl font-bold leading-tight sm:text-4xl"
+              style={{ "--d": "80ms" } as React.CSSProperties}
+            >
+              點數制計費，用多少扣多少
+            </h1>
+            <p
+              className="pricing-rise mt-4 max-w-xl text-base leading-7 text-charcoal/75"
+              style={{ "--d": "180ms" } as React.CSSProperties}
+            >
+              建立活動免費。先儲值點數，之後新增或匯入報名者時依人數扣點，點數可以跨活動使用，用不完會保留在帳號中。
+            </p>
+            <div className="pricing-rise mt-6" style={{ "--d": "300ms" } as React.CSSProperties}>
+              <CtaButton />
+            </div>
+          </div>
+          <Image
+            src="/brand/mascot.png"
+            alt=""
+            width={200}
+            height={200}
+            className="mascot-float hidden h-[170px] w-[170px] shrink-0 object-contain sm:block"
+            priority
+            unoptimized
+          />
         </div>
       </div>
 
+      <Section title="先算一下：這場活動要買多少點？">
+        <PricingPlayground />
+      </Section>
+
       <Section title="計價規則" tone="white">
+        <div className="grid items-start gap-8 md:grid-cols-[1.1fr_1fr]">
         <ul className="grid gap-2 pl-5">
           <li className="list-disc">
             <strong>每人 1 點，報名者與攜伴分別計算。</strong>例如 1 位報名者帶 2 位同伴，共 3 人，扣 3 點。
@@ -106,18 +134,19 @@ export default function PricingPage() {
             <strong>點數可跨活動使用。</strong>不用每辦一場活動就重新開通。
           </li>
         </ul>
+        <CompanionDemo />
+        </div>
       </Section>
 
       <Section title="點數方案">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {PRICING_TIERS.map((t) => (
-            <div key={t.credits} className="rounded-lg border border-charcoal/10 bg-white p-5">
-              <p className="text-2xl font-bold text-charcoal">{formatTwd(t.price)}</p>
-              <p className="mt-1 text-sm font-semibold text-charcoal/60">{t.credits} 點</p>
-              <p className="mt-3 text-sm">{t.fit}</p>
-            </div>
-          ))}
-        </div>
+        <TierCards
+          tiers={PRICING_TIERS.map((t) => ({
+            credits: t.credits,
+            price: formatTwd(t.price),
+            perPoint: perPointPrice(t),
+            fit: t.fit,
+          }))}
+        />
       </Section>
 
       <Section title="各人數級距的費用" tone="white">
@@ -138,7 +167,7 @@ export default function PricingPage() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.n} className="border-t border-charcoal/10">
+                <tr key={r.n} className="border-t border-charcoal/10 transition-colors hover:bg-orange/[0.05]">
                   <td className="px-4 py-3 font-semibold">{r.n.toLocaleString("en-US")} 人</td>
                   <td className="px-4 py-3">{r.plain.needed} 點</td>
                   <td className="px-4 py-3">{describePlan(r.plain.counts)}</td>
@@ -156,9 +185,6 @@ export default function PricingPage() {
         <p className="mt-3 text-xs text-charcoal/60">
           「本次需購買金額」是帳戶沒有餘額時，湊足本場所需點數的最低購買金額，不是每場都要重新付費；剩下的點數會保留在帳號，下一場活動可以繼續使用。實際金額以購買當下的方案價格為準。
         </p>
-        <div className="mt-6">
-          <CreditEstimator tiers={PRICING_TIERS} />
-        </div>
       </Section>
 
       <Section title="品牌客製化怎麼扣點">
