@@ -202,7 +202,7 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
 const teamItems: FeatureItem[] = [
   {
     title: "角色權限分工",
-    text: "OWNER／ADMIN／STAFF，各自只看指派的活動。",
+    text: "主辦者管理自己建立的活動，工作人員只看得到被指派的活動。",
     icon: UserCog,
   },
   {
