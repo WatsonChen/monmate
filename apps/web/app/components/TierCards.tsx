@@ -39,7 +39,7 @@ export function TierCards({ tiers }: { tiers: Tier[] }) {
         return (
           <div
             key={t.credits}
-            className="group rounded-2xl border border-charcoal/10 bg-white p-5 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-orange/40 hover:shadow-soft motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            className="rounded-2xl border border-charcoal/10 bg-white p-5"
           >
             <p className="text-3xl font-bold tabular-nums text-charcoal">{t.price}</p>
             <p className="mt-1 text-sm font-semibold text-charcoal/60">{t.credits} 點</p>
