@@ -21,7 +21,7 @@ export const contentDates: Record<string, string> = {
 // 法律條款頁已在頁面上自行標示「最後更新日期」，這裡必須與頁面文字完全一致，也不另外顯示第二個日期
 export const legalPageDates: Record<string, string> = {
   "/privacy": "2026-10-29",
-  "/refund": "2026-06-05"
+  "/refund": "2026-10-30"
 };
 
 export function contentDate(path: string): string | undefined {

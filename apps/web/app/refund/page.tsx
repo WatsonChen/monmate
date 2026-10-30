@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandLogo } from "../components/BrandLogo";
+import { REFUND_TERMS_DATE_ZH } from "../lib/refund-terms";
 
 export const metadata: Metadata = {
   title: "退款條款",
+  description: "MonMate 點數制的退款與點數退回規則：付款後 7 日內且點數尚未使用可全額退款，已使用的點數不予退回。",
   alternates: { canonical: "/refund" },
 };
 
@@ -24,42 +26,53 @@ export default function RefundPage() {
       <div className="mx-auto max-w-3xl px-5 py-12">
         <p className="text-sm font-bold text-orange">法律文件</p>
         <h1 className="mt-2 text-3xl font-bold">退款條款</h1>
-        <p className="mt-3 text-sm text-charcoal/50">最後更新日期：2026 年 6 月 5 日</p>
+        <p className="mt-3 text-sm text-charcoal/50">最後更新日期：{REFUND_TERMS_DATE_ZH}</p>
 
         <div className="mt-10 grid gap-8 text-sm leading-7 text-charcoal/80">
           <section>
             <h2 className="text-base font-bold text-charcoal">一、服務說明</h2>
             <p className="mt-3">
-              MonMate 提供以「單場活動」為單位的報到管理服務，主辦方於付款完成後即可建立活動、匯入名單並取得報到連結。本條款說明付款後的退款申請規則。
+              MonMate 以點數制計費：建立活動免費，主辦方先購買點數，之後新增或匯入報名者時，每位報名者（含攜伴）扣 1 點，並可選用品牌客製化等功能（每場 50 點）。點數可跨活動使用，用不完會保留在帳號中。本條款說明購買點數後的退款與點數退回規則。
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-charcoal">二、退款申請資格</h2>
-            <p className="mt-3">符合以下條件者，可申請退款：</p>
+            <h2 className="text-base font-bold text-charcoal">二、付款退款（退回款項）</h2>
+            <p className="mt-3">符合以下任一條件者，可申請退款：</p>
             <ul className="mt-3 grid gap-2 pl-5">
               <li className="list-disc">
-                <strong>活動尚未建立：</strong>付款成功後，若尚未使用該筆費用建立任何活動，可於付款後 <strong>7 日內</strong>申請全額退款。
+                <strong>點數尚未使用：</strong>付款成功後 <strong>7 日內</strong>，且自該筆付款成功起，帳戶沒有任何扣點紀錄（尚未用於新增報名者、匯入名單或解鎖功能），可申請全額退款。
               </li>
               <li className="list-disc">
                 <strong>服務重大瑕疵：</strong>因本服務系統故障，導致活動無法正常使用且無法於活動日前修復，可申請全額退款。
               </li>
             </ul>
+            <p className="mt-3">建立活動本身不扣點，不影響上述「尚未使用」的認定。</p>
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-charcoal">三、不適用退款之情況</h2>
-            <p className="mt-3">以下情況恕不受理退款：</p>
+            <h2 className="text-base font-bold text-charcoal">三、點數退回（已使用的點數）</h2>
+            <p className="mt-3">
+              點數一經用於新增報名者、匯入名單或解鎖功能，即視為服務已提供，<strong>不予退回</strong>。包含但不限於以下情況，已扣除的點數不會退回：
+            </p>
             <ul className="mt-3 grid gap-2 pl-5">
-              <li className="list-disc">活動已建立並取得報到連結，無論活動是否實際舉辦。</li>
-              <li className="list-disc">活動因主辦方自身因素取消或延期。</li>
-              <li className="list-disc">付款後超過 7 日且無法提供服務瑕疵證明。</li>
+              <li className="list-disc">報名者未到場，或活動因主辦方自身因素取消、延期。</li>
+              <li className="list-disc">取消報名、減少攜伴人數、刪除名單或刪除活動。</li>
+              <li className="list-disc">重新匯入名單時，已存在且人數未增加的報名者不會重複扣點，已扣的點數也不會因調低人數而退回。</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-charcoal">四、不適用付款退款之情況</h2>
+            <ul className="mt-3 grid gap-2 pl-5">
+              <li className="list-disc">付款成功後已有任何扣點紀錄的部分。</li>
+              <li className="list-disc">付款後超過 7 日，且無法提供服務瑕疵證明。</li>
               <li className="list-disc">因使用者操作不當導致的問題。</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-charcoal">四、退款申請方式</h2>
+            <h2 className="text-base font-bold text-charcoal">五、退款申請方式</h2>
             <p className="mt-3">請以電子郵件聯繫我們，並提供以下資訊：</p>
             <ul className="mt-3 grid gap-2 pl-5">
               <li className="list-disc">帳號電子郵件地址</li>
@@ -72,31 +85,31 @@ export default function RefundPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-charcoal">五、退款處理時間</h2>
+            <h2 className="text-base font-bold text-charcoal">六、退款處理時間</h2>
             <p className="mt-3">
               退款申請審核通過後，款項將退回原付款方式。退款時間依金融機構作業，通常需要 <strong>7 至 14 個工作天</strong>。
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-charcoal">六、消費者保護</h2>
+            <h2 className="text-base font-bold text-charcoal">七、消費者保護</h2>
             <p className="mt-3">
-              依《消費者保護法》第 19 條規定，透過網路購買數位服務之消費者，享有收受服務後 7 日內解除契約之權利（即「猶豫期」）。但使用者一經使用服務功能，即視為同意放棄猶豫期之適用。
+              依《消費者保護法》規定，透過網路購買商品或服務的消費者，原則上享有收受後 7 日內解除契約的權利。本服務為線上服務，購買前會於結帳畫面提示並請您勾選同意：點數一經使用，即視為服務已提供，該已使用的部分不適用 7 日解除權；尚未使用的點數，仍可依本條款第二條申請退款。
             </p>
             <p className="mt-3">
-              如對本服務有消費爭議，亦可向行政院消費者保護委員會或各地消費者服務中心申訴。
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-base font-bold text-charcoal">七、條款修訂</h2>
-            <p className="mt-3">
-              本服務保留修訂本退款條款之權利，修訂後將於服務頁面公告，修訂前已付款之訂單仍適用付款當時之條款。
+              如對本服務有消費爭議，亦可向各地消費者服務中心申訴。
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-bold text-charcoal">八、聯絡我們</h2>
+            <h2 className="text-base font-bold text-charcoal">八、條款修訂</h2>
+            <p className="mt-3">
+              本服務保留修訂本退款條款之權利，修訂後將於服務頁面公告，修訂前已付款之訂單仍適用付款當時您所同意的條款版本。
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-base font-bold text-charcoal">九、聯絡我們</h2>
             <p className="mt-3">
               如您對本退款條款有任何疑問，請聯絡我們：
             </p>

@@ -11,6 +11,8 @@ import { CreditCard, RefreshCcw, Receipt, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { perPointPrice } from "../lib/pricing";
+import { REFUND_TERMS_VERSION } from "../lib/refund-terms";
+import { PurchaseConsentDialog } from "./PurchaseConsentDialog";
 import { DotsLoading } from "./DotsLoading";
 
 function formatDate(value: string) {
@@ -56,6 +58,7 @@ export function AdminBillingClient() {
   const [selectedTierId, setSelectedTierId] = useState("SMALL");
   const [message, setMessage] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   async function loadBilling(nextToken = token) {
     if (!nextToken) return;
@@ -116,7 +119,8 @@ export function AdminBillingClient() {
     const res = await apiFetch<CheckoutSessionDTO>("/billing/checkout-session", {
       method: "POST",
       token,
-      body: JSON.stringify({ tierId: selectedTierId })
+      // 同時把「使用者同意了哪一版退款條款」送給後端留存
+      body: JSON.stringify({ tierId: selectedTierId, acceptedRefundTerms: true, termsVersion: REFUND_TERMS_VERSION })
     });
     setIsCheckingOut(false);
     if (!res.success || !res.data) {
@@ -256,12 +260,20 @@ export function AdminBillingClient() {
           <button
             type="button"
             disabled={!token || isCheckingOut || pricingTiers.length === 0}
-            onClick={() => void checkout()}
+            onClick={() => setConfirmOpen(true)}
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-orange text-sm font-bold text-white disabled:opacity-40"
           >
             <CreditCard size={16} />
             {isCheckingOut ? <>前往付款<DotsLoading /></> : "立即購買"}
           </button>
+          <PurchaseConsentDialog
+            open={confirmOpen}
+            planLabel={selectedTier ? `${selectedTier.label}（${selectedTier.attendeeCredits} 點）` : ""}
+            priceText={selectedTier ? `NT$ ${selectedTier.amount.toLocaleString()}` : ""}
+            busy={isCheckingOut}
+            onCancel={() => setConfirmOpen(false)}
+            onConfirm={() => void checkout()}
+          />
         </section>
       </div>
 

@@ -4,7 +4,9 @@ import { CREDIT_FLOOR, type CheckoutSessionDTO, type PricingTierDTO } from "@mon
 import { CreditCard, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { REFUND_TERMS_VERSION } from "../lib/refund-terms";
 import { DotsLoading } from "./DotsLoading";
+import { RefundConsent } from "./RefundConsent";
 
 type Props = {
   open: boolean;
@@ -25,6 +27,7 @@ export function TopUpDialog({ open, token, onClose, needed, balance, returnTo, t
   const [tierId, setTierId] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [error, setError] = useState("");
+  const [accepted, setAccepted] = useState(false);
 
   const balanceAfter = balance - needed;
   // 至少要補到操作後餘額不低於臨時額度下限
@@ -54,7 +57,7 @@ export function TopUpDialog({ open, token, onClose, needed, balance, returnTo, t
     const res = await apiFetch<CheckoutSessionDTO>("/billing/checkout-session", {
       method: "POST",
       token,
-      body: JSON.stringify({ tierId, returnTo })
+      body: JSON.stringify({ tierId, returnTo, acceptedRefundTerms: true, termsVersion: REFUND_TERMS_VERSION })
     });
     if (!res.success || !res.data) {
       setIsCheckingOut(false);
@@ -141,6 +144,10 @@ export function TopUpDialog({ open, token, onClose, needed, balance, returnTo, t
           </p>
         ) : null}
 
+        <div className="mt-4">
+          <RefundConsent checked={accepted} onChange={setAccepted} />
+        </div>
+
         {error ? <p className="mt-3 text-sm font-semibold text-red-600">{error}</p> : null}
 
         <div className="mt-5 flex gap-2">
@@ -149,7 +156,7 @@ export function TopUpDialog({ open, token, onClose, needed, balance, returnTo, t
           </button>
           <button
             type="button"
-            disabled={!tierId || isCheckingOut}
+            disabled={!tierId || !accepted || isCheckingOut}
             onClick={() => void checkout()}
             className="flex h-11 flex-[2] items-center justify-center gap-2 rounded-lg bg-orange text-sm font-bold text-white disabled:opacity-40"
           >
