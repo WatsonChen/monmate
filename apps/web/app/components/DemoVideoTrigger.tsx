@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -63,6 +64,13 @@ export function DemoVideoTrigger({
                 playsInline
                 className="w-full rounded-lg shadow-soft"
               />
+              {/* 影片本身沒有提到計費，所以在影片下方補一行說明 */}
+              <p className="mt-3 text-center text-sm leading-6 text-white/90">
+                此為示範活動。實際使用時，建立活動免費；報名或匯入名單時每人 1 點，點數可跨活動使用。
+                <Link href="/pricing" onClick={() => setOpen(false)} className="ml-1 font-bold text-white underline">
+                  查看價格說明
+                </Link>
+              </p>
             </div>
           </div>,
           document.body
