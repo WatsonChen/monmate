@@ -2,13 +2,13 @@ import { ScenarioPage, scenarioMetadata, type ScenarioContent } from "../../comp
 
 const content: ScenarioContent = {
   path: "/scenarios/seminar",
-  metaTitle: "講座、課程、教育訓練簽到系統",
+  metaTitle: "研討會、講座、課程報到系統｜QR Code 簽到與出席報表｜MonMate",
   description:
-    "講座、課程與教育訓練的簽到怎麼做？MonMate 提供 QR Code、序號、電話三種報到方式，事後查看報到率、匯出報表並發送問卷，附費用範例。",
-  eyebrow: "適用場景・講座、課程、教育訓練",
-  h1: "講座、課程、教育訓練的簽到怎麼做？",
+    "MonMate 適合研討會、講座、課程與教育訓練。參加者可用 QR Code、序號或電話報到，主辦方即時掌握出席狀況並匯出報表。",
+  eyebrow: "適用場景・研討會、講座、課程、教育訓練",
+  h1: "研討會、講座與課程的 QR Code 報到系統",
   intro:
-    "講座、課程與內部訓練的簽到，重點是現場快、事後好對帳。MonMate 讓學員用 QR Code、序號或電話完成報到，報到資料即時整理成可匯出的名單。",
+    "研討會、講座、課程與內部訓練的簽到，重點是現場快、事後好對帳。MonMate 讓參加者用 QR Code、序號或電話完成報到，報到資料即時整理成可匯出的名單。",
   image: "/brand/scenario-seminar.png",
   crumbName: "講座、課程、教育訓練",
   pains: [
@@ -48,6 +48,35 @@ const content: ScenarioContent = {
   ],
   exampleIntro: "講座與課程常見的人數規模與對應費用如下（依現有計價規則自動計算）：",
   exampleHeadcounts: [50, 100, 300, 500],
+  suitable: {
+    title: "適合哪些活動？",
+    items: [
+      "學術研討會、論壇、產業交流",
+      "企業內訓、教育訓練、工作坊",
+      "講座、課程、讀書會",
+      "社群聚會、會員活動",
+    ],
+  },
+  compare: {
+    title: "為什麼不用紙本簽到？",
+    leftLabel: "紙本簽到",
+    left: [
+      "需要人工逐一核對姓名，人潮集中時容易排隊",
+      "事後要謄打與統計，多場次的出席資料分散在不同簽到表",
+      "不容易在活動進行中掌握目前的出席狀況",
+    ],
+    right: [
+      "參加者用 QR Code、序號或電話自助報到",
+      "主辦方在後台即時查看報名與報到人數",
+      "匯出 CSV／Excel 報表，報到後可自動發送問卷",
+    ],
+  },
+  related: [
+    { label: "已有 Excel 名單的研討會", href: "/scenarios/excel-list", desc: "名單已確定，匯入後直接現場報到。" },
+    { label: "費用說明", href: "/pricing", desc: "點數怎麼算，50／100／300／500 人各要多少。" },
+    { label: "匯出出席報表", href: "/guides/export-attendance-report", desc: "活動結束後怎麼整理出席名單與報到時間。" },
+    { label: "完整功能介紹", href: "/", desc: "從建立活動、報名到報到與問卷的完整流程。" },
+  ],
   faq: [
     [
       "多場次課程怎麼算費用？",
@@ -64,6 +93,14 @@ const content: ScenarioContent = {
     [
       "課程結束後能發問卷嗎？",
       "可以，在後台建立題目後，報到完成的學員會自動收到問卷。",
+    ],
+    [
+      "研討會一定要開放線上報名嗎？",
+      "不一定。可以開放線上報名讓參加者自己填，也可以由主辦方直接匯入 Excel 或 CSV 名單，現場只做報到。",
+    ],
+    [
+      "活動結束後可以匯出報到資料嗎？",
+      "可以，後台提供 CSV 與 Excel 匯出，報表包含報到狀態與報到時間。",
     ],
   ],
 };

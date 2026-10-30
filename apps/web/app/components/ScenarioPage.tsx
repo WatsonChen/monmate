@@ -33,25 +33,41 @@ export type ScenarioContent = {
   exampleHeadcounts: number[];
   /** 費用表多顯示「加購品牌客製化後」欄位 */
   showBranding?: boolean;
+  /** 適合哪些活動（條列） */
+  suitable?: { title: string; items: string[] };
+  /** 與既有做法（Excel、紙本）的差異，不攻擊競品 */
+  compare?: { title: string; leftLabel: string; left: string[]; right: string[] };
+  /** 相關頁面（內部連結） */
+  related?: { label: string; href: string; desc: string }[];
+  /** 次要 CTA 文案，預設「查看費用試算」，連到 /pricing */
+  secondaryCtaLabel?: string;
   faq: [string, string][];
 };
 
+// 全站共用的核心訊息
+const VALUE_PROPOSITION = "讓工作人員從逐一核對名單，變成只處理例外與引導動線。";
+
 export function scenarioMetadata(c: ScenarioContent): Metadata {
   return {
-    title: c.metaTitle,
+    // 標題已自帶品牌名，不再套用全站的「｜MonMate 活動報到系統」模板
+    title: { absolute: c.metaTitle },
     description: c.description,
     alternates: { canonical: c.path },
     openGraph: { type: "website", locale: "zh_TW", title: c.metaTitle, description: c.description, url: c.path },
   };
 }
 
-const pageNav = [
-  { href: "#pains", label: "常見痛點" },
-  { href: "#flow", label: "使用流程" },
-  { href: "#staffing", label: "現場人力" },
-  { href: "#cost", label: "費用範例" },
-  { href: "#faq", label: "常見問題" },
-];
+function buildPageNav(c: ScenarioContent) {
+  return [
+    { href: "#pains", label: "常見痛點" },
+    { href: "#flow", label: "使用流程" },
+    ...(c.suitable ? [{ href: "#suitable", label: "適用活動" }] : []),
+    ...(c.compare ? [{ href: "#compare", label: "做法比較" }] : []),
+    { href: "#staffing", label: "現場人力" },
+    { href: "#cost", label: "費用範例" },
+    { href: "#faq", label: "常見問題" },
+  ];
+}
 
 function Stage({
   step,
@@ -93,6 +109,9 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
     { name: "適用場景", href: "/#scenarios" },
     { name: c.crumbName, href: c.path },
   ];
+  // 流程區是 paper 底，之後的區塊依序交錯白／淺底，不論有沒有選配的區塊都不會連續同色
+  let toneIndex = 0;
+  const nextTone = (): "white" | "paper" => (toneIndex++ % 2 === 0 ? "white" : "paper");
   const examples = c.exampleHeadcounts.map((n) => ({
     n,
     ...estimateCost(n),
@@ -120,7 +139,7 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <CtaButton />
               <Link href="/pricing" className="text-sm font-bold text-orange">
-                看價格說明 →
+                {c.secondaryCtaLabel ?? "查看費用試算"} →
               </Link>
             </div>
           </div>
@@ -136,7 +155,7 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
           ) : null}
         </div>
         <nav aria-label="本頁內容" className="mt-8 flex flex-wrap gap-2">
-          {pageNav.map((n) => (
+          {buildPageNav(c).map((n) => (
             <a
               key={n.href}
               href={n.href}
@@ -163,6 +182,7 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
       </Section>
 
       <Section id="flow" title="用 MonMate 的流程">
+        <p className="mb-5 max-w-2xl text-[15px] font-semibold text-charcoal">{VALUE_PROPOSITION}</p>
         <div className="grid gap-4 md:grid-cols-3">
           <Stage step="STEP 1" title="活動前" items={c.before} icon={CalendarPlus} />
           <Stage step="STEP 2" title="活動當天" items={c.during} icon={QrCode} />
@@ -170,7 +190,49 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
         </div>
       </Section>
 
-      <Section id="staffing" title="現場人力怎麼安排" tone="white">
+      {c.suitable ? (
+        <Section id="suitable" title={c.suitable.title} tone={nextTone()}>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {c.suitable.items.map((t) => (
+              <li key={t} className="flex gap-2.5 rounded-lg border border-charcoal/10 bg-paper px-4 py-3 text-[15px] leading-6">
+                <CheckCircle2 size={16} className="mt-1 shrink-0 text-mint" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {c.compare ? (
+        <Section id="compare" title={c.compare.title} tone={nextTone()}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-lg border border-charcoal/10 bg-white p-5">
+              <h3 className="text-base font-bold text-charcoal/70">{c.compare.leftLabel}</h3>
+              <ul className="mt-3 grid gap-2.5">
+                {c.compare.left.map((t) => (
+                  <li key={t} className="flex gap-2.5 text-[15px] leading-6 text-charcoal/75">
+                    <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-charcoal/30" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-lg border border-mint/40 bg-white p-5">
+              <h3 className="text-base font-bold text-charcoal">用 MonMate</h3>
+              <ul className="mt-3 grid gap-2.5">
+                {c.compare.right.map((t) => (
+                  <li key={t} className="flex gap-2.5 text-[15px] leading-6">
+                    <CheckCircle2 size={16} className="mt-1 shrink-0 text-mint" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Section>
+      ) : null}
+
+      <Section id="staffing" title="現場人力怎麼安排" tone={nextTone()}>
         <div className="grid gap-4 sm:grid-cols-3">
           {c.staffing.map((t) => (
             <div key={t} className="rounded-lg border border-charcoal/10 bg-paper p-5">
@@ -181,7 +243,7 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
         </div>
       </Section>
 
-      <Section id="cost" title="費用範例">
+      <Section id="cost" title="費用範例" tone={nextTone()}>
         <p className="max-w-2xl">{c.exampleIntro}</p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-charcoal/10 bg-white">
           <table className={`w-full text-left text-sm ${c.showBranding ? "min-w-[640px]" : "min-w-[420px]"}`}>
@@ -219,23 +281,39 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
           <Link href="/pricing" className="ml-1 font-bold text-orange">
             完整價格說明
           </Link>
-          ・
-          <Link href="/cases/elementary-school" className="font-bold text-orange">
-            小學家長會案例
-          </Link>
         </p>
       </Section>
 
-      <Section id="faq" title="常見問題" tone="white">
+      <Section id="faq" title="常見問題" tone={nextTone()}>
         <FaqAccordion items={c.faq} />
       </Section>
+
+      {c.related && c.related.length > 0 ? (
+        <Section id="related" title="相關頁面" tone={nextTone()}>
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {c.related.map((r) => (
+              <Link
+                key={r.href}
+                href={r.href}
+                className="rounded-lg border border-charcoal/10 bg-white p-4 transition-colors hover:border-orange/40"
+              >
+                <span className="text-sm font-bold text-charcoal">{r.label} →</span>
+                <span className="mt-1 block text-[13px] leading-5 text-charcoal/65">{r.desc}</span>
+              </Link>
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
       <section className="bg-paper">
         <div className="mx-auto max-w-4xl px-5 py-12 text-center">
           <h2 className="text-2xl font-bold">準備好試試看了嗎？</h2>
           <p className="mt-3 text-sm text-charcoal/70">建立活動免費，點數用多少扣多少。</p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
             <CtaButton />
+            <Link href="/pricing" className="text-sm font-bold text-orange">
+              {c.secondaryCtaLabel ?? "查看費用試算"} →
+            </Link>
           </div>
         </div>
       </section>

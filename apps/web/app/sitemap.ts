@@ -12,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/scenarios/excel-list`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/scenarios/brand-event`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/scenarios/community`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/guides/offline-check-in`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${siteUrl}/guides/export-attendance-report`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/cases/elementary-school`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${siteUrl}/refund`, lastModified: now, changeFrequency: "yearly", priority: 0.3 }

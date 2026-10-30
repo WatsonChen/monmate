@@ -37,6 +37,8 @@
 - [已有 Excel 名單的活動報到](https://www.monmate.tw/scenarios/excel-list)
 - [品牌活動、展會報到](https://www.monmate.tw/scenarios/brand-event)
 - [社群聚會、小型活動報到](https://www.monmate.tw/scenarios/community)
+- [活動現場網路不穩時的報到備援](https://www.monmate.tw/guides/offline-check-in)
+- [活動出席報表匯出](https://www.monmate.tw/guides/export-attendance-report)
 - [客戶案例：小學家長會與研討會](https://www.monmate.tw/cases/elementary-school)
 - [隱私權條款](https://www.monmate.tw/privacy)
 - [退款條款](https://www.monmate.tw/refund)

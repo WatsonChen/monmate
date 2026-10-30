@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 頁內錨點（例如情境頁的「使用流程」「常見問題」）平滑捲動；系統設定「減少動態效果」時恢復瞬間跳轉。
+   html 上的 data-scroll-behavior 讓 Next.js 在換頁時暫時停用平滑捲動，不會影響路由切換。 */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 :root {
   color: #1a2421;
   background: #fbfaf7;

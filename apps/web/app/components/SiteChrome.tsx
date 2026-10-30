@@ -164,7 +164,7 @@ export function SiteFooter() {
   );
 }
 
-export function CtaButton({ children = "免費建立活動" }: { children?: ReactNode }) {
+export function CtaButton({ children = "免費建立測試活動" }: { children?: ReactNode }) {
   return (
     <Link
       href="/admin/login"

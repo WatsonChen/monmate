@@ -26,12 +26,13 @@ import {
 } from "../lib/pricing";
 
 const path = "/pricing";
-const title = "價格說明：點數制計費與各人數費用表";
+const title = "MonMate 費用｜活動報到系統點數方案與費用試算";
 const description =
-  "MonMate 採點數制：每人 1 點（報名者與攜伴分別計算），建立活動免費，點數可跨活動使用。提供 50／100／300／500／1,000 人的費用表與品牌客製化扣點方式。";
+  "MonMate 採點數制，每人 1 點（報名者與攜伴分別計算），建立活動免費、人數上限不扣點。查看 50、100、300、500、1000 人活動所需點數與費用試算。";
 
 export const metadata: Metadata = {
-  title,
+  // 標題已自帶品牌名，不再套用全站的標題模板
+  title: { absolute: title },
   description,
   alternates: { canonical: path },
   openGraph: { type: "website", locale: "zh_TW", title, description, url: path },
@@ -42,10 +43,20 @@ const crumbs: Crumb[] = [
   { name: "價格說明", href: path },
 ];
 
+// 100 人的範例答案由共用的試算邏輯算出，與上方費用表、試算器一致
+const hundred = estimateCost(100);
+const hundredPlan = PRICING_TIERS.flatMap((t, i) =>
+  hundred.counts[i] ? [hundred.counts[i] > 1 ? `${t.credits} 點方案 ${hundred.counts[i]} 份` : `${t.credits} 點方案`] : []
+).join("加");
+
 const faq: [string, string][] = [
   [
     "建立活動要收費嗎？",
     "不用。建立活動免費，只有新增或匯入報名者、以及解鎖品牌客製化時才會扣點。",
+  ],
+  [
+    "100 人活動要多少錢？",
+    `100 人（含攜伴）需要 ${hundred.needed} 點。帳戶沒有餘額時，最少購買 ${hundredPlan}，約 ${formatTwd(hundred.total)}，活動後剩下 ${hundred.credits - hundred.needed} 點，可留到下一場使用。`,
   ],
   [
     "活動設定的人數上限會扣點嗎？",
@@ -56,8 +67,8 @@ const faq: [string, string][] = [
     "不是。計費人數是新增或匯入的報名人數（含攜伴），每人 1 點，報名者與攜伴分別計算。",
   ],
   [
-    "買了點數用不完怎麼辦？",
-    "點數保留在帳號中，可以跨活動使用，下一場活動繼續扣。",
+    "點數可以留到下一場活動嗎？用不完怎麼辦？",
+    "可以。點數保留在帳號中，可以跨活動使用，下一場活動繼續扣。",
   ],
   [
     "品牌客製化要多少點？",
@@ -88,7 +99,7 @@ export default function PricingPage() {
               className="pricing-rise mt-2 text-3xl font-bold leading-tight sm:text-4xl"
               style={{ "--d": "80ms" } as React.CSSProperties}
             >
-              點數制計費，用多少扣多少
+              活動報到系統費用：依實際報名人數扣點
             </h1>
             <p
               className="pricing-rise mt-4 max-w-xl text-base leading-7 text-charcoal/75"

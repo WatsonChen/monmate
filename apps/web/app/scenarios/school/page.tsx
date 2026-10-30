@@ -2,11 +2,11 @@ import { ScenarioPage, scenarioMetadata, type ScenarioContent } from "../../comp
 
 const content: ScenarioContent = {
   path: "/scenarios/school",
-  metaTitle: "學校家長會、校內研討會報到系統",
+  metaTitle: "學校家長會報到系統｜QR Code 自助報到、Excel 名單匯入｜MonMate",
   description:
-    "學校家長會、校內研習與研討會的報到怎麼做？MonMate 讓與會者掃現場 QR Code 自助報到，工作人員只處理例外狀況與引導動線，並提供費用範例。",
-  eyebrow: "適用場景・學校活動",
-  h1: "學校家長會、校內研討會的報到怎麼做？",
+    "MonMate 適合家長會、親師座談、校慶與校內研習。匯入 Excel 名單、產生 QR Code 報到連結，家長現場自助報到，工作人員只需處理例外與引導。",
+  eyebrow: "適用場景・學校家長會、校內活動",
+  h1: "學校家長會報到系統：QR Code 自助報到，減少現場人工核對",
   intro:
     "家長會、校內研習與研討會的報到常常集中在開場前十幾分鐘。用 MonMate，與會者掃現場張貼的 QR Code 就能自助報到，承辦人不必再逐一核對紙本名單。",
   image: "/brand/scenario-school.png",
@@ -48,6 +48,36 @@ const content: ScenarioContent = {
   ],
   exampleIntro: "學校活動常見的人數規模與對應費用如下（依現有計價規則自動計算）：",
   exampleHeadcounts: [50, 100, 300],
+  secondaryCtaLabel: "查看 50／100／300 人費用",
+  suitable: {
+    title: "適合哪些學校活動？",
+    items: [
+      "家長會、班親會、親師座談",
+      "校慶、園遊會、運動會",
+      "家長日、新生說明會",
+      "校內研習、教師研討會",
+      "志工訓練與社團活動",
+    ],
+  },
+  compare: {
+    title: "為什麼不用 Excel 現場報到？",
+    leftLabel: "Excel 或紙本名單現場核對",
+    left: [
+      "適合事前整理名單，這個用途不需要換掉",
+      "現場多人同時更新容易互相覆蓋，也不容易即時掌握報到率",
+      "活動後還要手動合併、統計，才能交出席資料",
+    ],
+    right: [
+      "名單先匯入，現場報到狀況即時更新",
+      "家長掃現場 QR Code 自助報到，工作人員處理例外",
+      "活動後可匯出 CSV／Excel 報表，方便核對與留存",
+    ],
+  },
+  related: [
+    { label: "費用說明", href: "/pricing", desc: "點數怎麼算，50／100／300 人各要多少。" },
+    { label: "小學家長會案例", href: "/cases/elementary-school", desc: "一所小學從人工核對改成自助報到的做法。" },
+    { label: "已有 Excel 名單", href: "/scenarios/excel-list", desc: "名單已確定，匯入後直接現場報到。" },
+  ],
   faq: [
     [
       "家長帶孩子或同伴一起來，人數怎麼算？",
