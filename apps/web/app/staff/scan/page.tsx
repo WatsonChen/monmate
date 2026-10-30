@@ -21,6 +21,8 @@ export default function StaffScanPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserDTO | null>(null);
   const [events, setEvents] = useState<EventDTO[]>([]);
+  // 自己建立（主辦）的活動；被指派的活動不在其中，所以不顯示「返回後台」
+  const [ownedEventIds, setOwnedEventIds] = useState<Set<string>>(new Set());
   const [eventId, setEventId] = useState("");
   const [eventName, setEventName] = useState("");
   const [manualCode, setManualCode] = useState("");
@@ -74,13 +76,19 @@ export default function StaffScanPage() {
           }
         }
       } else {
+        // 主辦帳號：自己建立的活動，加上被指派為工作人員的別人的活動
         const evRes = await apiFetch<EventDTO[]>("/events/", { token });
-        if (evRes.success && evRes.data) {
-          setEvents(evRes.data);
-          const stored = window.localStorage.getItem("monmate.staff.eventId");
-          const match = evRes.data.find((e) => e.id === stored);
-          if (match) { setEventId(match.id); setEventName(match.name); }
-        }
+        const own = evRes.success && evRes.data ? evRes.data : [];
+        setOwnedEventIds(new Set(own.map((e) => e.id)));
+        const extraIds = (u.assignedEventIds ?? []).filter((id) => !own.some((e) => e.id === id));
+        const extra = (await Promise.all(extraIds.map((id) => apiFetch<EventDTO>(`/events/${id}`, { token }))))
+          .map((r) => (r.success ? r.data : null))
+          .filter((ev): ev is EventDTO => Boolean(ev));
+        const all = [...own, ...extra];
+        setEvents(all);
+        const stored = window.localStorage.getItem("monmate.staff.eventId");
+        const match = all.find((e) => e.id === stored);
+        if (match) { setEventId(match.id); setEventName(match.name); }
       }
     });
   }, [router]);
@@ -300,7 +308,7 @@ export default function StaffScanPage() {
               </select>
               <div className="flex items-start gap-2 rounded-lg bg-charcoal/5 px-3 py-2 text-xs text-charcoal/60">
                 <Info size={13} className="mt-0.5 shrink-0" />
-                <span>只顯示此帳號建立的活動。工作人員帳號以 email 綁定，登入後只會看到被指派的活動。</span>
+                <span>這裡會列出你建立的活動，以及被指派你擔任工作人員的活動。</span>
               </div>
             </>
           )}
@@ -473,7 +481,7 @@ export default function StaffScanPage() {
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{message}</div>
         )}
 
-        {(user?.role === "ADMIN" || user?.role === "OWNER") && eventId && (
+        {(user?.role === "ADMIN" || user?.role === "OWNER") && eventId && ownedEventIds.has(eventId) && (
           <button type="button"
             onClick={() => { setScannerOn(false); router.push(`/admin/events/${eventId}`); }}
             className="w-full rounded-lg border border-charcoal/15 bg-white py-2 text-sm font-semibold">

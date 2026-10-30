@@ -245,11 +245,16 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
   }
 
   async function addStaff() {
-    if (!staffName.trim() || !staffEmail.trim() || !staffPassword.trim()) { setStaffMsg("請填寫所有欄位"); return; }
+    // 對方已經有帳號時只需要 Email；全新帳號才需要姓名與密碼（由後端判斷並回報）
+    if (!staffEmail.trim()) { setStaffMsg("請填寫 Email"); return; }
     setIsAddingStaff(true); setStaffMsg("");
     const res = await apiFetch<StaffDTO>(`/events/${eventId}/staff`, {
       method: "POST", token,
-      body: JSON.stringify({ name: staffName.trim(), email: staffEmail.trim(), password: staffPassword })
+      body: JSON.stringify({
+        email: staffEmail.trim(),
+        ...(staffName.trim() ? { name: staffName.trim() } : {}),
+        ...(staffPassword ? { password: staffPassword } : {})
+      })
     });
     setIsAddingStaff(false);
     if (!res.success || !res.data) { setStaffMsg(res.error?.message ?? "新增失敗"); return; }
@@ -1272,21 +1277,21 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
 
             {showStaffForm && (
               <div className="mb-4 rounded-lg border border-charcoal/10 bg-paper p-4">
-                <p className="mb-3 text-sm font-bold">新增工作人員帳號</p>
+                <p className="mb-3 text-sm font-bold">新增工作人員</p>
                 {staffMsg && <p className="mb-3 text-xs font-semibold text-red-500">{staffMsg}</p>}
                 <div className="grid gap-3 sm:grid-cols-3">
                   <label className="text-xs font-semibold">
-                    姓名
+                    姓名（新帳號才需要）
                     <input value={staffName} onChange={(e) => setStaffName(e.target.value)}
                       className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
                   </label>
                   <label className="text-xs font-semibold">
-                    Email（登入帳號）
+                    Email（對方的登入帳號）
                     <input type="email" value={staffEmail} onChange={(e) => setStaffEmail(e.target.value)}
                       className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
                   </label>
                   <label className="text-xs font-semibold">
-                    密碼（至少 6 碼）
+                    密碼（新帳號才需要，至少 6 碼）
                     <input type="password" value={staffPassword} onChange={(e) => setStaffPassword(e.target.value)}
                       className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint" />
                   </label>
@@ -1296,10 +1301,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     className="h-9 rounded-lg border border-charcoal/15 px-4 text-sm font-semibold hover:bg-white">取消</button>
                   <button type="button" disabled={isAddingStaff} onClick={() => void addStaff()}
                     className="flex h-9 items-center gap-1.5 rounded-lg bg-orange px-4 text-sm font-bold text-white disabled:opacity-40">
-                    <Plus size={14} />{isAddingStaff ? "新增中…" : "建立帳號"}
+                    <Plus size={14} />{isAddingStaff ? "新增中…" : "新增工作人員"}
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-charcoal/50">工作人員只能掃描此活動的 QR，支援多台裝置同時登入</p>
+                <p className="mt-2 text-xs leading-5 text-charcoal/50">如果對方已經有 MonMate 帳號（例如用 Google 登入的主辦），只要填 Email 即可，不需要姓名與密碼；對方用原本的帳號登入，就會在「工作人員掃描」看到被指派的活動。工作人員只能報到與查看此活動的名單，支援多台裝置同時登入。</p>
               </div>
             )}
 
