@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { MarketingAnalytics } from "./components/MarketingAnalytics";
-import { Providers } from "./components/Providers";
 
 const siteName = "MonMate 活動報到系統";
 const siteDescription =
@@ -49,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="zh-Hant" data-scroll-behavior="smooth">
       <body>
-        <Providers>{children}</Providers>
+        {children}
         <MarketingAnalytics />
       </body>
     </html>
