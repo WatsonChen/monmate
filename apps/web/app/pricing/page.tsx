@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CompanionDemo } from "../components/CompanionDemo";
 import { PricingPlayground } from "../components/PricingPlayground";
+import { ScenarioLinks } from "../components/ScenarioLinks";
 import { TierCards } from "../components/TierCards";
 import { FaqAccordion } from "../components/FaqAccordion";
 import {
@@ -205,12 +206,7 @@ export default function PricingPage() {
       </Section>
 
       <Section title="想先看實際案例或情境？">
-        <p className="flex flex-wrap gap-x-5 gap-y-2 font-bold text-orange">
-          <Link href="/cases/elementary-school">小學家長會案例</Link>
-          <Link href="/scenarios/school">學校活動</Link>
-          <Link href="/scenarios/seminar">講座、課程、教育訓練</Link>
-          <Link href="/scenarios/excel-list">已有 Excel 名單</Link>
-        </p>
+        <ScenarioLinks />
       </Section>
 
       <Section title="價格常見問題" tone="white">
