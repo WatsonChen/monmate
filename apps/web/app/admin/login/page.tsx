@@ -2,7 +2,8 @@
 
 import type { UserDTO } from "@monmate/types";
 import { GoogleLogin } from "@react-oauth/google";
-import { LogIn } from "lucide-react";
+import { ArrowLeft, LogIn } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "../../components/BrandLogo";
@@ -39,7 +40,16 @@ export default function AdminLoginPage() {
   return (
     <main className="grid min-h-dvh place-items-center px-5 py-10">
       <section className="w-full max-w-sm rounded-lg border border-charcoal/10 bg-white p-6 shadow-soft">
-        <BrandLogo variant="slogan" className="mx-auto h-28 w-64 object-contain" />
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-charcoal/60 hover:text-charcoal"
+        >
+          <ArrowLeft size={16} />
+          回首頁
+        </Link>
+        <Link href="/" aria-label="回到 MonMate 首頁" className="mt-2 block">
+          <BrandLogo variant="slogan" className="mx-auto h-28 w-64 object-contain" />
+        </Link>
 
         {message && (
           <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600">
@@ -49,10 +59,15 @@ export default function AdminLoginPage() {
 
         <div className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold" htmlFor="email">Email</label>
+            <label className="block text-sm font-semibold" htmlFor="account">帳號</label>
             <input
-              id="email"
-              type="email"
+              id="account"
+              type="text"
+              inputMode="email"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="你的 Email，或主辦方給你的帳號"
               value={email}
               disabled={loading}
               onChange={(e) => setEmail(e.target.value)}
@@ -65,6 +80,8 @@ export default function AdminLoginPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
+              placeholder="請輸入密碼"
               value={password}
               disabled={loading}
               onChange={(e) => setPassword(e.target.value)}
@@ -106,7 +123,8 @@ export default function AdminLoginPage() {
                 return;
               }
               window.localStorage.setItem("monmate.token", response.data.token);
-              router.push("/admin");
+              // 工作人員用 Google 登入也要進到現場掃碼頁，而不是主辦後台
+              router.push(response.data.user.role === "STAFF" ? "/staff/scan" : "/admin");
             }}
             onError={() => setMessage("Google 登入失敗，請再試")}
             locale="zh-TW"
