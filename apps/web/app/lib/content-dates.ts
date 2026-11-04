@@ -6,13 +6,15 @@
 // 若每次部署都把全站標成剛修改，整個欄位會被忽略。
 // 改動 /pricing、情境頁等被 AI 引用的頁面時，也請同步更新 public/llms.txt 的「最後更新」。
 export const contentDates: Record<string, string> = {
-  "/": "2026-10-30",
+  "/": "2026-11-04",
   "/pricing": "2026-10-30",
-  "/scenarios/school": "2026-10-30",
-  "/scenarios/seminar": "2026-10-30",
-  "/scenarios/excel-list": "2026-10-30",
-  "/scenarios/brand-event": "2026-10-30",
-  "/scenarios/community": "2026-10-30",
+  "/guides": "2026-11-04",
+  "/about": "2026-11-04",
+  "/scenarios/school": "2026-11-04",
+  "/scenarios/seminar": "2026-11-04",
+  "/scenarios/excel-list": "2026-11-04",
+  "/scenarios/brand-event": "2026-11-04",
+  "/scenarios/community": "2026-11-04",
   "/guides/offline-check-in": "2026-10-30",
   "/guides/export-attendance-report": "2026-10-30",
   "/cases/elementary-school": "2026-10-30"

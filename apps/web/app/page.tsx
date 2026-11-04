@@ -49,6 +49,7 @@ const navItems = [
   { label: "價格", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
   { label: "價格說明", href: "/pricing" },
+  { label: "使用指南", href: "/guides" },
   { label: "客戶案例", href: "/cases/elementary-school" },
 ];
 
@@ -106,7 +107,6 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
             width={724}
             height={543}
             className="h-auto w-full rounded-lg"
-            unoptimized
           />
         ),
       },
@@ -121,7 +121,6 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
             width={724}
             height={543}
             className="h-auto w-full rounded-lg"
-            unoptimized
           />
         ),
       },
@@ -141,7 +140,6 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
             width={724}
             height={543}
             className="h-auto w-full rounded-lg"
-            unoptimized
           />
         ),
       },
@@ -156,7 +154,6 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
             width={724}
             height={543}
             className="h-auto w-full rounded-lg"
-            unoptimized
           />
         ),
       },
@@ -176,7 +173,6 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
             width={724}
             height={543}
             className="h-auto w-full rounded-lg"
-            unoptimized
           />
         ),
       },
@@ -191,7 +187,6 @@ const featureGroups: { stage: string; items: FeatureItem[] }[] = [
             width={724}
             height={543}
             className="h-auto w-full rounded-lg"
-            unoptimized
           />
         ),
       },
@@ -336,6 +331,17 @@ const jsonLd = {
       logo: `${siteUrl}/brand/logo-mark.png`,
     },
     {
+      "@type": "VideoObject",
+      name: "MonMate 活動報到 Demo",
+      description: "示範 MonMate 活動報到的流程：建立活動、匯入或開放報名、現場掃 QR Code 報到。",
+      thumbnailUrl: `${siteUrl}/brand/demo-poster.png`,
+      contentUrl: `${siteUrl}/brand/demo.mp4`,
+      uploadDate: "2026-07-24",
+      duration: "PT30S",
+      inLanguage: "zh-Hant-TW",
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+    {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
@@ -453,7 +459,6 @@ export default function HomePage() {
             height={280}
             className="mascot-float absolute right-0 top-4 z-0 w-[170px] object-contain sm:-right-4 sm:w-[220px] md:hidden"
             priority
-            unoptimized
           />
 
           <div className="relative z-10 mt-7 flex flex-wrap gap-3">
@@ -494,7 +499,6 @@ export default function HomePage() {
               height={558}
               className="h-auto w-full object-contain"
               priority
-              unoptimized
             />
 
             <div className="absolute left-[10.5%] top-[39%] h-[47%] w-[29%] overflow-hidden px-[clamp(4px,1vw,8px)] py-[clamp(6px,1.4vw,10px)]">
@@ -667,7 +671,6 @@ export default function HomePage() {
                         width={72}
                         height={72}
                         className="mx-auto h-[72px] w-[72px] object-contain"
-                        unoptimized
                       />
                       <h3 className="mt-4 text-base font-bold">{item.title}</h3>
                       <p className="mt-2 text-sm leading-6 text-charcoal/65">{item.text}</p>
@@ -795,7 +798,6 @@ export default function HomePage() {
                     width={200}
                     height={200}
                     className="mascot-float w-40 object-contain sm:w-48"
-                    unoptimized
                   />
                 </div>
               </div>
@@ -834,8 +836,14 @@ export default function HomePage() {
               <Link href="/pricing" className="hover:text-charcoal">
                 價格說明
               </Link>
+              <Link href="/guides" className="hover:text-charcoal">
+                使用指南
+              </Link>
               <Link href="/cases/elementary-school" className="hover:text-charcoal">
                 客戶案例
+              </Link>
+              <Link href="/about" className="hover:text-charcoal">
+                關於 MonMate
               </Link>
             </div>
           </div>

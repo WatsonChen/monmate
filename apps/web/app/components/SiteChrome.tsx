@@ -108,6 +108,7 @@ export function Breadcrumb({ crumbs }: { crumbs: Crumb[] }) {
 
 const headerLinks = [
   { label: "價格說明", href: "/pricing" },
+  { label: "使用指南", href: "/guides" },
   { label: "客戶案例", href: "/cases/elementary-school" },
 ];
 
@@ -156,6 +157,10 @@ export function SiteFooter() {
     { label: "學校活動", href: "/scenarios/school" },
     { label: "講座、課程簽到", href: "/scenarios/seminar" },
     { label: "Excel 名單報到", href: "/scenarios/excel-list" },
+    { label: "品牌活動、展會", href: "/scenarios/brand-event" },
+    { label: "社群聚會", href: "/scenarios/community" },
+    { label: "使用指南", href: "/guides" },
+    { label: "關於 MonMate", href: "/about" },
     { label: "隱私權條款", href: "/privacy" },
     { label: "退款條款", href: "/refund" },
   ];

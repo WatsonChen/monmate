@@ -12,6 +12,8 @@ import {
   type Crumb,
 } from "./SiteChrome";
 import { FaqAccordion } from "./FaqAccordion";
+import { ScenarioLinks } from "./ScenarioLinks";
+import { GUIDES } from "../lib/site-content";
 import { describePlan, estimateCost, formatTwd } from "../lib/pricing";
 
 export type ScenarioContent = {
@@ -150,7 +152,6 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
               width={220}
               height={220}
               className="hidden h-[200px] w-[200px] shrink-0 object-contain md:block"
-              unoptimized
             />
           ) : null}
         </div>
@@ -304,6 +305,19 @@ export function ScenarioPage({ c }: { c: ScenarioContent }) {
           </div>
         </Section>
       ) : null}
+
+      <Section id="more" title="其他適用情境與使用指南">
+        <ScenarioLinks exclude={c.path} />
+        <ul className="mt-6 grid gap-2 text-[15px]">
+          {GUIDES.map((g) => (
+            <li key={g.href}>
+              <Link href={g.href} className="font-bold text-orange">
+                {g.label} →
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Section>
 
       <section className="bg-paper">
         <div className="mx-auto max-w-4xl px-5 py-12 text-center">
