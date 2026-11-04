@@ -2,7 +2,7 @@ import { ScenarioPage, scenarioMetadata, type ScenarioContent } from "../../comp
 
 const content: ScenarioContent = {
   path: "/scenarios/community",
-  metaTitle: "社群聚會、小型活動報到系統",
+  metaTitle: "社群聚會、小型活動報到系統｜只填姓名電話就能報名｜MonMate",
   description:
     "社群聚會與小型活動的報到怎麼做？MonMate 讓來賓只填姓名與電話就能報名，現場掃 QR Code 或查電話報到，活動後匯出名單，附小型活動費用範例。",
   eyebrow: "適用場景・社群聚會",

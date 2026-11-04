@@ -26,7 +26,8 @@ export function EventCoverBanner({ seed, imageUrl }: { seed: string; imageUrl?: 
         alt=""
         fill
         priority
-        unoptimized
+        // 使用者上傳的封面是遠端網址（不在允許最佳化的網域內），維持原樣；站內預設封面（1.2MB 的 PNG）則交給 Next 最佳化
+        unoptimized={Boolean(imageUrl)}
         className="object-cover"
       />
     </div>

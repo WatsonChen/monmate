@@ -3,7 +3,7 @@ import { ScenarioPage, scenarioMetadata, type ScenarioContent } from "../../comp
 
 const content: ScenarioContent = {
   path: "/scenarios/brand-event",
-  metaTitle: "品牌活動、展會報到系統",
+  metaTitle: "品牌活動、展會報到系統｜QR Code 自助報到、品牌客製化｜MonMate",
   description:
     "品牌活動、展會與發表活動的報到怎麼做？MonMate 提供來賓 QR Code 自助報到，可選用品牌客製化（Logo、頂部大圖、隱藏 MonMate 標示），並附含品牌客製化的費用範例。",
   eyebrow: "適用場景・品牌活動、展會",

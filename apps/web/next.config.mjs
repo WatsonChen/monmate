@@ -7,6 +7,7 @@ const repoRoot = resolve(appRoot, "../..");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@monmate/types", "@monmate/config"],
+  images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
     // 全站共通的安全標頭。刻意不加 CSP 的 script／connect 限制與 COOP：

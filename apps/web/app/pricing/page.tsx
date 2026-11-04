@@ -118,7 +118,6 @@ export default function PricingPage() {
             height={200}
             className="mascot-float hidden h-[170px] w-[170px] shrink-0 object-contain sm:block"
             priority
-            unoptimized
           />
         </div>
       </div>
