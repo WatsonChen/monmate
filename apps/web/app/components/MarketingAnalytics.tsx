@@ -37,6 +37,23 @@ export function MarketingAnalytics() {
     });
   }, [tracked, pathname]);
 
+  // 轉換事件：只追蹤「免費建立活動／登入」連結（cta_click），以及標了 data-ga-event 的按鈕。
+  // 只送頁面路徑與按鈕文字，不帶網址參數，也不含任何個人資料。
+  useEffect(() => {
+    if (!tracked) return;
+    function onClick(e: MouseEvent) {
+      const el = (e.target as Element | null)?.closest?.("a[href='/admin/login'], [data-ga-event]");
+      if (!el) return;
+      const gtag = (window as unknown as { gtag?: Gtag }).gtag;
+      gtag?.("event", el.getAttribute("data-ga-event") ?? "cta_click", {
+        page_path: pathname,
+        link_text: (el.textContent ?? "").trim().slice(0, 40)
+      });
+    }
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [tracked, pathname]);
+
   if (!tracked) return null;
 
   return (

@@ -20,6 +20,7 @@ export function CreditEstimator({ tiers }: { tiers: PricingTier[] }) {
     <div className="overflow-hidden rounded-lg border border-charcoal/10 bg-paper">
       <button
         type="button"
+        data-ga-event="estimator_toggle"
         aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"

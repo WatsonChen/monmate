@@ -30,7 +30,7 @@ export function DemoVideoTrigger({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={className}>
+      <button type="button" data-ga-event="demo_open" onClick={() => setOpen(true)} className={className}>
         {children}
       </button>
 
