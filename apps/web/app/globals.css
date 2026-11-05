@@ -411,6 +411,88 @@ textarea {
   }
 }
 
+/* 案例頁入口示意：改用前，一次只通過一個人，其餘在桌前等待 */
+.case-flow-slow {
+  animation: case-flow-slow 8s ease-in-out infinite;
+}
+
+@keyframes case-flow-slow {
+  0%,
+  55% {
+    transform: translate(-50%, -50%) scale(1);
+    left: 54%;
+    opacity: 1;
+  }
+  85% {
+    left: 94%;
+    opacity: 1;
+  }
+  100% {
+    left: 96%;
+    opacity: 0;
+  }
+}
+
+/* 改用後：多條動線同時進行，各自掃描、掃完就入場 */
+.case-flow-fast {
+  animation: case-flow-fast 5.2s ease-in-out infinite both;
+}
+
+@keyframes case-flow-fast {
+  0% {
+    left: 26%;
+    opacity: 0;
+  }
+  10% {
+    left: 32%;
+    opacity: 1;
+  }
+  40%,
+  52% {
+    left: 46%;
+  }
+  92% {
+    left: 92%;
+    opacity: 1;
+  }
+  100% {
+    left: 94%;
+    opacity: 0;
+  }
+}
+
+.case-scan-pop {
+  animation: case-scan-pop 5.2s ease-out infinite both;
+}
+
+@keyframes case-scan-pop {
+  0%,
+  38% {
+    transform: scale(0);
+  }
+  46% {
+    transform: scale(1.25);
+  }
+  54%,
+  88% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-flow-slow,
+  .case-flow-fast,
+  .case-scan-pop {
+    animation: none;
+  }
+  .case-flow-fast {
+    left: 70%;
+  }
+}
+
 @media print {
   * {
     -webkit-print-color-adjust: exact;
