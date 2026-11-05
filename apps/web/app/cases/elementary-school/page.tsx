@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { QrCode, ThumbsUp, Users } from "lucide-react";
-import { CaseFlowDemo } from "../../components/CaseFlowDemo";
+import { CaseFlowCompare } from "../../components/CaseFlowCompare";
 import { ScenarioLinks } from "../../components/ScenarioLinks";
 import {
   Breadcrumb,
@@ -67,9 +67,9 @@ export default function ElementarySchoolCasePage() {
 
       <Section title="入口的差別">
         <p className="mb-4 max-w-2xl">
-          這所小學的家長會與研討會，原本都在入口逐一核對名單。切換看看，改用後的入口是什麼樣子。
+          這所小學的家長會與研討會，原本都在入口逐一核對名單。改用後，入口流程和工作人員的角色都不同。
         </p>
-        <CaseFlowDemo />
+        <CaseFlowCompare />
       </Section>
 
       <Section title="背景" tone="white">
