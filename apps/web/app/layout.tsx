@@ -4,7 +4,7 @@ import { MarketingAnalytics } from "./components/MarketingAnalytics";
 
 const siteName = "MonMate 活動報到系統";
 const siteDescription =
-  "MonMate 是活動報到系統：建立活動、開放線上報名或匯入名單，現場用手機掃 QR Code、輸入序號或查電話即可報到，並提供報到率數據、報表匯出與問卷。講座、課程、品牌活動、展會都適用。";
+  "MonMate 活動報到系統是結合線上報名與 QR Code 簽到的活動報到平台：建立活動、開放線上報名或匯入名單，現場用手機掃 QR Code、輸入序號或查電話即可報到，並提供報到率數據、報表匯出與問卷。講座、課程、品牌活動、展會都適用。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.monmate.tw"),

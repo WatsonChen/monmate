@@ -346,7 +346,7 @@ const jsonLd = {
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
       name: "MonMate 活動報到系統",
-      alternateName: ["MonMate", "MonMate 活動報到"],
+      alternateName: ["MonMate", "MonMate 活動報到", "MonMate 活動報到平台", "MonMate 活動報名系統"],
       inLanguage: "zh-Hant-TW",
       publisher: { "@id": `${siteUrl}/#organization` },
     },
@@ -441,14 +441,14 @@ export default function HomePage() {
         <div className="relative max-w-2xl overflow-hidden pb-2 md:overflow-visible md:pb-0">
           <div className="relative z-10 max-w-[68%] sm:max-w-[60%] md:max-w-none">
             <p className="text-sm font-bold text-orange">
-              MonMate・活動報到系統
+              MonMate・活動報到系統・線上報名與簽到
             </p>
             <h1 className="mt-3 text-4xl font-semibold leading-[1.15] tracking-tight sm:text-6xl">
               活動報到，從報名到現場一次搞定
             </h1>
             <p className="mt-5 text-base leading-7 text-charcoal/70 md:max-w-xl">
               來賓可掃現場 QR Code 自助報到，不必每個人都排隊核對；需要協助時，工作人員也能掃個人 QR
-              Code、輸入序號或查電話。從名單匯入到活動後出席統計，一套完成。
+              Code、輸入序號或查電話。從線上報名或名單匯入，到現場簽到與活動後出席統計，一個活動報到平台就能完成。
             </p>
           </div>
 
