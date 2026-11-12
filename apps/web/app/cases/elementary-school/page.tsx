@@ -67,7 +67,7 @@ export default function ElementarySchoolCasePage() {
 
       <Section title="入口的差別">
         <p className="mb-4 max-w-2xl">
-          這所小學的家長會與研討會，原本都在入口逐一核對名單。改用後，入口流程和工作人員的角色都不同。
+          這所小學的家長會與研討會，原本都在入口逐一核對名單。拖曳中間的拉桿，看改用後入口流程和工作人員的角色有什麼不同。
         </p>
         <CaseFlowCompare />
       </Section>
