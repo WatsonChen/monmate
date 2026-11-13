@@ -541,6 +541,11 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     >
                       {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                     </button>
+                    <ShareToLine
+                      iconOnly
+                      url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
+                      text={event.name}
+                    />
                   </div>
                 </div>
                 <div>
@@ -633,12 +638,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <ClipboardList size={14} />
                   活動問卷
                 </Link>
-                <ShareToLine
-                  url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
-                  text={event.name}
-                  label="LINE 分享"
-                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
-                />
                 <VenueQrButton
                   eventId={event.id}
                   eventName={event.name}
