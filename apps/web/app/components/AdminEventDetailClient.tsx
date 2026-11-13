@@ -1,6 +1,7 @@
 "use client";
 
 import { ShareToLine } from "./ShareToLine";
+import { OnboardingChecklist } from "./OnboardingChecklist";
 import type { AttendeeDTO, EventDTO, InsufficientCreditsDetails, RegistrationField, StaffDTO } from "@monmate/types";
 import Link from "next/link";
 import {
@@ -541,13 +542,6 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                       {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                     </button>
                   </div>
-                  <div className="mt-2">
-                    <ShareToLine
-                      url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
-                      text={event.name}
-                      className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#06C755] px-3 text-xs font-bold text-white hover:brightness-95"
-                    />
-                  </div>
                 </div>
                 <div>
                   <span className="text-charcoal/50">開始時間</span>
@@ -639,6 +633,12 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                   <ClipboardList size={14} />
                   活動問卷
                 </Link>
+                <ShareToLine
+                  url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
+                  text={event.name}
+                  label="LINE 分享"
+                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-charcoal/15 bg-white px-3 text-sm font-bold hover:bg-paper sm:px-4"
+                />
                 <VenueQrButton
                   eventId={event.id}
                   eventName={event.name}
@@ -648,6 +648,14 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
               </div>
             </div>
           </section>
+
+          <OnboardingChecklist
+            eventId={event.id}
+            openRegistration={!!event.openRegistration}
+            hasAttendees={attendees.length > 0}
+            hasStaff={staffList.length > 0}
+            hasCheckIns={totalCheckedInCount > 0}
+          />
 
           {/* 超額報名警示 */}
           {event.attendeeLimit != null && totalRegistered > event.attendeeLimit && (

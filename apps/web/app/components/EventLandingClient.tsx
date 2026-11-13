@@ -47,6 +47,7 @@ export function EventLandingClient({ event, token }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [fieldValues, setFieldValues] = useState(emptyRegistrationFieldValues());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -73,7 +74,7 @@ export function EventLandingClient({ event, token }: Props) {
     // 只會覺得自己填了「一個」表單。
     const res = await apiFetch<{ qrToken: string }>(`/events/public/${event.slug}/register`, {
       method: "POST",
-      body: JSON.stringify({ name: name.trim(), phone: phone.trim(), requestId: (requestIdRef.current ??= crypto.randomUUID()), turnstileToken: captchaToken ?? undefined })
+      body: JSON.stringify({ name: name.trim(), phone: phone.trim(), email: email.trim() || undefined, requestId: (requestIdRef.current ??= crypto.randomUUID()), turnstileToken: captchaToken ?? undefined })
     });
     if (!res.success || !res.data) {
       setIsSubmitting(false);
@@ -138,21 +139,12 @@ export function EventLandingClient({ event, token }: Props) {
             <p className="mt-3 text-sm leading-relaxed text-charcoal/70">{event.description}</p>
           )}
 
-          {/* 分享用的網址一律不帶 token，避免把受邀者的專屬報名連結轉出去 */}
-          <div className="mt-4">
-            <ShareToLine
-              url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
-              text={event.name}
-              label="分享給朋友"
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#06C755]/40 px-3 text-xs font-bold text-[#06A94A] hover:bg-[#06C755]/10"
-            />
-          </div>
-
+          <div className="mt-5 flex flex-wrap items-center gap-2">
           {/* 已受邀用戶的 CTA */}
           {ctaHref && (
             <Link
               href={ctaHref}
-              className="mt-5 inline-flex h-11 items-center rounded-lg bg-orange px-5 text-sm font-bold text-white"
+              className="inline-flex h-11 items-center rounded-lg bg-orange px-5 text-sm font-bold text-white"
             >
               前往填寫報名資料
             </Link>
@@ -161,7 +153,7 @@ export function EventLandingClient({ event, token }: Props) {
           {/* 公開報名 */}
           {/* 主辦暫停新增報名：只影響新報名，已報名者持原連結仍可查看票券與報到 */}
           {!token && event.openRegistration && event.registrationPaused && (
-            <p className="mt-5 text-sm font-semibold text-charcoal/60">
+            <p className="w-full text-sm font-semibold text-charcoal/60">
               目前暫停接受新的報名，請聯絡主辦單位。
             </p>
           )}
@@ -170,7 +162,7 @@ export function EventLandingClient({ event, token }: Props) {
             <button
               type="button"
               onClick={() => setShowForm(true)}
-              className="mt-5 inline-flex h-11 items-center rounded-lg bg-orange px-5 text-sm font-bold text-white"
+              className="inline-flex h-11 items-center rounded-lg bg-orange px-5 text-sm font-bold text-white"
             >
               我要報名
             </button>
@@ -178,10 +170,18 @@ export function EventLandingClient({ event, token }: Props) {
 
           {/* 邀請制活動、沒帶 token 造訪：沒有任何 CTA 可以顯示，至少說明狀態 */}
           {!token && !event.openRegistration && (
-            <p className="mt-5 text-sm font-semibold text-charcoal/50">
+            <p className="w-full text-sm font-semibold text-charcoal/50">
               此活動採邀請制，請透過您收到的專屬報名連結完成報名。
             </p>
           )}
+            {/* 分享用的網址一律不帶 token，避免把受邀者的專屬報名連結轉出去 */}
+            <ShareToLine
+              url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
+              text={event.name}
+              label="分享"
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-charcoal/15 bg-white px-4 text-sm font-bold hover:bg-paper"
+            />
+          </div>
 
           {!token && event.openRegistration && !event.registrationPaused && showForm && (
             <div className="mt-5 rounded-lg border border-charcoal/10 bg-paper p-4">
@@ -205,6 +205,19 @@ export function EventLandingClient({ event, token }: Props) {
                     placeholder="0912345678"
                     className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
                   />
+                </label>
+                <label className="text-xs font-semibold sm:col-span-2">
+                  Email<span className="ml-1 font-normal text-charcoal/40">（選填）</span>
+                  <input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="mt-1.5 h-10 w-full rounded-lg border border-charcoal/15 bg-white px-3 text-sm outline-none focus:border-mint"
+                  />
+                  <span className="mt-1 block font-normal text-charcoal/50">填寫後會把票券連結寄給你，弄丟時可以從信箱找回。</span>
                 </label>
               </div>
 

@@ -112,7 +112,8 @@ export default async function PublicEventPage({
       redirect(`/event/${slug}/ticket?token=${token}`);
     }
 
-    // 需要填表且尚未報名 → 顯示 landing，CTA 指向報名表
+    // 需要填表且尚未報名 → 直接帶到報名表（報名頁本身就會顯示活動資訊與內容），省掉多按一次
+    redirect(`/event/${slug}/register?token=${token}`);
   }
 
   const jsonLd = {
