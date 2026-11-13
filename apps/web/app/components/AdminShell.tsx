@@ -2,18 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  BarChart2,
-  ClipboardCheck,
-  CreditCard,
-  Download,
-  Home,
-  ListChecks,
-  LogOut,
-  QrCode,
-  Users,
-  X,
-} from "lucide-react";
+import { BarChart2, ClipboardCheck, CreditCard, Download, Home, ListChecks, LogOut, QrCode, Users, X, ShieldOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { apiFetch } from "../lib/api";
@@ -60,6 +49,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   function logout() {
     window.localStorage.removeItem("monmate.token");
     router.push("/");
+  }
+
+  // 登出所有裝置：請伺服器讓這個帳號所有已發出的登入憑證失效（例如手機或別人的電腦忘了登出、憑證可能外洩時使用）
+  async function logoutAll() {
+    if (!window.confirm("確定要登出所有裝置嗎？包含這台在內，所有已登入的裝置都需要重新登入。")) return;
+    const token = window.localStorage.getItem("monmate.token") ?? "";
+    const res = await apiFetch("/auth/logout-all", { method: "POST", token });
+    if (!res.success) {
+      window.alert("登出所有裝置失敗，請稍後再試。");
+      return;
+    }
+    logout();
   }
 
   return (
@@ -135,6 +136,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             >
               <LogOut size={16} />
               登出
+            </button>
+            <button
+              type="button"
+              onClick={() => void logoutAll()}
+              className="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-xs font-semibold text-charcoal/45 hover:bg-paper hover:text-charcoal"
+            >
+              <ShieldOff size={14} />
+              登出所有裝置
             </button>
           </div>
         </aside>
