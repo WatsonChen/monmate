@@ -17,6 +17,7 @@ type PublicEvent = {
   coverImageUrl?: string | null;
   registrationRequired: boolean;
   openRegistration: boolean;
+  isEnded?: boolean;
   registrationFields: RegistrationField[];
 };
 

@@ -567,10 +567,10 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                 )}
                 <div>
                   <span className="text-charcoal/50">公開報名</span>
-                  <p className={`font-semibold ${event.openRegistration ? "text-green-600" : "text-charcoal/40"}`}>
-                    {event.openRegistration ? (event.registrationPausedAt ? "已暫停新增報名" : "開放中") : "未開放"}
+                  <p className={`font-semibold ${event.isEnded ? "text-charcoal/50" : event.openRegistration ? "text-green-600" : "text-charcoal/40"}`}>
+                    {event.isEnded ? "活動已結束" : event.openRegistration ? (event.registrationPausedAt ? "已暫停新增報名" : "開放中") : "未開放"}
                   </p>
-                  {event.openRegistration && (
+                  {event.openRegistration && !event.isEnded && (
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <button type="button" disabled={isTogglingPause} onClick={() => void togglePublicRegistrationPause()}
                         className="h-8 rounded-lg border border-charcoal/15 px-3 text-xs font-semibold hover:bg-paper disabled:opacity-40">

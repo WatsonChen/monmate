@@ -24,11 +24,12 @@ function formatDate(value: string) {
 function getEventStatus(event: EventDTO): { label: string; className: string } {
   const now = Date.now();
   const start = new Date(event.startAt).getTime();
-  // Events without an explicit end time are treated as point-in-time —
-  // once the start passes there's no "in progress" window to show.
+  // 是否結束由後端統一計算（有結束時間看結束時間；沒有則開始當天過完才算），
+  // 舊版後端沒回傳時才退回用開始時間判斷。
   const end = event.endAt ? new Date(event.endAt).getTime() : start;
+  const ended = event.isEnded ?? now > end;
 
-  if (now > end) return { label: "已結束", className: "text-charcoal/40" };
+  if (ended) return { label: "已結束", className: "text-charcoal/40" };
   if (now >= start) return { label: "進行中", className: "text-green-600" };
   if (event.openRegistration) return { label: "報名中", className: "text-orange" };
   return { label: "尚未開放", className: "text-charcoal/40" };

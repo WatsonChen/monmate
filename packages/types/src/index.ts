@@ -90,6 +90,8 @@ export type EventDTO = {
   unlockedFeatures?: string[];
   /** 主辦手動暫停新增公開報名的時間；null 代表未暫停 */
   registrationPausedAt?: string | null;
+  /** 活動已結束（有結束時間就超過結束時間；沒有則開始當天過完），由後端計算 */
+  isEnded?: boolean;
   attendeeCount?: number;
   checkInLogCount?: number;
   createdAt?: string;

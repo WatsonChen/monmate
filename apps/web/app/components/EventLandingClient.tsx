@@ -34,6 +34,7 @@ type Props = {
     registrationFields: RegistrationField[];
     unlockedFeatures?: string[];
     registrationPaused?: boolean;
+    isEnded?: boolean;
   };
   token: string | null;
 };
@@ -152,13 +153,19 @@ export function EventLandingClient({ event, token }: Props) {
 
           {/* 公開報名 */}
           {/* 主辦暫停新增報名：只影響新報名，已報名者持原連結仍可查看票券與報到 */}
-          {!token && event.openRegistration && event.registrationPaused && (
+          {!token && event.openRegistration && event.isEnded && (
+            <p className="w-full text-sm font-semibold text-charcoal/60">
+              此活動已結束，不再接受報名。
+            </p>
+          )}
+
+          {!token && event.openRegistration && !event.isEnded && event.registrationPaused && (
             <p className="w-full text-sm font-semibold text-charcoal/60">
               目前暫停接受新的報名，請聯絡主辦單位。
             </p>
           )}
 
-          {!token && event.openRegistration && !event.registrationPaused && !showForm && (
+          {!token && event.openRegistration && !event.isEnded && !event.registrationPaused && !showForm && (
             <button
               type="button"
               onClick={() => setShowForm(true)}
@@ -183,7 +190,7 @@ export function EventLandingClient({ event, token }: Props) {
             />
           </div>
 
-          {!token && event.openRegistration && !event.registrationPaused && showForm && (
+          {!token && event.openRegistration && !event.isEnded && !event.registrationPaused && showForm && (
             <div className="mt-5 rounded-lg border border-charcoal/10 bg-paper p-4">
               <p className="mb-3 text-sm font-bold">填寫報名資料</p>
               {error && <p className="mb-3 text-xs font-semibold text-red-500">{error}</p>}
