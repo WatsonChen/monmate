@@ -7,6 +7,8 @@ import type { EventDTO } from "@monmate/types";
 import { Check, MapPin, QrCode, Search } from "lucide-react";
 import { EventCoverBanner } from "../../../components/EventCoverBanner";
 import { LogoLoading } from "../../../components/LogoLoading";
+import { ShareToLine } from "../../../components/ShareToLine";
+import { makeQrDataUrl } from "../../../lib/qr";
 
 type AttendeeTicket = {
   id: string;
@@ -29,6 +31,7 @@ export default function TicketPage() {
   const [data, setData] = useState<TicketData | null>(null);
   const [showCode, setShowCode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!params.slug || !token) { setLoading(false); return; }
@@ -36,6 +39,15 @@ export default function TicketPage() {
       .then((res) => { if (res.success && res.data) setData(res.data); })
       .finally(() => setLoading(false));
   }, [params.slug, token]);
+
+  // 在瀏覽器內產生 QR：現場網路差也能顯示，票券代碼也不會傳給第三方
+  const qrValue = data?.attendee?.qrToken;
+  useEffect(() => {
+    if (!qrValue) return;
+    let cancelled = false;
+    void makeQrDataUrl(qrValue, 440).then((url) => { if (!cancelled) setQrImageUrl(url); });
+    return () => { cancelled = true; };
+  }, [qrValue]);
 
   if (loading) return <LogoLoading />;
   if (!data?.attendee) return (
@@ -50,8 +62,7 @@ export default function TicketPage() {
 
   const { event, attendee } = data;
   const checkedIn = attendee.checkInStatus === "CHECKED_IN";
-  const qrValue = attendee.qrToken;
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrValue)}`;
+  const ticketUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
     <main className="min-h-dvh bg-paper">
@@ -82,7 +93,11 @@ export default function TicketPage() {
 
           {!showCode ? (
             <div className="mt-4">
-              <img src={qrImageUrl} alt="QR Code" className="mx-auto h-52 w-52 rounded-lg" />
+              {qrImageUrl ? (
+                <img src={qrImageUrl} alt="QR Code" className="mx-auto h-52 w-52 rounded-lg" />
+              ) : (
+                <div className="mx-auto h-52 w-52 animate-pulse rounded-lg bg-charcoal/5" />
+              )}
               <p className="mt-2 font-mono text-sm tracking-widest text-charcoal/60">{attendee.checkInCode}</p>
             </div>
           ) : (
@@ -101,6 +116,21 @@ export default function TicketPage() {
             {showCode ? "顯示 QR Code" : "只顯示代碼"}
           </button>
         </div>
+
+        {!checkedIn && (
+          <div className="rounded-xl border border-orange/30 bg-orange/5 p-5 text-center">
+            <p className="text-sm font-bold">請保存這張票券</p>
+            <p className="mt-1 text-xs leading-5 text-charcoal/65">
+              這個頁面的網址就是你的入場憑證，關掉後無法用電話找回。請截圖，或把連結傳到 LINE 給自己。
+            </p>
+            <ShareToLine
+              url={ticketUrl}
+              text={`${event.name} 入場票券（請勿轉給他人）`}
+              label="傳到 LINE 給自己保存"
+              className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#06C755] px-4 text-sm font-bold text-white hover:brightness-95"
+            />
+          </div>
+        )}
 
         {!checkedIn && (
           <div className="rounded-xl border border-charcoal/10 bg-white p-5 shadow-soft text-center">

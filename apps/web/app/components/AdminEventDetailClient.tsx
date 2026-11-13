@@ -1,5 +1,6 @@
 "use client";
 
+import { ShareToLine } from "./ShareToLine";
 import type { AttendeeDTO, EventDTO, InsufficientCreditsDetails, RegistrationField, StaffDTO } from "@monmate/types";
 import Link from "next/link";
 import {
@@ -539,6 +540,13 @@ export function AdminEventDetailClient({ eventId, created }: Props) {
                     >
                       {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                     </button>
+                  </div>
+                  <div className="mt-2">
+                    <ShareToLine
+                      url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
+                      text={event.name}
+                      className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#06C755] px-3 text-xs font-bold text-white hover:brightness-95"
+                    />
                   </div>
                 </div>
                 <div>

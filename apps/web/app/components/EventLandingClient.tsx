@@ -8,6 +8,7 @@ import type { RegistrationField } from "@monmate/types";
 import { apiFetch } from "../lib/api";
 import { formatEventDate, formatEventTime } from "../lib/eventDate";
 import { EventCoverBanner } from "./EventCoverBanner";
+import { ShareToLine } from "./ShareToLine";
 import { TurnstileWidget, turnstileSiteKey } from "./TurnstileWidget";
 import {
   buildRegistrationFieldsPayload,
@@ -136,6 +137,16 @@ export function EventLandingClient({ event, token }: Props) {
           {event.description && (
             <p className="mt-3 text-sm leading-relaxed text-charcoal/70">{event.description}</p>
           )}
+
+          {/* 分享用的網址一律不帶 token，避免把受邀者的專屬報名連結轉出去 */}
+          <div className="mt-4">
+            <ShareToLine
+              url={typeof window !== "undefined" ? `${window.location.origin}/event/${event.slug}` : `/event/${event.slug}`}
+              text={event.name}
+              label="分享給朋友"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#06C755]/40 px-3 text-xs font-bold text-[#06A94A] hover:bg-[#06C755]/10"
+            />
+          </div>
 
           {/* 已受邀用戶的 CTA */}
           {ctaHref && (

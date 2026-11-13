@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { QrCode, X, Download } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import { makeQrDataUrl } from "../lib/qr";
 import { LogoSpinner } from "./LogoSpinner";
 
 type VenueQrData = {
@@ -136,9 +137,18 @@ export function VenueQrButton({ eventId, eventName, token, brandingUnlocked = fa
     }
   }
 
-  const qrImageUrl = data
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=H&data=${encodeURIComponent(data.venueUrl)}`
-    : null;
+  // 在瀏覽器內產生，不連外部服務
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!data) return;
+    let cancelled = false;
+    void makeQrDataUrl(data.venueUrl, 300, "H").then((url) => {
+      if (!cancelled) setQrImageUrl(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
 
   useEffect(() => {
     if (!qrImageUrl) return;

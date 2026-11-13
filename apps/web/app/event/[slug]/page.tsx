@@ -14,6 +14,7 @@ type PublicEvent = {
   endAt?: string | null;
   location?: string | null;
   logoUrl?: string | null;
+  coverImageUrl?: string | null;
   registrationRequired: boolean;
   openRegistration: boolean;
   registrationFields: RegistrationField[];
@@ -63,15 +64,14 @@ export async function generateMetadata({
   const title = event.name;
   const description = event.description || "使用 MonMate 建立的活動報到頁面";
 
-  // No per-event cover image field yet — the brand lockup is a reasonable
-  // default so shared links at least show something branded and legible
-  // instead of the generic site-wide "MonMate" card.
+  // 分享預覽圖（LINE／FB）優先用活動封面；沒有封面才退回品牌圖。
+  const image = event.coverImageUrl && /^https?:\/\//.test(event.coverImageUrl) ? event.coverImageUrl : "/brand/logo-slogan.png";
   return {
     title,
     description,
     alternates: { canonical: `/event/${slug}` },
-    openGraph: { title, description, url: `/event/${slug}`, type: "website", images: ["/brand/logo-slogan.png"] },
-    twitter: { card: "summary_large_image", title, description, images: ["/brand/logo-slogan.png"] }
+    openGraph: { title, description, url: `/event/${slug}`, type: "website", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] }
   };
 }
 
