@@ -80,7 +80,7 @@ export default function RefundPage() {
               <li className="list-disc">申請退款原因</li>
             </ul>
             <p className="mt-3">
-              退款申請信箱：<a href="mailto:contact@weihui.io" className="text-orange hover:underline">contact@weihui.io</a>
+              退款申請信箱：<a href="mailto:support@monmate.tw" className="text-orange hover:underline">support@monmate.tw</a>
             </p>
           </section>
 
@@ -114,7 +114,7 @@ export default function RefundPage() {
               如您對本退款條款有任何疑問，請聯絡我們：
             </p>
             <p className="mt-2">
-              電子郵件：<a href="mailto:contact@weihui.io" className="text-orange hover:underline">contact@weihui.io</a>
+              電子郵件：<a href="mailto:support@monmate.tw" className="text-orange hover:underline">support@monmate.tw</a>
             </p>
           </section>
         </div>

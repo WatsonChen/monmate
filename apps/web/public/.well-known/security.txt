@@ -1,0 +1,4 @@
+Contact: mailto:support@monmate.tw
+Expires: 2027-11-12T00:00:00.000Z
+Preferred-Languages: zh-Hant, en
+Canonical: https://www.monmate.tw/.well-known/security.txt

@@ -85,8 +85,8 @@ export default function AboutPage() {
       <Section id="contact" title="聯絡我們">
         <p className="max-w-2xl">
           產品使用、付款或退款問題，請來信：
-          <a href="mailto:contact@weihui.io" className="ml-1 font-bold text-orange">
-            contact@weihui.io
+          <a href="mailto:support@monmate.tw" className="ml-1 font-bold text-orange">
+            support@monmate.tw
           </a>
           。
         </p>
