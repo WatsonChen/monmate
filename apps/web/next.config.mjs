@@ -17,7 +17,9 @@ const nextConfig = {
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       // 不允許被其他網站用 iframe 嵌入，避免點擊劫持（後台、報到、付款頁都是敏感操作）
       { key: "X-Frame-Options", value: "SAMEORIGIN" },
-      { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+      // 只加不會影響 Google 登入、GA、藍新付款的指令：禁止外掛物件、禁止被改寫 <base>，
+      // 讓活動頁即使被塞入 <object>／<base> 也無法利用；script-src 仍不限制（理由見上）
+      { key: "Content-Security-Policy", value: "frame-ancestors 'self'; object-src 'none'; base-uri 'self'" },
       // 工作人員掃碼只需要本站的攝影機；麥克風、定位、付款 API 用不到，一律關閉
       { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), payment=()" }
     ];
