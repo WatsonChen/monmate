@@ -133,6 +133,9 @@ export default function AdminLoginPage() {
             size="large"
           />
         </div>
+        <p className="mt-3 text-center text-xs leading-5 text-charcoal/55">
+          第一次使用？不用另外註冊，用 Google 登入會自動幫你建立帳號。
+        </p>
       </section>
     </main>
   );
